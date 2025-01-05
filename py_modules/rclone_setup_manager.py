@@ -1,10 +1,14 @@
-import asyncio
 from asyncio.subprocess import Process, create_subprocess_exec
-import os
 from pathlib import Path
+import asyncio
+import os
 import re
+
 import decky_plugin
-import plugin_config
+
+from game_sync_target import *
+from library_sync_target import *
+from sync_target import *
 
 async def _kill_previous_spawn(process: Process):
     """
@@ -14,8 +18,8 @@ async def _kill_previous_spawn(process: Process):
     process (asyncio.subprocess.Process): The process to be killed.
     """
     if process and process.returncode is None:
-        decky_plugin.logger.warn("Killing previous Process")
-        
+        decky_plugin.logger.warning("Killing previous Process")
+
         process.kill()
 
         await asyncio.sleep(0.1)  # Give time for OS to clear up the port
@@ -33,7 +37,7 @@ def _is_port_in_use(port: int) -> bool:
     import socket
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(('localhost', port)) == 0
-    
+
 async def _get_url_from_rclone_process(process: asyncio.subprocess.Process):
     """
     Extracts the URL from the stderr of the rclone process.
@@ -70,13 +74,13 @@ class RcloneSetupManager:
         if _is_port_in_use(53682):
             raise Exception('RCLONE_PORT_IN_USE')
 
-        self.current_spawn = await create_subprocess_exec(plugin_config.rclone_bin, *(["config", "create", "backend", backend_type]), stderr=asyncio.subprocess.PIPE)
+        self.current_spawn = await create_subprocess_exec(str(RCLONE_BIN_PATH), *(["config", "create", "backend", backend_type]), stderr=asyncio.subprocess.PIPE)
 
         url = await _get_url_from_rclone_process(self.current_spawn)
         decky_plugin.logger.info("Login URL: %s", url)
 
         return url
-    
+
     async def probe(self):
         """
         Checks if the current rclone process is running.
@@ -96,7 +100,7 @@ class RcloneSetupManager:
         Returns:
         str: The current backend type.
         """
-        with open(plugin_config.rclone_cfg, "r") as f:
+        with RCLONE_CFG_PATH.open("r") as f:
             l = f.readlines()
             return l[1]
 
@@ -172,8 +176,6 @@ class RcloneSetupManager:
             for line in lines:
                 f.write(line)
 
-        plugin_config.regenerate_filter_file()
-
     async def remove_syncpath(self, path: str, file: str):
         """
         Removes a sync path from the specified file.
@@ -191,8 +193,6 @@ class RcloneSetupManager:
             for line in lines:
                 if line.strip("\n") != path:
                     f.write(line)
-
-        plugin_config.regenerate_filter_file()
 
     def cleanup(self):
         """

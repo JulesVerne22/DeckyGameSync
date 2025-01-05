@@ -1,6 +1,5 @@
 import decky_plugin
 
-
 def log(level: str, msg: str) -> int:
     """
     Logs a message with the specified level.
@@ -22,28 +21,6 @@ def log(level: str, msg: str) -> int:
         case "error":
             decky_plugin.logger.error(msg)
 
-
-def get_last_sync_log() -> str:
-    """
-    Retrieves the last synchronization log.
-
-    Returns:
-    str: The last synchronization log.
-    """
-    record: bool = False
-    log: str = ""
-    with open(decky_plugin.DECKY_PLUGIN_LOG) as f:
-        for line in reversed(list(f)):
-            if(record == False):
-                if "=== FINISHING SYNC ===" in line:
-                    record = True
-            else:
-                if "=== STARTING SYNC ===" in line:
-                    break
-                else:
-                    log = line + '\n' + log  
-    return log
-
 def get_plugin_log() -> str:
     """
     Retrieves the entire plugin log.
@@ -54,7 +31,7 @@ def get_plugin_log() -> str:
     log: str = ""
     with open(decky_plugin.DECKY_PLUGIN_LOG) as f:
         for line in reversed(list(f)):
-            log = line + '\n' + log  
+            log = line + '\n' + log
             if "Logger initialized at level" in line.strip():
                 break
     return log
