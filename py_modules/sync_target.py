@@ -12,18 +12,20 @@ RCLONE_BIN_PATH = Path(decky_plugin.DECKY_PLUGIN_DIR) / "bin/rcloneLauncher"
 RCLONE_CFG_PATH = Path(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR) / "rclone.conf"
 RCLONE_BISYNC_CACHE_DIR = Path(decky_plugin.HOME) / "/.cache/rclone/bisync"
 
-class SyncTarget:
-    DEFAULT_CONFIG = {
-        "log_level": "INFO",
-        "sync_on_game_exit": True,
-        "toast_auto_sync": True,
-        "destination_directory": "decky-cloud-save",
-        "bisync": False,
-        "additional_sync_args": [],
-        "sync_root": "/",
-    }
+GLOBAL_CONFIG = SettingsManager(name="config", settings_directory=str(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR))
+DEFAULT_GLOBAL_CONFIG = {
+    "log_level": "INFO",
+    "sync_on_game_exit": True,
+    "toast_auto_sync": True,
+    "destination_directory": "decky-cloud-save",
+    "bisync": False,
+    "additional_sync_args": [],
+    "sync_root": "/",
+}
 
-    DEFAULT_CONFIG_FALLBACK = DEFAULT_CONFIG
+
+class SyncTarget:
+    DEFAULT_CONFIG = DEFAULT_GLOBAL_CONFIG
 
     def __init__(self, subdir: str = ""):
         self.current_sync = None
@@ -34,12 +36,28 @@ class SyncTarget:
         self.config_dir = Path(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR) / subdir
         self.runtime_dir = Path(decky_plugin.DECKY_PLUGIN_RUNTIME_DIR) / subdir
         self.log_dir = Path(decky_plugin.DECKY_PLUGIN_LOG_DIR) / subdir
-        self.config = SettingsManager(name="config", settings_directory=str(self.config_dir))
         self.rclone_log_path = None
+        if self.subdir:
+            self.config = SettingsManager(name="config", settings_directory=str(self.config_dir))
+        else:
+            # To avoid inconsistency between objects
+            self.config = GLOBAL_CONFIG
 
         self.syncpath_includes_file = self.config_dir / "sync_paths_includes.txt"
         self.syncpath_excludes_file = self.config_dir / "sync_paths_excludes.txt"
         self.syncpath_filter_file = self.runtime_dir / "filter.txt"
+
+    def get_global_config_item(self, key: str) -> dict:
+        """
+        Retrieves the global plugin configuration.
+
+        Parameters:
+        key (str): The key to get.
+
+        Returns:
+        dict: The global plugin configuration.
+        """
+        GLOBAL_CONFIG.getSettings(key, DEFAULT_GLOBAL_CONFIG.get(key))
 
     def get_config(self) -> dict:
         """
@@ -48,7 +66,7 @@ class SyncTarget:
         Returns:
         dict: The plugin configuration.
         """
-        self.config.read()
+        # self.config.read()
         if not self.config.settings:
             self.config.settings = self.DEFAULT_CONFIG
             self.config.commit()
@@ -64,9 +82,11 @@ class SyncTarget:
 
         Returns:
         int|bool|str: The value of the configuration item.
+                      If the config doesn't exist, the default value will be returned.
+                      If the entry doesn't exist in the default config, the value from the default config fallback will be returned.
         """
         all_configs = self.get_config()
-        return all_configs.get(key, self.DEFAULT_CONFIG.get(key))
+        return all_configs.get(key, self.DEFAULT_CONFIG.get(key, self.get_global_config_item(key)))
 
     def get_config_items(self, *keys: str)-> tuple[Any, ...]:
         """
@@ -76,10 +96,10 @@ class SyncTarget:
         *keys (str): The keys to get.
 
         Returns:
-        dict: A dictionary containing the requested configuration items.
+        tuple: Requested configuration items.
         """
         all_configs = self.get_config()
-        return *[all_configs.get(key, self.DEFAULT_CONFIG.get(key)) for key in keys],
+        return *[all_configs.get(key, self.DEFAULT_CONFIG.get(key, self.get_global_config_item(key))) for key in keys],
 
     def set_config(self, key: str, value: Any):
         """
