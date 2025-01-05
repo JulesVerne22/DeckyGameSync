@@ -35,6 +35,7 @@ class SyncTarget:
         self.runtime_dir = Path(decky_plugin.DECKY_PLUGIN_RUNTIME_DIR) / subdir
         self.log_dir = Path(decky_plugin.DECKY_PLUGIN_LOG_DIR) / subdir
         self.config = SettingsManager(name="config", settings_directory=str(self.config_dir))
+        self.rclone_log_path = None
 
         self.syncpath_includes_file = self.config_dir / "sync_paths_includes.txt"
         self.syncpath_excludes_file = self.config_dir / "sync_paths_excludes.txt"
@@ -172,7 +173,7 @@ class SyncTarget:
                 args.extend(["--conflict-resolve", winner])
 
         args.extend(["--transfers", "8", "--checkers", "16", "--log-file",
-                    str(rclone_log_path), "--log-format", "none", "-v"])
+                    str(self.rclone_log_path), "--log-format", "none", "-v"])
 
         args.extend(self.get_config_item("additional_sync_args", []))
 
@@ -184,7 +185,7 @@ class SyncTarget:
         self.current_sync = await create_subprocess_exec(*cmd)
         self.sync_result = await self.current_sync.wait()
         self.current_sync = None
-        decky_plugin.logger.info(f"Sync {rclone_log_path} finished with exit code: {self.sync_result}")
+        decky_plugin.logger.info(f"Sync {self.rclone_log_path} finished with exit code: {self.sync_result}")
 
     async def delete_lock_files(self):
         """
@@ -199,7 +200,18 @@ class SyncTarget:
         Retrieves the last synchronization log.
 
         Returns:
-        str: The last synchronization log.
+        str: The last synchronization log contents.
         """
-        with self.rclone_log_path.open() as f:
-            return f.read()
+        if not self.rclone_log_path:
+            all_log_files = sorted(self.log_dir.glob("rclone *.log"))
+            if len(all_log_files) > 0:
+                self.rclone_log_path = all_log_files[-1]
+            else:
+                return "No logs available."
+        try:
+            with self.rclone_log_path.open() as f:
+                return f.read()
+        except Exception as e:
+            err_msg = f"Error reading log file {self.rclone_log_path}:\n{e}"
+            decky_plugin.logger.error(err_msg)
+            return err_msg
