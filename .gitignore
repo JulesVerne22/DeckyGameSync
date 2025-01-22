@@ -24,6 +24,7 @@ node_modules
 bower_components
 .pnpm-store
 py_modules/dependencies
+py_modules/settings.py
 
 # Editors
 .idea

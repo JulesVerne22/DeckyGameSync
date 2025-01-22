@@ -1,132 +1,41 @@
-from asyncio import create_subprocess_exec
 from datetime import datetime
-from enum import Enum
 from pathlib import Path
-from subprocess import list2cmdline
 from typing import Any
+import subprocess
 
 import decky_plugin
-from settings import SettingsManager as settings_manager
+from config import Config
 
 RCLONE_BIN_PATH = Path(decky_plugin.DECKY_PLUGIN_DIR) / "bin/rcloneLauncher"
 RCLONE_CFG_PATH = Path(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR) / "rclone.conf"
-RCLONE_BISYNC_CACHE_DIR = Path(decky_plugin.HOME) / "/.cache/rclone/bisync"
+RCLONE_BISYNC_CACHE_DIR = Path(decky_plugin.HOME) / ".cache/rclone/bisync"
 
-GLOBAL_CONFIG = SettingsManager(name="config", settings_directory=str(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR))
-DEFAULT_GLOBAL_CONFIG = {
-    "log_level": "INFO",
-    "sync_on_game_exit": True,
-    "toast_auto_sync": True,
-    "destination_directory": "decky-cloud-save",
-    "bisync": False,
-    "additional_sync_args": [],
-    "sync_root": "/",
-}
-
-
-class SyncTarget:
-    DEFAULT_CONFIG = DEFAULT_GLOBAL_CONFIG
-
+class SyncTarget():
     def __init__(self, subdir: str = ""):
         self.current_sync = None
         self.sync_result = None
-        self.subdir = subdir
 
-        # subdir should be empty for global sync
         self.config_dir = Path(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR) / subdir
-        self.runtime_dir = Path(decky_plugin.DECKY_PLUGIN_RUNTIME_DIR) / subdir
         self.log_dir = Path(decky_plugin.DECKY_PLUGIN_LOG_DIR) / subdir
-        self.rclone_log_path = None
-        if self.subdir:
-            self.config = SettingsManager(name="config", settings_directory=str(self.config_dir))
-        else:
-            # To avoid inconsistency between objects
-            self.config = GLOBAL_CONFIG
 
+        self.rclone_log_path = None
         self.syncpath_includes_file = self.config_dir / "sync_paths_includes.txt"
         self.syncpath_excludes_file = self.config_dir / "sync_paths_excludes.txt"
-        self.syncpath_filter_file = self.runtime_dir / "filter.txt"
 
-    def get_global_config_item(self, key: str) -> dict:
-        """
-        Retrieves the global plugin configuration.
-
-        Parameters:
-        key (str): The key to get.
-
-        Returns:
-        dict: The global plugin configuration.
-        """
-        GLOBAL_CONFIG.getSettings(key, DEFAULT_GLOBAL_CONFIG.get(key))
-
-    def get_config(self) -> dict:
-        """
-        Retrieves the plugin configuration.
-
-        Returns:
-        dict: The plugin configuration.
-        """
-        # self.config.read()
-        if not self.config.settings:
-            self.config.settings = self.DEFAULT_CONFIG
-            self.config.commit()
-
-        return self.config.settings
-
-    def get_config_item(self, key: str) -> int|bool|str:
-        """
-        Retrieves a configuration item.
-
-        Parameters:
-        key (str): The key to get.
-
-        Returns:
-        int|bool|str: The value of the configuration item.
-                      If the config doesn't exist, the default value will be returned.
-                      If the entry doesn't exist in the default config, the value from the default config fallback will be returned.
-        """
-        all_configs = self.get_config()
-        return all_configs.get(key, self.DEFAULT_CONFIG.get(key, self.get_global_config_item(key)))
-
-    def get_config_items(self, *keys: str)-> tuple[Any, ...]:
-        """
-        Retrieves multiple configuration items.
-
-        Parameters:
-        *keys (str): The keys to get.
-
-        Returns:
-        tuple: Requested configuration items.
-        """
-        all_configs = self.get_config()
-        return *[all_configs.get(key, self.DEFAULT_CONFIG.get(key, self.get_global_config_item(key))) for key in keys],
-
-    def set_config(self, key: str, value: Any):
-        """
-        Sets a configuration key-value pair in the plugin configuration file.
-
-        Parameters:
-        key (str): The key to set.
-        value (Any): The value to set for the key.
-        """
-        self.config.setSetting(key, value)
-
-    def generate_filter_file(self):
+    def get_filter_str(self) -> str:
         """
         Generates the sync paths filter file based on includes and excludes files.
+
+        Returns:
+        str: A string containing all filter entries
         """
-        with open(self.sync_path_includes_file, 'r') as f:
-            includes = f.readlines()
-        with open(self.sync_path_excludes_file, 'r') as f:
-            excludes = f.readlines()
-        with open(self.sync_path_filter_file, 'w') as f:
-            for exclude in excludes:
-                f.write(f"- {exclude}")
-            f.write("\n")
-            for include in includes:
-                f.write(f"+ {include}")
-            f.write("\n")
-            f.write("- **\n")
+        filter_string = ""
+        with self.syncpath_includes_file.open('r') as f:
+            filter_string += f.read().strip() + '\n'
+        with self.syncpath_excludes_file.open('r') as f:
+            filter_string += f.read().strip() + '\n'
+        filter_string += "- **"
+        return filter_string
 
     def get_filter_args(self) -> list[str]:
         """
@@ -135,7 +44,7 @@ class SyncTarget:
         Returns:
         list: A list of filter arguments.
         """
-        return ["--filter-from", self.syncpath_filter_file]
+        return ["--filter-from", "-"]
 
     def create_rclone_log_file(self, max_log_files: int = 5) -> Path:
         """
@@ -163,7 +72,7 @@ class SyncTarget:
 
         return log_file
 
-    async def sync_now(self, winner: str, resync: bool = False):
+    def sync_now(self, winner: str, resync: bool = False):
         """
         Initiates a synchronization process using rclone.
 
@@ -171,10 +80,9 @@ class SyncTarget:
         winner (str): The winner of the resync operation. Defaults to None.
         resync (bool, optional): Whether to perform a resync operation. Defaults to False.
         """
-        self.generate_filter_file()
         self.rclone_log_path = self.create_rclone_log_file()
 
-        bisync, sync_root, destination_dir = self.get_config_items("bisync", "sync_root", "destination_directory")
+        bisync, sync_root, destination_dir = Config.get_config_items("bisync", "sync_root", "destination_directory")
         args = [sync_root, f"backend:{destination_dir}"]
         args.extend(self.get_filter_args())
 
@@ -200,20 +108,18 @@ class SyncTarget:
         cmd = [RCLONE_BIN_PATH, *args]
 
         decky_plugin.logger.info(
-            "Running command: %s", list2cmdline(cmd))
+            "Running command: %s", subprocess.list2cmdline(cmd))
 
-        self.current_sync = await create_subprocess_exec(*cmd)
-        self.sync_result = await self.current_sync.wait()
+        self.current_sync = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        sync_stdcout, sync_stderr = self.current_sync.communicate(self.get_filter_str())
+        self.sync_result = self.current_sync.returncode
         self.current_sync = None
-        decky_plugin.logger.info(f"Sync {self.rclone_log_path} finished with exit code: {self.sync_result}")
 
-    async def delete_lock_files(self):
-        """
-        Deletes rclone lock files
-        """
-        decky_plugin.logger.info("Deleting lock files.")
-        for lck_file in RCLONE_BISYNC_CACHE_DIR.glob("*.lck"):
-            lck_file.unlink(missing_ok=True)
+        decky_plugin.logger.info(f"Sync {self.rclone_log_path} finished with exit code: {self.sync_result}")
+        if sync_stdcout:
+            decky_plugin.logger.info(f"Sync {self.rclone_log_path} stdout: {sync_stdcout}")
+        if sync_stderr:
+            decky_plugin.logger.error(f"Sync {self.rclone_log_path} stderr: {sync_stderr}")
 
     def get_last_sync_log(self) -> str:
         """
@@ -235,3 +141,82 @@ class SyncTarget:
             err_msg = f"Error reading log file {self.rclone_log_path}:\n{e}"
             decky_plugin.logger.error(err_msg)
             return err_msg
+
+    def get_syncpaths(self, exclude: bool) -> list[str]:
+        """
+        Retrieves sync paths from the specified file.
+
+        Parameters:
+        exclude (bool): The type of the sync paths to retrieve, True for exclude, False for include
+
+        Returns:
+        list[str]: A list of sync paths.
+        """
+        file = self.syncpath_excludes_file if exclude else self.syncpath_includes_file
+        if not file.exists():
+            return []
+        with file.open("r") as f:
+            return f.readlines()
+
+    def add_syncpath(self, path: str, exclude: bool):
+        """
+        Adds a sync path.
+
+        Parameters:
+        path (str): The path to add.
+        exclude (bool): The type of the sync paths to add, True for exclude, False for include
+        """
+        file = self.syncpath_excludes_file if exclude else self.syncpath_includes_file
+        decky_plugin.logger.info(f"Adding Path to Sync: '{path}', {file}")
+
+        # Replace the beginning of path to replace the root.
+        path = f"{path.strip().replace(self.get_config_item("sync_root"), "/", 1)}\n"
+
+        if path in self.get_syncpaths(exclude):
+            return
+        with file.open("a") as f:
+            f.write(path)
+
+    def remove_syncpath(self, path: str, exclude: bool):
+        """
+        Removes a sync path from the specified file.
+
+        Parameters:
+        path (str): The path to remove.
+        exclude (bool): The type of the sync paths to add, True for exclude, False for include
+        """
+        file = self.syncpath_excludes_file if exclude else self.syncpath_includes_file
+        decky_plugin.logger.info(f"Removing Path to Sync: '{path}', {file}")
+
+        # Replace the beginning of path to replace the root.
+        path = f"{path.strip()}\n"
+
+        lines = self.get_syncpaths(exclude)
+        with file.open("w") as f:
+            for line in lines:
+                if line != path:
+                    f.write(line)
+
+
+class GameSyncTarget(SyncTarget):
+    def __init__(self, app_id: int):
+        if app_id <= 0:
+            raise ValueError(f"Invalid app_id {app_id}, it is required to be > 730")
+        super().__init__(str(app_id))
+
+
+class LibrarySyncTarget(SyncTarget):
+    def __init__(self, library: str):
+        if not library:
+            raise ValueError("library is required")
+        super().__init__(library)
+
+    def get_filter_args(self) -> list:
+        """
+        Retrieves the filter arguments for rclone.
+        For library sync, no filter args will be used.
+
+        Returns:
+        list: An empty list
+        """
+        return []

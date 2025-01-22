@@ -17,7 +17,7 @@ def log(level: str, msg: str) -> int:
         case "info":
             decky_plugin.logger.info(msg)
         case "warn":
-            decky_plugin.logger.warn(msg)
+            decky_plugin.logger.warning(msg)
         case "error":
             decky_plugin.logger.error(msg)
 

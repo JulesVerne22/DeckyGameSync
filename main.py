@@ -1,120 +1,123 @@
-import signal
 import decky_plugin
-import plugin_config
+import sys
+from os import path
+
+import signal
 import process_utils
 import logger_utils
 from rclone_setup_manager import RcloneSetupManager
-from rclone_sync_manager import RcloneSyncManager
+
+from sync_target import *
+from config import Config
 
 
 class Plugin:
     manager_setup = RcloneSetupManager()
-    manager_sync = RcloneSyncManager()
+    ongoing_sync_targets = dict()
 
-# rclone.conf Setup
+    # rclone.conf Setup
 
     async def spawn(self, backend_type: str):
-        decky_plugin.logger.debug(
-            "Executing: RcloneSetupManager.spawn(%s)", backend_type)
+        decky_plugin.logger.debug(f"Executing spawn(backend_type={backend_type})")
         return await self.manager_setup.spawn(backend_type)
 
     async def spawn_probe(self):
-        decky_plugin.logger.debug("Executing: RcloneSetupManager.probe()")
+        decky_plugin.logger.debug(f"Executing probe()")
         return await self.manager_setup.probe()
 
     async def get_backend_type(self):
-        decky_plugin.logger.debug(
-            "Executing: RcloneSetupManager.get_backend_type()")
+        decky_plugin.logger.debug(f"Executing get_backend_type()")
         return await self.manager_setup.get_backend_type()
 
-# Sync Paths
+    # Sync Paths
 
-    async def get_syncpaths(self, file: str):
+    async def get_syncpaths(self, exclude: bool, app_id=None):
         decky_plugin.logger.debug(
-            "Executing: RcloneSetupManager.get_syncpaths(%s)", file)
-        return await self.manager_setup.get_syncpaths(file)
+            f"Executing get_syncpaths(exclude={exclude}, app_id={app_id})"
+        )
+        return SyncTarget().get_syncpaths(exclude)
 
     async def test_syncpath(self, path: str):
-        decky_plugin.logger.debug(
-            "Executing: RcloneSetupManager.test_syncpath(%s)", path)
-        return await self.manager_setup.test_syncpath(path)
+        decky_plugin.logger.debug(f"Executing test_syncpath({path})")
+        return self.manager_setup.test_syncpath(path)
 
-    async def add_syncpath(self, path: str, file: str):
+    async def add_syncpath(self, path: str, exclude: bool):
         decky_plugin.logger.debug(
-            "Executing: RcloneSetupManager.add_syncpath(%s, %s)", path, file)
-        return await self.manager_setup.add_syncpath(path, file)
+            f"Executing add_syncpath(path={path}, exclude={exclude})"
+        )
+        return SyncTarget().add_syncpath(path, exclude)
 
-    async def remove_syncpath(self, path: str, file: str):
+    async def remove_syncpath(self, path: str, exclude: bool):
         decky_plugin.logger.debug(
-            "Executing: RcloneSetupManager.remove_syncpath(%s, %s)", path, file)
-        return await self.manager_setup.remove_syncpath(path, file)
+            f"Executing remove_syncpath(path={path}, exclude={exclude})"
+        )
+        return SyncTarget().remove_syncpath(path, exclude)
 
-# Syncing
+    # Syncing
 
     async def sync_now_internal(self, winner: str, resync: bool):
         decky_plugin.logger.info(
-            "Executing: RcloneSyncManager.sync_now(%s, %b)", winner, resync)
-        return await self.manager_sync.sync_now(winner, resync)
+            f"Executing RcloneSyncManager.sync_now(winner={winner}, resync={resync})"
+        )
+        return SyncTarget().sync_now(winner, resync)
 
     async def sync_now_probe(self):
-        decky_plugin.logger.debug("Executing: RcloneSyncManager.probe()")
+        decky_plugin.logger.debug(f"Executing RcloneSyncManager.probe()")
         return await self.manager_sync.probe()
 
     async def delete_lock_files(self):
-        decky_plugin.logger.debug(
-            "Executing: RcloneSyncManager.delete_lock_files()")
+        decky_plugin.logger.debug(f"Executing RcloneSyncManager.delete_lock_files()")
         return await self.manager_sync.delete_lock_files()
 
-# Processes
+    # Processes
 
     async def signal(self, pid: int, s: str):
-        decky_plugin.logger.debug("Executing: send_signal(%s)", pid, s)
+        decky_plugin.logger.debug(f"Executing send_signal(pid={pid}, s={s})")
         if s == "SIGSTOP":
             return process_utils.send_signal(pid, signal.SIGSTOP)
         elif s == "SIGCONT":
             return process_utils.send_signal(pid, signal.SIGCONT)
 
-# Configuration
+    # Configuration
 
     async def get_log_level(self):
-        decky_plugin.logger.debug("Executing: get_log_level()")
+        decky_plugin.logger.debug(f"Executing get_log_level()")
         return decky_plugin.logger.level
 
     async def get_config(self):
-        decky_plugin.logger.debug("Executing: get_config()")
-        return plugin_config.get_config()
+        decky_plugin.logger.debug(f"Executing get_config()")
+        return Config.get_config()
 
     async def set_config(self, key: str, value: str):
-        decky_plugin.logger.debug("Executing: set_config(%s, %s)", key, value)
-        plugin_config.set_config(key, value)
+        decky_plugin.logger.debug(f"Executing set_config(key={key}, value={value})")
+        Config.set_config(key, value)
 
-# Logger
+    # Logger
 
     async def log(self, level: str, msg: str) -> int:
-        decky_plugin.logger.debug("Executing: log()")
+        decky_plugin.logger.debug(f"Executing log()")
         return logger_utils.log(level, msg)
 
     async def get_last_sync_log(self) -> str:
-        decky_plugin.logger.debug("Executing: get_last_sync_log()")
+        decky_plugin.logger.debug(f"Executing get_last_sync_log()")
         return logger_utils.get_last_sync_log()
 
     async def get_plugin_log(self) -> str:
-        decky_plugin.logger.debug("Executing: get_plugin_log()")
+        decky_plugin.logger.debug(f"Executing get_plugin_log()")
         return logger_utils.get_plugin_log()
 
-# Lifecycle
+    # Lifecycle
 
     async def _main(self):
-        logger_level = plugin_config.get_config_item("log_level", "INFO")
+        logger_level = Config.get_config_item("log_level")
         decky_plugin.logger.setLevel(logger_level)
 
-        decky_plugin.logger.debug(
-            "rclone exe path: %s", plugin_config.rclone_bin)
-        decky_plugin.logger.debug(
-            "rclone cfg path: %s", plugin_config.rclone_cfg)
+        decky_plugin.logger.debug(f"rclone exe path: {RCLONE_BIN_PATH}")
+        decky_plugin.logger.debug(f"rclone cfg path: {RCLONE_CFG_PATH}")
 
     async def _unload(self):
         self.manager_setup.cleanup()
 
     async def _migration(self):
-        plugin_config.migrate()
+        # plugin_config.migrate()
+        pass

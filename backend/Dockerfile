@@ -4,16 +4,7 @@
 #FROM ghcr.io/steamdeckhomebrew/holo-toolchain-rust:latest
 #FROM ghcr.io/steamdeckhomebrew/holo-toolchain-go:latest
 #FROM ghcr.io/steamdeckhomebrew/holo-base:latest
-FROM docker.io/python:latest as python
-RUN pip install protobuf --upgrade --target=/protobuf
-
 FROM docker.io/rclone/rclone:latest as rclone
-
-FROM docker.io/namely/protoc-all:latest
-RUN apt install -y unzip wget
-
-COPY --from=python /protobuf /protobuf
-COPY --from=rclone /usr/local/bin/rclone /rclone
 
 # entrypoint.sh should always be located in the backend folder
 ENTRYPOINT [ "/backend/entrypoint.sh" ]
