@@ -27,17 +27,26 @@ class Plugin:
 
     # Sync Paths
 
-    async def get_syncpaths(self, exclude: bool, app_id=None):
+    async def get_syncpaths(self, exclude: bool, app_id: int = 0):
         decky_plugin.logger.debug(f"Executing get_syncpaths(exclude={exclude}, app_id={app_id})")
-        return GlobalSyncTarget().get_syncpaths(exclude)
+        if app_id > 0:
+            return GameSyncTarget(app_id).get_syncpaths(exclude)
+        else:
+            return GlobalSyncTarget().get_syncpaths(exclude)
 
-    async def add_syncpath(self, path: str, exclude: bool):
-        decky_plugin.logger.debug(f"Executing add_syncpath(path={path}, exclude={exclude})")
-        return GlobalSyncTarget().add_syncpath(path, exclude)
+    async def add_syncpath(self, path: str, exclude: bool, app_id: int = 0):
+        decky_plugin.logger.debug(f"Executing add_syncpath(path={path}, exclude={exclude}, app_id={app_id})")
+        if app_id > 0:
+            return GameSyncTarget(app_id).add_syncpath(exclude)
+        else:
+            return GlobalSyncTarget().add_syncpath(path, exclude)
 
-    async def remove_syncpath(self, path: str, exclude: bool):
-        decky_plugin.logger.debug(f"Executing remove_syncpath(path={path}, exclude={exclude})")
-        return GlobalSyncTarget().remove_syncpath(path, exclude)
+    async def remove_syncpath(self, path: str, exclude: bool, app_id: int = 0):
+        decky_plugin.logger.debug(f"Executing remove_syncpath(path={path}, exclude={exclude}, app_id={app_id})")
+        if app_id > 0:
+            return GameSyncTarget(app_id).remove_syncpath(exclude)
+        else:
+            return GlobalSyncTarget().remove_syncpath(path, exclude)
 
     async def test_syncpath(self, path: str):
         decky_plugin.logger.debug(f"Executing test_syncpath({path})")
@@ -45,9 +54,16 @@ class Plugin:
 
     # Syncing
 
-    async def sync_now(self, winner: str, resync: bool) -> int | None:
+    async def sync_now(self, winner: str, resync: bool, app_id: int = 0) -> int | None:
         decky_plugin.logger.info(f"Executing RcloneSyncManager.sync_now(winner={winner}, resync={resync})")
-        return await GlobalSyncTarget().sync_now(winner, resync)
+        if app_id > 0:
+            return await GameSyncTarget(app_id).sync_now(winner, resync)
+        else:
+            return await GlobalSyncTarget().sync_now(winner, resync)
+
+    async def sync_now_screenshots(self) -> int | None:
+        decky_plugin.logger.info(f"Executing RcloneSyncManager.sync_now_screenshots()")
+        return await LibrarySyncTarget("Pictures").sync_now()
 
     async def delete_lock_files(self):
         decky_plugin.logger.debug(f"Executing RcloneSyncManager.delete_lock_files()")

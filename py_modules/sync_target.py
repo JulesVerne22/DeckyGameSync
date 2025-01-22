@@ -109,13 +109,13 @@ class _SyncTarget:
         """
         return Config.get_config_item("bisync")
 
-    async def sync_now(self, winner: str, resync: bool = False) -> int | None:
+    async def sync_now(self, winner: str = "", resync: bool = False) -> int | None:
         """
         Do synchronization using rclone. Sync again if self.sync_again is set to True and
         current sync finished successfully. Otherwise stop here and return the exit code.
 
         Parameters:
-        winner (str): The winner of the resync operation. Defaults to None.
+        winner (str, optional): The winner of the resync operation. Defaults to "".
         resync (bool, optional): Whether to perform a resync operation. Defaults to False.
 
         Returns:
@@ -135,13 +135,13 @@ class _SyncTarget:
         ONGOING_SYNCS.pop(self.id)
         return sync_result
 
-    async def _sync_now_internal(self, winner: str, resync: bool = False) -> int | None:
+    async def _sync_now_internal(self, winner: str, resync: bool) -> int | None:
         """
         Initiates a synchronization process using rclone.
 
         Parameters:
-        winner (str): The winner of the resync operation. Defaults to None.
-        resync (bool, optional): Whether to perform a resync operation. Defaults to False.
+        winner (str): The winner of the resync operation
+        resync (bool): Whether to perform a resync operation.
 
         Returns:
         int | None: Exit code of this sync if the filter is not empty, None otherwise
