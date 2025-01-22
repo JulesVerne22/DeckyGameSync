@@ -1,7 +1,7 @@
 from datetime import datetime
 from pathlib import Path
-from typing import Any
-import subprocess
+from asyncio.subprocess import create_subprocess_exec, PIPE
+from subprocess import list2cmdline
 
 import decky_plugin
 from config import Config
@@ -9,7 +9,8 @@ from utils import *
 
 ONGOING_SYNCS = dict()
 
-class _SyncTarget():
+
+class _SyncTarget:
     def __init__(self, subdir: str):
         self.id = subdir
         self.sync_again = False
@@ -31,13 +32,15 @@ class _SyncTarget():
         if not self.syncpath_includes_file.exists():
             return None
 
-        with self.syncpath_includes_file.open('r') as f:
-            filter_string = f.read().strip() + '\n'
-        if not self.syncpath_excludes_file.exists():
-            with self.syncpath_excludes_file.open('r') as f:
-                filter_string += f.read().strip() + '\n'
+        filter_string = ""
+        with open_file(self.syncpath_excludes_file, "r") as f:
+            for line in f.readlines():
+                filter_string += f"- {line.strip()}\n"
+        with open_file(self.syncpath_includes_file, "r") as f:
+            for line in f.readlines():
+                filter_string += f"+ {line.strip()}\n"
         filter_string += "- **"
-        decky_plugin.logger.info(f"Sync {self.rclone_log_path} filter string: {filter_string}")
+        LOGGER.info(f"Sync {self.rclone_log_path} filter string:\n{filter_string}")
         return filter_string.encode(STR_ENCODING)
 
     def get_filter_args(self) -> list[str]:
@@ -94,7 +97,7 @@ class _SyncTarget():
                 return f.read()
         except Exception as e:
             err_msg = f"Error reading log file {self.rclone_log_path}:\n{e}"
-            decky_plugin.logger.error(err_msg)
+            LOGGER.error(err_msg)
             return err_msg
 
     def is_bisync_enabled(self) -> bool:
@@ -106,7 +109,7 @@ class _SyncTarget():
         """
         return Config.get_config_item("bisync")
 
-    def sync_now(self, winner: str, resync: bool = False) -> int | None:
+    async def sync_now(self, winner: str, resync: bool = False) -> int | None:
         """
         Do synchronization using rclone. Sync again if self.sync_again is set to True and
         current sync finished successfully. Otherwise stop here and return the exit code.
@@ -125,14 +128,14 @@ class _SyncTarget():
         ONGOING_SYNCS[self.id] = self
         while True:
             self.sync_again = False
-            sync_result = self.sync_now_internal(winner, resync)
+            sync_result = await self._sync_now_internal(winner, resync)
             if (not self.sync_again) or (sync_result != 0):
                 break
 
         ONGOING_SYNCS.pop(self.id)
         return sync_result
 
-    def sync_now_internal(self, winner: str, resync: bool = False) -> int | None:
+    async def _sync_now_internal(self, winner: str, resync: bool = False) -> int | None:
         """
         Initiates a synchronization process using rclone.
 
@@ -149,10 +152,10 @@ class _SyncTarget():
 
         if bisync:
             args.extend(["bisync"])
-            decky_plugin.logger.debug("Using bisync")
+            LOGGER.debug("Using bisync")
         else:
             args.extend(["copy"])
-            decky_plugin.logger.debug("Using copy")
+            LOGGER.debug("Using copy")
 
         args.extend(self.get_filter_args())
         args.extend(["--copy-links"])
@@ -162,25 +165,39 @@ class _SyncTarget():
             else:
                 args.extend(["--conflict-resolve", winner])
 
-        args.extend(["--transfers", "8", "--checkers", "16", "--log-file",
-                    str(self.rclone_log_path), "--log-format", "none", "-v"])
+        args.extend(
+            [
+                "--transfers",
+                "8",
+                "--checkers",
+                "16",
+                "--log-file",
+                str(self.rclone_log_path),
+                "--log-format",
+                "none",
+                "-v",
+            ]
+        )
 
-        args.extend(self.get_config_item("additional_sync_args", []))
+        args.extend(Config.get_config_item("additional_sync_args"))
 
-        cmd = [RCLONE_BIN_PATH, *args]
+        LOGGER.info(f"Running command: {RCLONE_BIN_PATH} {list2cmdline(args)}")
 
-        decky_plugin.logger.info(
-            "Running command: %s", subprocess.list2cmdline(cmd))
-
-        current_sync = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        sync_stdcout, sync_stderr = current_sync.communicate(self.get_filter_str_bytes())
+        current_sync = await create_subprocess_exec(
+            str(RCLONE_BIN_PATH),
+            *args,
+            stdin=PIPE,
+            stdout=PIPE,
+            stderr=PIPE,
+        )
+        sync_stdcout, sync_stderr = await current_sync.communicate(self.get_filter_str_bytes())
         sync_result = current_sync.returncode
 
-        decky_plugin.logger.info(f"Sync {self.rclone_log_path} finished with exit code: {sync_result}")
+        LOGGER.info(f"Sync {self.rclone_log_path} finished with exit code: {sync_result}")
         if sync_stdcout:
-            decky_plugin.logger.info(f"Sync {self.rclone_log_path} stdout: {sync_stdcout}")
+            LOGGER.info(f"Sync {self.rclone_log_path} stdout: {sync_stdcout.decode(STR_ENCODING)}")
         if sync_stderr:
-            decky_plugin.logger.error(f"Sync {self.rclone_log_path} stderr: {sync_stderr}")
+            LOGGER.error(f"Sync {self.rclone_log_path} stderr: {sync_stderr.decode(STR_ENCODING)}")
 
         return sync_result
 
@@ -209,7 +226,7 @@ class _SyncTarget():
         exclude (bool): The type of the sync paths to add, True for exclude, False for include
         """
         file = self.syncpath_excludes_file if exclude else self.syncpath_includes_file
-        decky_plugin.logger.info(f"Adding path '{path}' to sync '{file}'")
+        LOGGER.info(f"Adding path '{path}' to sync '{file}'")
 
         # Replace the beginning of path to replace the root.
         path = f"{path.strip().replace(Config.get_config_item("sync_root"), "/", 1)}\n"
@@ -217,9 +234,7 @@ class _SyncTarget():
         if path in self.get_syncpaths(exclude):
             return
 
-        file.parent.mkdir(parents=True, exist_ok=True)
-        file.touch(exist_ok=True)
-        with file.open("a") as f:
+        with open_file(file, "a") as f:
             f.write(path)
 
     def remove_syncpath(self, path: str, exclude: bool):
@@ -231,15 +246,13 @@ class _SyncTarget():
         exclude (bool): The type of the sync paths to add, True for exclude, False for include
         """
         file = self.syncpath_excludes_file if exclude else self.syncpath_includes_file
-        decky_plugin.logger.info(f"Removing path '{path}' to sync '{file}'")
+        LOGGER.info(f"Removing path '{path}' to sync '{file}'")
 
         # Replace the beginning of path to replace the root.
         path = f"{path.strip()}\n"
         lines = self.get_syncpaths(exclude)
 
-        file.parent.mkdir(parents=True, exist_ok=True)
-        file.touch(exist_ok=True)
-        with file.open("w") as f:
+        with open_file(file, "w") as f:
             for line in lines:
                 if line != path:
                     f.write(line)
