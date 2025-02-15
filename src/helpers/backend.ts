@@ -1,99 +1,35 @@
-import { ServerAPI } from "decky-frontend-lib";
+// import { ServerAPI } from "decky-frontend-lib";
+import { callable } from "@decky/api"
 
-/**
- * The Backend class provides access to plugin Python backend methods
- */
-export class Backend {
+// rclone.conf Setup
+export const spawn = callable<[backend_type: string], string>("spawn");
+export const spawn_probe = callable<[], number>("spawn_probe");
+export const get_backend_type = callable<[], string>("get_backend_type");
 
-    /**
-     * Private constructor to prevent instantiation
-     */
-    private constructor() {
-    }
+// Sync Paths
+export const get_syncpaths = callable<[exclude: boolean, app_id: number], Array<string>>("get_syncpaths");
+export const add_syncpath = callable<[path: string, exclude: boolean, app_id: number], void>("add_syncpath");
+export const remove_syncpath = callable<[path: string, exclude: boolean, app_id: number], void>("remove_syncpath");
+export const test_syncpath = callable<[path: string], number>("test_syncpath");
 
-    /**
-     * Static instance of ServerAPI to handle API calls
-     */
-    private static serverApi: ServerAPI = null!;
+// Syncing
+export const sync_now = callable<[winner: string, app_id: number], number | void>("sync_now");
+export const resync_now = callable<[winner: string, app_id: number], number | void>("resync_now");
+// export const sync_now_screenshots
+export const delete_lock_files = callable<[], void>("delete_lock_files");
 
-    /**
-     * Method to initialize the server API
-     * @param serverApi - An instance of ServerAPI
-     */
-    public static initialize(serverApi: ServerAPI) {
-        Backend.serverApi = serverApi;
-    }
+// Processes
+export const signal = callable<[pid: number, s: string], void>("signal");
 
-    /**
-     * Generic method to make backend calls to Python plugin methods
-     * @param name - The name of the method to call
-     * @param params - The parameters to pass to the method
-     * @returns A Promise of the result type
-     */
-    private static async backend_call<I, O>(name: string, params: I): Promise<O> {
-        try {
-            const res = await Backend.serverApi.callPluginMethod<I, O>(name, params);
-            if (res.success) {
-                let result = res.result;
-                return result;
-            } else {
-                let result = res.result;
-                throw result;
-            }
-        } catch (e) {
-            throw e;
-        }
-    }
+// Configuration
+export const get_log_level = callable<[], number>("get_log_level");
+export const get_config = callable<[], Map<string, any>>("get_config");
+export const set_config = callable<[key: string, value: any], void>("set_config");
 
-    /**
-     * Method that delete lock files
-     * @returns A Promise of the result type
-     */
-    public static async deleteLockFiles(): Promise<void> {
-        return Backend.backend_call<{}, void>("delete_lock_files", {});
-    }
-
-    /**
-     * Method to send a signal to a process
-     * @param pid - The process ID
-     * @param s - The signal type ('SIGSTOP' or 'SIGCONT')
-     * @returns A Promise of the result type
-     */
-    public static async signal(pid: number, s: 'SIGSTOP' | 'SIGCONT'): Promise<number> {
-        return Backend.backend_call<{ pid: number, s: 'SIGSTOP' | 'SIGCONT' }, number>("signal", { pid, s });
-    }
-
-    /**
-     * Method to get the last sync log
-     * @returns A Promise of the log as a string
-     */
-    public static async getLastSyncLog(): Promise<string> {
-        return Backend.backend_call<{}, string>("get_last_sync_log", {});
-    }
-
-    /**
-     * Method to get the plugin log
-     * @returns A Promise of the log as a string
-     */
-    public static async getPluginLog(): Promise<string> {
-        return Backend.backend_call<{}, string>("get_plugin_log", {});
-    }
-
-    /**
-     * Method to get the log level
-     * @returns A Promise of the log level as a string
-     */
-    public static async getLogLevel(): Promise<string> {
-        return Backend.backend_call<{}, string>("get_log_level", {});
-    }
-
-    /**
-     * Method to log a message
-     * @param lvl - The log level
-     * @param args - The arguments to log
-     * @returns A Promise that resolves when the log is complete
-     */
-    public static async log(lvl: string, ...args: any): Promise<void> {
-        return Backend.backend_call<{ level: string, msg: string }, void>("log", { level: lvl, msg: `[UI]: ${JSON.stringify(args)}` });
-    }
-}
+// Logger
+export const log_debug = callable<[msg: string], void>("log_debug");
+export const log_info = callable<[msg: string], void>("log_info");
+export const log_warning = callable<[msg: string], void>("log_warning");
+export const log_error = callable<[msg: string], void>("log_error");
+// export const get_last_sync_log = callable<[], string>("get_last_sync_log");
+export const get_plugin_log = callable<[], string>("get_plugin_log");

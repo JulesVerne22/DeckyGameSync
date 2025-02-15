@@ -1,20 +1,17 @@
 from pathlib import Path
 from typing import Any
+import json
 
 import decky_plugin
 from settings import SettingsManager
+from utils import *
 
-DEFAULT_CONFIG = {
-    "log_level": "INFO",
-    "sync_on_game_exit": True,
-    "toast_auto_sync": True,
-    "destination_directory": "decky-cloud-save",
-    "bisync": False,
-    "additional_sync_args": [],
-    "sync_root": "/",
-    "enable_screenshot_sync": False,
-    "screenshot_sync_destination": "deck-libraries/Pictures",
-}
+DEFAULT_CONFIG = dict()
+try:
+    with PLUGIN_DEFAULT_CONFIG_PATH.open('r') as f:
+        DEFAULT_CONFIG.update(json.load(f))
+except Exception as e:
+    logger.error(f"Failed to load default config: {e}")
 
 class Config():
     config_dir = Path(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR)

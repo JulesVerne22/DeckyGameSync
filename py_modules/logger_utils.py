@@ -1,26 +1,19 @@
 import decky_plugin
 
-def log(level: str, msg: str) -> int:
+def log(level: str, msg: str) -> None:
     """
     Logs a message with the specified level.
 
     Parameters:
     level (str): The level of the log message ('debug', 'info', 'warn', or 'error').
     msg (str): The message to log.
-
-    Returns:
-    int: The status code indicating the success of the logging operation.
     """
     match level.lower():
         case "debug":
-            decky_plugin.logger.debug(msg)
-        case "info":
-            decky_plugin.logger.info(msg)
-        case "warn":
-            decky_plugin.logger.warning(msg)
-        case "error":
-            decky_plugin.logger.error(msg)
-
+decky_plugin.logger.debug(msg)        case "info":
+decky_plugin.logger.debug(msg)        case "warn":
+decky_plugin.logger.debug(msg)        case "error":
+decky_plugin.logger.debug(msg)
 def get_plugin_log() -> str:
     """
     Retrieves the entire plugin log.

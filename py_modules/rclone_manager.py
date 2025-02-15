@@ -10,7 +10,7 @@ class RcloneManager:
     current_spawn: Process | None = None
 
     @classmethod
-    def spawn(cls, backend_type: str):
+    def spawn(cls, backend_type: str) -> str:
         """
         Spawns a new rclone process with the specified backend type.
 
@@ -36,7 +36,7 @@ class RcloneManager:
         return url
 
     @classmethod
-    def probe(cls):
+    def probe(cls) -> int:
         """
         Checks if the current rclone process is running.
 
@@ -49,7 +49,7 @@ class RcloneManager:
         return cls.current_spawn.returncode
 
     @classmethod
-    def get_backend_type(cls):
+    def get_backend_type(cls) -> str:
         """
         Retrieves the current backend type from the rclone configuration.
 

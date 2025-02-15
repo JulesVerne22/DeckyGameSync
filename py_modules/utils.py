@@ -9,14 +9,15 @@ import os, signal, re
 from config import Config
 
 STR_ENCODING = "utf-8"
-LOGGER = decky_plugin.logger
-
 RCLONE_PORT = 53682
 
 RCLONE_BIN_PATH = Path(decky_plugin.DECKY_PLUGIN_DIR) / "bin/rcloneLauncher"
 RCLONE_CFG_PATH = Path(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR) / "rclone.conf"
 RCLONE_BISYNC_CACHE_DIR = Path(decky_plugin.HOME) / ".cache/rclone/bisync"
 
+PLUGIN_DEFAULT_CONFIG_PATH = Path(decky_plugin.DECKY_PLUGIN_DIR) / "bin/default_config.json"
+
+logger = decky_plugin.logger
 
 def kill_previous_spawn(process: Process):
     """
@@ -26,7 +27,7 @@ def kill_previous_spawn(process: Process):
     process (asyncio.subprocess.Process): The process to be killed.
     """
     if process and process.returncode is None:
-        LOGGER.warning("Killing previous Process")
+        logger.warning("Killing previous Process")
 
         process.kill()
 
@@ -97,7 +98,7 @@ def send_signal(pid: int, signal: signal.Signals):
     """
     try:
         os.kill(pid, signal)
-        LOGGER.info("Process with PID %d received signal %s.", pid, signal)
+        logger.info("Process with PID %d received signal %s.", pid, signal)
 
         child_pids = get_process_tree(pid)
 
@@ -105,7 +106,7 @@ def send_signal(pid: int, signal: signal.Signals):
             send_signal(child_pid, signal)
 
     except Exception as e:
-         LOGGER.error("Error sending signal to process with PID %d: %s", pid, e)
+         logger.error("Error sending signal to process with PID %d: %s", pid, e)
 
 def test_syncpath(syncpath: str):
     """
@@ -131,7 +132,7 @@ def test_syncpath(syncpath: str):
 
     count = 0
     for root, os_dirs, os_files in os.walk(syncpath, followlinks=True):
-        LOGGER.debug("%s %s %s", root, os_dirs, os_files)
+        logger.debug("%s %s %s", root, os_dirs, os_files)
         count += len(os_files)
         if count > 9000:
             return -1
@@ -144,7 +145,7 @@ def delete_lock_files():
     """
     Deletes rclone lock files
     """
-    LOGGER.info("Deleting lock files.")
+    logger.info("Deleting lock files.")
     for lck_file in RCLONE_BISYNC_CACHE_DIR.glob("*.lck"):
         lck_file.unlink(missing_ok=True)
 

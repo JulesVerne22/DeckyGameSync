@@ -1,31 +1,14 @@
 import { Navigation, sleep } from "decky-frontend-lib";
 import { ApplicationState } from "./state";
 import { Toast } from "./toast";
-import { Backend } from "./backend";
-import { Translator } from "./translator";
-import { Logger } from '../helpers/logger';
+import * as Backend from "./backend";
+import Logger from '../helpers/logger';
 import { Storage } from '../helpers/storage';
 
 /**
  * Represents an API client for handling synchronization.
  */
 export class ApiClient {
-
-  /**
-   * Delete lock files and forces resync
-   * @param winner - The winner of the synchronization.
-   */
-  public static async deleteLocksAndResync(winner: string) {
-    await Backend.deleteLockFiles();
-    await this.resyncNow(winner);
-  }
-
-  /**
-   * Constructs a new instance of the ApiClient class.
-   * @private
-   */
-  private constructor() { }
-
   /**
    * Synchronizes data immediately.
    * @param showToast - Whether to show toast notifications.
@@ -129,7 +112,7 @@ export class ApiClient {
     Logger.info("Synchronizing");
     const start = new Date();
     if (ApplicationState.getAppState().currentState.syncing) {
-      Toast.toast(Translator.translate("waiting.previous"), 2000);
+      Toast.toast("Waiting for previous sync", 2000);
       while (ApplicationState.getAppState().currentState.syncing) {
         await sleep(300);
       }
@@ -171,13 +154,13 @@ export class ApiClient {
     let time = 2000;
     let action = () => { Navigation.Navigate("/dcs-sync-logs"); };
 
-    const syncLogs = await Backend.getLastSyncLog();
-    Storage.setSessionStorageItem("syncLogs", syncLogs);
+    // const syncLogs = await Backend.getLastSyncLog();
+    // Storage.setSessionStorageItem("syncLogs", syncLogs);
 
     if (pass) {
-      body = Translator.translate("sync.completed", { "time": timeDiff });
+      body = `Sync completed in ${timeDiff}s`;
     } else {
-      body = Translator.translate("sync.failed");
+      body = "Error. Click here to see the errors.";
       time = 15000;
     }
 
@@ -186,8 +169,8 @@ export class ApiClient {
     }
 
     // Additional check for if there were any conflicts.
-    if (syncLogs.match(/Moved \(server-side\) to: .*\.conflict\d*/)) {
-      Toast.toast(Translator.translate("sync.conflict"), 5000, () => { Navigation.Navigate("/dcs-sync-logs"); })
-    }
+    // if (syncLogs.match(/Moved \(server-side\) to: .*\.conflict\d*/)) {
+    //   Toast.toast(Translator.translate("sync.conflict"), 5000, () => { Navigation.Navigate("/dcs-sync-logs"); })
+    // }
   }
 }

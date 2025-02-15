@@ -11,16 +11,17 @@ ONGOING_SYNCS = dict()
 
 
 class _SyncTarget:
-    def __init__(self, subdir: str):
-        self.id = subdir
-        self.sync_again = False
 
-        self.config_dir = Path(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR) / subdir
-        self.log_dir = Path(decky_plugin.DECKY_PLUGIN_LOG_DIR) / subdir
+    def __init__(self, id: str):
+        self.id = id
+        # self.sync_again = False
+
+        # self.config_dir = Path(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR) / subdir
+        self.log_dir = Path(decky_plugin.DECKY_PLUGIN_LOG_DIR) / id
 
         self.rclone_log_path = None
-        self.syncpath_includes_file = self.config_dir / "sync_paths_includes.txt"
-        self.syncpath_excludes_file = self.config_dir / "sync_paths_excludes.txt"
+        self.syncpath_includes_file = Config.config_dir / f"{self.id}.include"
+        self.syncpath_excludes_file = Config.config_dir / "all.exclude"
 
     def get_filter_str_bytes(self) -> bytes | None:
         """
@@ -35,12 +36,14 @@ class _SyncTarget:
         filter_string = ""
         with open_file(self.syncpath_excludes_file, "r") as f:
             for line in f.readlines():
-                filter_string += f"- {line.strip()}\n"
+                if stripped_line := line.strip():
+                    filter_string += f"- {stripped_line}\n"
         with open_file(self.syncpath_includes_file, "r") as f:
             for line in f.readlines():
-                filter_string += f"+ {line.strip()}\n"
+                if stripped_line := line.strip():
+                    filter_string += f"+ {line.strip()}\n"
         filter_string += "- **"
-        LOGGER.info(f"Sync {self.rclone_log_path} filter string:\n{filter_string}")
+        logger.debug(f"Sync {self.rclone_log_path} filter string:\n{filter_string}")
         return filter_string.encode(STR_ENCODING)
 
     def get_filter_args(self) -> list[str]:
@@ -97,7 +100,7 @@ class _SyncTarget:
                 return f.read()
         except Exception as e:
             err_msg = f"Error reading log file {self.rclone_log_path}:\n{e}"
-            LOGGER.error(err_msg)
+            logger.error(err_msg)
             return err_msg
 
     def is_bisync_enabled(self) -> bool:
@@ -122,15 +125,17 @@ class _SyncTarget:
         int | None: Exit code of this sync if this sync runs, None otherwise
         """
         if (ongoing_sync := ONGOING_SYNCS.get(self.id)) is not None:
-            ongoing_sync.sync_again = True
+            # ongoing_sync.sync_again = True
             return None
 
-        ONGOING_SYNCS[self.id] = self
-        while True:
-            self.sync_again = False
-            sync_result = await self._sync_now_internal(winner, resync)
-            if (not self.sync_again) or (sync_result != 0):
-                break
+        sync_result = await self._sync_now_internal(winner, resync)
+
+        # ONGOING_SYNCS[self.id] = self
+        # while self.sync_again == True:
+        #     self.sync_again = False
+        #     sync_result = await self._sync_now_internal(winner, resync)
+        #     if sync_result != 0:
+        #         break
 
         ONGOING_SYNCS.pop(self.id)
         return sync_result
@@ -152,13 +157,12 @@ class _SyncTarget:
 
         if bisync:
             args.extend(["bisync"])
-            LOGGER.debug("Using bisync")
+            logger.debug("Using bisync")
         else:
             args.extend(["copy"])
-            LOGGER.debug("Using copy")
+            logger.debug("Using copy")
 
         args.extend(self.get_filter_args())
-        args.extend(["--copy-links"])
         if bisync:
             if resync:
                 args.extend(["--resync-mode", winner, "--resync"])
@@ -167,6 +171,7 @@ class _SyncTarget:
 
         args.extend(
             [
+                "--copy-links",
                 "--transfers",
                 "8",
                 "--checkers",
@@ -181,7 +186,7 @@ class _SyncTarget:
 
         args.extend(Config.get_config_item("additional_sync_args"))
 
-        LOGGER.info(f"Running command: {RCLONE_BIN_PATH} {list2cmdline(args)}")
+        logger.info(f"Running command: {RCLONE_BIN_PATH} {list2cmdline(args)}")
 
         current_sync = await create_subprocess_exec(
             str(RCLONE_BIN_PATH),
@@ -193,11 +198,11 @@ class _SyncTarget:
         sync_stdcout, sync_stderr = await current_sync.communicate(self.get_filter_str_bytes())
         sync_result = current_sync.returncode
 
-        LOGGER.info(f"Sync {self.rclone_log_path} finished with exit code: {sync_result}")
+        logger.info(f"Sync {self.rclone_log_path} finished with exit code: {sync_result}")
         if sync_stdcout:
-            LOGGER.info(f"Sync {self.rclone_log_path} stdout: {sync_stdcout.decode(STR_ENCODING)}")
+            logger.info(f"Sync {self.rclone_log_path} stdout: {sync_stdcout.decode(STR_ENCODING)}")
         if sync_stderr:
-            LOGGER.error(f"Sync {self.rclone_log_path} stderr: {sync_stderr.decode(STR_ENCODING)}")
+            logger.error(f"Sync {self.rclone_log_path} stderr: {sync_stderr.decode(STR_ENCODING)}")
 
         return sync_result
 
@@ -226,7 +231,7 @@ class _SyncTarget:
         exclude (bool): The type of the sync paths to add, True for exclude, False for include
         """
         file = self.syncpath_excludes_file if exclude else self.syncpath_includes_file
-        LOGGER.info(f"Adding path '{path}' to sync '{file}'")
+        logger.info(f"Adding path '{path}' to sync '{file}'")
 
         # Replace the beginning of path to replace the root.
         path = f"{path.strip().replace(Config.get_config_item("sync_root"), "/", 1)}\n"
@@ -246,7 +251,7 @@ class _SyncTarget:
         exclude (bool): The type of the sync paths to add, True for exclude, False for include
         """
         file = self.syncpath_excludes_file if exclude else self.syncpath_includes_file
-        LOGGER.info(f"Removing path '{path}' to sync '{file}'")
+        logger.info(f"Removing path '{path}' to sync '{file}'")
 
         # Replace the beginning of path to replace the root.
         path = f"{path.strip()}\n"
@@ -260,7 +265,7 @@ class _SyncTarget:
 
 class GlobalSyncTarget(_SyncTarget):
     def __init__(self):
-        super().__init__("")
+        super().__init__("global")
 
 
 class GameSyncTarget(_SyncTarget):
