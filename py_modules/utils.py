@@ -11,12 +11,9 @@ from config import Config
 
 STR_ENCODING = "utf-8"
 RCLONE_PORT = 53682
-
 RCLONE_BIN_PATH = Path(decky_plugin.DECKY_PLUGIN_DIR) / "bin/rcloneLauncher"
 RCLONE_CFG_PATH = Path(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR) / "rclone.conf"
 RCLONE_BISYNC_CACHE_DIR = Path(decky_plugin.HOME) / ".cache/rclone/bisync"
-
-PLUGIN_DEFAULT_CONFIG_PATH = Path(decky_plugin.DECKY_PLUGIN_DIR) / "bin/default_config.json"
 
 class RcloneSyncMode(Enum):
     """
