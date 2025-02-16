@@ -20,12 +20,12 @@ class Config():
     config = SettingsManager(name="config", settings_directory=str(config_dir))
 
     @classmethod
-    def get_config(cls) -> dict:
+    def get_config(cls) -> dict[str, Any]:
         """
         Retrieves the plugin configuration.
 
         Returns:
-        dict: The plugin configuration.
+        dict[str, Any]: The plugin configuration.
         """
         # cls.read()
         if not cls.config.settings:
