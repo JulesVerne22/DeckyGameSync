@@ -33,6 +33,13 @@ class RcloneSyncWinner(Enum):
     LOCAL = 1
     CLOUD = 2
 
+class SyncPathType(Enum):
+    """
+    Enum representing the different types of sync paths.
+    """
+    INCLUDE = True
+    EXCLUDE = False
+
 logger = decky_plugin.logger
 
 def kill_previous_spawn(process: Process):

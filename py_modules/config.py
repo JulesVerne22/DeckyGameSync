@@ -49,7 +49,7 @@ class Config():
         return all_configs.get(key)
 
     @classmethod
-    def get_config_items(cls, *keys: str)-> tuple[bool | str | list[str], ...]:
+    def get_config_items(cls, *keys: str)-> tuple[Any, ...]:
         """
         Retrieves multiple configuration items.
 

@@ -27,26 +27,29 @@ class Plugin:
 
     # Sync Paths
 
-    async def get_syncpaths(self, exclude: bool, app_id: int = 0) -> list[str]:
-        decky_plugin.logger.debug(f"Executing get_syncpaths(exclude={exclude}, app_id={app_id})")
-        if app_id > 0:
-            return GameSyncTarget(app_id).get_syncpaths(exclude)
-        else:
-            return GlobalSyncTarget().get_syncpaths(exclude)
+    async def get_syncpaths_include(self, app_id: int = 0) -> list[str]:
+        decky_plugin.logger.debug(f"Executing get_syncpaths_include(app_id={app_id})")
+        get_sync_target(app_id).get_syncpaths(SyncPathType.INCLUDE)
 
-    async def add_syncpath(self, path: str, exclude: bool, app_id: int = 0) -> None:
-        decky_plugin.logger.debug(f"Executing add_syncpath(path={path}, exclude={exclude}, app_id={app_id})")
-        if app_id > 0:
-            GameSyncTarget(app_id).add_syncpath(exclude)
-        else:
-            GlobalSyncTarget().add_syncpath(path, exclude)
+    async def get_syncpaths_exclude(self, app_id: int = 0) -> list[str]:
+        decky_plugin.logger.debug(f"Executing get_syncpaths_exclude(app_id={app_id})")
+        get_sync_target(app_id).get_syncpaths(SyncPathType.EXCLUDE)
 
-    async def remove_syncpath(self, path: str, exclude: bool, app_id: int = 0) -> None:
-        decky_plugin.logger.debug(f"Executing remove_syncpath(path={path}, exclude={exclude}, app_id={app_id})")
-        if app_id > 0:
-            GameSyncTarget(app_id).remove_syncpath(exclude)
-        else:
-            GlobalSyncTarget().remove_syncpath(path, exclude)
+    async def add_syncpath_include(self, path: str, app_id: int = 0) -> None:
+        decky_plugin.logger.debug(f"Executing add_syncpath_include(path={path}, app_id={app_id})")
+        get_sync_target(app_id).add_syncpath(SyncPathType.INCLUDE)
+
+    async def add_syncpath_exclude(self, path: str, app_id: int = 0) -> None:
+        decky_plugin.logger.debug(f"Executing add_syncpath_exclude(path={path}, app_id={app_id})")
+        get_sync_target(app_id).add_syncpath(SyncPathType.EXCLUDE)
+
+    async def remove_syncpath_include(self, path: str, app_id: int = 0) -> None:
+        decky_plugin.logger.debug(f"Executing remove_syncpath_include(path={path}, app_id={app_id})")
+        get_sync_target(app_id).remove_syncpath(SyncPathType.INCLUDE)
+
+    async def remove_syncpath_exclude(self, path: str, app_id: int = 0) -> None:
+        decky_plugin.logger.debug(f"Executing remove_syncpath_exclude(path={path}, app_id={app_id})")
+        get_sync_target(app_id).remove_syncpath(SyncPathType.EXCLUDE)
 
     async def test_syncpath(self, path: str) -> int:
         decky_plugin.logger.debug(f"Executing test_syncpath({path})")
@@ -70,37 +73,27 @@ class Plugin:
         decky_plugin.logger.debug(f"Executing resync_cloud_first(app_id={app_id})")
         return await self._resync(RcloneSyncWinner.CLOUD, app_id)
 
-    async def sync_screenshots(self, screenshot_path: str) -> int:
-        decky_plugin.logger.debug(f"Executing RcloneSyncManager.sync_now_screenshots()")
+    async def sync_screenshot(self, screenshot_path: str) -> int:
+        decky_plugin.logger.debug(f"Executing sync_screenshot()")
         return await ScreenshotSyncTarget(screenshot_path).sync()
 
     async def delete_lock_files(self):
-        decky_plugin.logger.debug(f"Executing RcloneSyncManager.delete_lock_files()")
+        decky_plugin.logger.debug(f"Executing delete_lock_files()")
         return utils.delete_lock_files()
 
     async def _sync(self, winner: RcloneSyncWinner, app_id: int = 0) -> int:
-        if app_id > 0:
-            return await GameSyncTarget(app_id).sync(winner)
-        else:
-            return await GlobalSyncTarget().sync(winner)
+        get_sync_target(app_id).sync(winner)
 
     async def _resync(self, winner: RcloneSyncWinner, app_id: int = 0) -> int:
-        if app_id > 0:
-            return await GameSyncTarget(app_id).sync(winner, True)
-        else:
-            return await GlobalSyncTarget().sync(winner, True)
+        get_sync_target(app_id).resync(winner)
 
     # Processes
 
     async def signal(self, pid: int, s: str) -> None:
-        decky_plugin.logger.debug(f"Executing send_signal(pid={pid}, s={s})")
+        decky_plugin.logger.debug(f"Executing signal(pid={pid}, s={s})")
         utils.send_signal(pid, getattr(signal, s))
 
     # Configuration
-
-    async def get_log_level(self) -> int:
-        decky_plugin.logger.debug(f"Executing get_log_level()")
-        return decky_plugin.logger.level
 
     async def get_config(self):
         decky_plugin.logger.debug(f"Executing get_config()")

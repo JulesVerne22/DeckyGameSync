@@ -2,18 +2,15 @@ from datetime import datetime
 from pathlib import Path
 from asyncio.subprocess import create_subprocess_exec, PIPE
 from subprocess import list2cmdline
+from typing import Awaitable, Callable
 
 import decky_plugin
 from config import Config
 from utils import *
-import asyncio
-import asyncio
 
-ONGOING_SYNCS = dict()
-
+ONGOING_SYNCS = set()
 
 class _SyncTarget:
-
     def __init__(self, id: str):
         self.id = id
         # self.sync_again = False
@@ -25,7 +22,35 @@ class _SyncTarget:
         self.syncpath_includes_file = Config.config_dir / f"{self.id}.include"
         self.syncpath_excludes_file = Config.config_dir / "all.exclude"
 
+    async def _start_sync_task(self, sync_task: Callable[[], Awaitable[int]]) -> int:
+        """
+        Wrapper of the sync_function for preparation and clean up.
+
+        Parameters:
+        sync_function (Callable[[], Awaitable[int]]): The sync task to be executed.
+
+        Returns:
+        int: Exit code of the sync process.
+        """
+        if self.id in ONGOING_SYNCS:
+            return 0
+
+        ONGOING_SYNCS.add(self.id)
+        try:
+            sync_result = await sync_task()
+        except Exception as e:
+            logger.error(f"Error during sync: {e}")
+            sync_result = -1
+        ONGOING_SYNCS.discard(self.id)
+        return sync_result
+
     async def sync(self, winner: RcloneSyncWinner) -> int:
+        async def sync_task():
+            return await self._sync_internal(winner)
+
+        return await self._start_sync_task(sync_task)
+
+    async def _sync_internal(self, winner: RcloneSyncWinner) -> int:
         """
         Runs the rclone sync process.
 
@@ -35,18 +60,20 @@ class _SyncTarget:
         Returns:
         int: Exit code of the rclone sync process if it runs, -1 if it cannot run.
         """
-        if (ONGOING_SYNCS.get(self.id)) is not None:
-            return 0
-
         extra_args = []
-        if self._get_sync_type() == RcloneSyncMode.BISYNC:
+        if self._get_sync_mode() == RcloneSyncMode.BISYNC:
             extra_args.extend(["--conflict-resolve", "path1"])
         sync_result = await self._rclone_execute(winner, extra_args)
 
-        ONGOING_SYNCS.pop(self.id)
         return sync_result
 
     async def resync(self, winner: RcloneSyncWinner) -> int:
+        async def sync_task():
+            return await self._resync_internal(winner)
+
+        return await self._start_sync_task(sync_task)
+
+    async def _resync_internal(self, winner: RcloneSyncWinner) -> int:
         """
         Triggers rclone bisync resync to fix sync issues. Only works when bisync is enabled.
 
@@ -56,21 +83,15 @@ class _SyncTarget:
         Returns:
         int: Exit code of the rclone sync process if it runs, -1 if it cannot run.
         """
-        if (ONGOING_SYNCS.get(self.id)) is not None:
-            return 0
-
-        if self._get_sync_type() != RcloneSyncMode.BISYNC:
-            logger.error(f"Resync not supported for sync type: {self._get_sync_type()}")
+        if self._get_sync_mode() != RcloneSyncMode.BISYNC:
+            logger.error(f"Resync not supported for sync type: {self._get_sync_mode()}")
             return -1
 
-        sync_result = await self._rclone_execute(
+        return await self._rclone_execute(
             winner, ["--resync-mode", "path1", "--resync"]
         )
 
-        ONGOING_SYNCS.pop(self.id)
-        return sync_result
-
-    def _get_sync_type(self):
+    def _get_sync_mode(self):
         """
         Determines the sync type based on the configuration.
 
@@ -177,8 +198,8 @@ class _SyncTarget:
         """
         additional_sync_args = Config.get_config_item("additional_sync_args")
         sync_root, destination_dir = self._get_sync_paths()
-        sync_type = self._get_sync_type()
-        arguments = [sync_type.value]
+        sync_mode = self._get_sync_mode()
+        arguments = [sync_mode.value]
 
         match winner:
             case RcloneSyncWinner.LOCAL:
@@ -235,56 +256,69 @@ class _SyncTarget:
 
         return sync_result
 
-    def get_syncpaths(self, exclude: bool) -> list[str]:
+    def get_syncpaths(self, path_type: SyncPathType) -> list[str]:
         """
         Retrieves sync paths from the specified file.
 
         Parameters:
-        exclude (bool): The type of the sync paths to retrieve, True for exclude, False for include
+        path_type (SyncPathType): The type of the sync paths to retrieve.
 
         Returns:
         list[str]: A list of sync paths.
         """
-        file = self.syncpath_excludes_file if exclude else self.syncpath_includes_file
+        match(path_type):
+            case SyncPathType.INCLUDE:
+                file = self.syncpath_includes_file
+            case SyncPathType.EXCLUDE:
+                file = self.syncpath_excludes_file
+
         if not file.exists():
             return []
         with file.open("r") as f:
             return f.readlines()
 
-    def add_syncpath(self, path: str, exclude: bool):
+    def add_syncpath(self, path: str, path_type: SyncPathType):
         """
         Adds a sync path.
 
         Parameters:
         path (str): The path to add.
-        exclude (bool): The type of the sync paths to add, True for exclude, False for include
+        path_type (SyncPathType): The type of the sync paths to add.
         """
-        file = self.syncpath_excludes_file if exclude else self.syncpath_includes_file
+        match(path_type):
+            case SyncPathType.INCLUDE:
+                file = self.syncpath_includes_file
+            case SyncPathType.EXCLUDE:
+                file = self.syncpath_excludes_file
         logger.info(f"Adding path '{path}' to sync '{file}'")
 
         # Replace the beginning of path to replace the root.
         path = f"{path.strip().replace(Config.get_config_item("sync_root"), "/", 1)}\n"
 
-        if path in self.get_syncpaths(exclude):
+        if path in self.get_syncpaths(path_type):
             return
 
         with open_file(file, "a") as f:
             f.write(path)
 
-    def remove_syncpath(self, path: str, exclude: bool):
+    def remove_syncpath(self, path: str, path_type: SyncPathType):
         """
         Removes a sync path from the specified file.
 
         Parameters:
         path (str): The path to remove.
-        exclude (bool): The type of the sync paths to add, True for exclude, False for include
+        path_type (SyncPathType): The type of the sync paths to add.
         """
-        file = self.syncpath_excludes_file if exclude else self.syncpath_includes_file
+        match(path_type):
+            case SyncPathType.INCLUDE:
+                file = self.syncpath_includes_file
+            case SyncPathType.EXCLUDE:
+                file = self.syncpath_excludes_file
         logger.info(f"Removing path '{path}' to sync '{file}'")
 
         # Replace the beginning of path to replace the root.
         path = f"{path.strip()}\n"
-        lines = self.get_syncpaths(exclude)
+        lines = self.get_syncpaths(path_type)
 
         with open_file(file, "w") as f:
             for line in lines:
@@ -341,3 +375,19 @@ class ScreenshotSyncTarget(_SyncTarget):
         )
 
         return str(self.screenshot_path), str(screenshot_destination_path)
+
+
+def get_sync_target(app_id: int) -> _SyncTarget:
+    """
+    Returns the sync target based on the app_id.
+
+    Parameters:
+    app_id (int): The app_id of the game.
+
+    Returns:
+    _SyncTarget: The sync target.
+    """
+    if app_id > 0:
+        return GameSyncTarget(app_id)
+    else:
+        return GlobalSyncTarget()
