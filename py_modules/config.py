@@ -73,4 +73,4 @@ class Config():
         key (str): The key to set.
         value (Any): The value to set for the key.
         """
-        cls.setSetting(key, value)
+        cls.config.setSetting(key, value)
