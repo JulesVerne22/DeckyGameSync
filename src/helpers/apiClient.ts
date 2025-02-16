@@ -1,10 +1,8 @@
-import { Navigation, sleep } from "decky-frontend-lib";
+import { Navigation, sleep } from "@decky/ui";
 import { ApplicationState } from "./state";
 import { Toast } from "./toast";
 import * as Backend from "./backend";
 import Logger from '../helpers/logger';
-import { Storage } from '../helpers/storage';
-
 /**
  * Represents an API client for handling synchronization.
  */
@@ -82,7 +80,7 @@ export class ApiClient {
   public static async getSyncPaths(file: "includes" | "excludes") {
     return ApplicationState.getServerApi()
       .callPluginMethod<{ file: "includes" | "excludes" }, string[]>("get_syncpaths", { file })
-      .then((r) => {
+      .then((r: { success: any; result: any[]; }) => {
         if (r.success) {
           if (r.result.length === 0) {
             return [];
@@ -93,7 +91,7 @@ export class ApiClient {
             r.result = r.result.slice(1);
           }
 
-          return r.result.map((r) => r.trimEnd());
+          return r.result.map((r: string) => r.trimEnd());
         } else {
           Toast.toast(r.result);
           return [];
@@ -118,7 +116,6 @@ export class ApiClient {
       }
     }
 
-    Storage.setSessionStorageItem("syncing", "true");
     ApplicationState.setAppState("syncing", true);
     await ApplicationState.getServerApi().callPluginMethod("sync_now_internal", { winner, resync });
 
@@ -148,7 +145,6 @@ export class ApiClient {
         break;
     }
     ApplicationState.setAppState("syncing", false);
-    Storage.setSessionStorageItem("syncing", "false");
 
     let body;
     let time = 2000;

@@ -1,1 +1,10 @@
-../src/helpers/default_config.json
+{
+    "log_level": "INFO",
+    "sync_on_game_exit": true,
+    "destination_directory": "decky-cloud-save",
+    "strict_sync": false,
+    "additional_sync_args": [],
+    "sync_root": "/",
+    "screenshot_sync_enable": false,
+    "screenshot_destination_directory": "Pictures/Screenshots"
+}

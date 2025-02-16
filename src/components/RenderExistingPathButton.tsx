@@ -1,10 +1,9 @@
-import { ButtonItem, ConfirmModal, showModal } from "decky-frontend-lib";
+import { ButtonItem, ConfirmModal, showModal } from "@decky/ui";
 import { useState } from "react";
 import { FaFile, FaFolder, FaTrash } from "react-icons/fa";
 import { ApplicationState } from "../helpers/state";
 import { PageProps } from "../helpers/types";
 import { Toast } from "../helpers/toast";
-import { Translator } from "../helpers/translator"
 
 export function RenderExistingPathButton({
   path,
@@ -16,13 +15,13 @@ export function RenderExistingPathButton({
   const onClickDelete = () => {
     showModal(
       <ConfirmModal
-        strTitle={Translator.translate("confirm.remove")}
-        strDescription={Translator.translate("removing.path", { "path": path })}
+        strTitle="Confirm Remove"
+        strDescription={`Removing Path ${path} Proceed?`}
         onCancel={() => setButtonDisabled(false)}
         onEscKeypress={() => setButtonDisabled(false)}
         onOK={() => {
           setButtonDisabled(true);
-          ApplicationState.getServerApi().callPluginMethod<{ path: string; file: "includes" | "excludes" }, void>("remove_syncpath", { path, file }).then((res) => {
+          ApplicationState.getServerApi().callPluginMethod<{ path: string; file: "includes" | "excludes" }, void>("remove_syncpath", { path, file }).then((res: { success: any; result: any; }) => {
             if (res.success) {
               if (onPathRemoved) onPathRemoved();
             } else {

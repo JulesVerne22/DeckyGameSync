@@ -1,31 +1,31 @@
 import * as plugin from "../json/plugin.json"
 import {
-    log_debug,
-    log_error,
-    log_info,
-    log_warning,
+    logDebug,
+    logError,
+    logInfo,
+    logWarning,
 } from "./backend";
 import DeckyLogger from "../deps/decky_logger";
 
 class Logger extends DeckyLogger {
     async debug(...args: any[]) {
         super.debug(this.now(), ...args);
-        log_debug(args.join(' '));
+        logDebug(args.join(' '));
     }
 
     async info(...args: any[]) {
         super.log(this.now(), ...args);
-        log_info(args.join(' '));
+        logInfo(args.join(' '));
     }
 
     async error(...args: any[]) {
         super.error(this.now(), ...args);
-        log_error(args.join(' '));
+        logError(args.join(' '));
     }
 
     async warning(...args: any[]) {
         super.warn(this.now(), ...args);
-        log_warning(args.join(' '));
+        logWarning(args.join(' '));
     }
 
     private now(): string {

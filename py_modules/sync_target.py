@@ -6,6 +6,8 @@ from subprocess import list2cmdline
 import decky_plugin
 from config import Config
 from utils import *
+import asyncio
+import asyncio
 
 ONGOING_SYNCS = dict()
 
@@ -23,12 +25,70 @@ class _SyncTarget:
         self.syncpath_includes_file = Config.config_dir / f"{self.id}.include"
         self.syncpath_excludes_file = Config.config_dir / "all.exclude"
 
-    def get_filter_str_bytes(self) -> bytes | None:
+    async def sync(self, winner: RcloneSyncWinner) -> int:
+        """
+        Runs the rclone sync process.
+
+        Parameters:
+        winner (RcloneSyncWinner): The winner of the sync, its data will be preserved as priority.
+
+        Returns:
+        int: Exit code of the rclone sync process if it runs, -1 if it cannot run.
+        """
+        if (ONGOING_SYNCS.get(self.id)) is not None:
+            return 0
+
+        extra_args = []
+        if self._get_sync_type() == RcloneSyncMode.BISYNC:
+            extra_args.extend(["--conflict-resolve", "path1"])
+        sync_result = await self._rclone_execute(winner, extra_args)
+
+        ONGOING_SYNCS.pop(self.id)
+        return sync_result
+
+    async def resync(self, winner: RcloneSyncWinner) -> int:
+        """
+        Triggers rclone bisync resync to fix sync issues. Only works when bisync is enabled.
+
+        Parameters:
+        winner (RcloneSyncWinner): The winner of the sync, its data will be preserved as priority.
+
+        Returns:
+        int: Exit code of the rclone sync process if it runs, -1 if it cannot run.
+        """
+        if (ONGOING_SYNCS.get(self.id)) is not None:
+            return 0
+
+        if self._get_sync_type() != RcloneSyncMode.BISYNC:
+            logger.error(f"Resync not supported for sync type: {self._get_sync_type()}")
+            return -1
+
+        sync_result = await self._rclone_execute(
+            winner, ["--resync-mode", "path1", "--resync"]
+        )
+
+        ONGOING_SYNCS.pop(self.id)
+        return sync_result
+
+    def _get_sync_type(self):
+        """
+        Determines the sync type based on the configuration.
+
+        Returns:
+        RcloneSyncMode: The sync mode.
+        """
+        strict_sync_enabled = Config.get_config_item("strict_sync")
+        if strict_sync_enabled:
+            return RcloneSyncMode.SYNC
+        else:
+            return RcloneSyncMode.BISYNC
+
+    def _get_filter_str_bytes(self) -> bytes | None:
         """
         Generates the sync paths filter file based on includes and excludes files.
 
         Returns:
-        bytes: Bytes of string containing all filter entries if sync path files exist, None otherwise
+        bytes: Bytes of string containing all filter entries if sync path files exist, None otherwise.
         """
         if not self.syncpath_includes_file.exists():
             return None
@@ -46,17 +106,7 @@ class _SyncTarget:
         logger.debug(f"Sync {self.rclone_log_path} filter string:\n{filter_string}")
         return filter_string.encode(STR_ENCODING)
 
-    def get_filter_args(self) -> list[str]:
-        """
-        Retrieves the filter arguments for rclone.
-
-        Returns:
-        list: A list of filter arguments.
-        """
-        sync_root, destination_dir = Config.get_config_items("sync_root", "destination_directory")
-        return [sync_root, f"backend:{destination_dir}", "--filter-from", "-"]
-
-    def create_rclone_log_file(self, max_log_files: int = 5) -> Path:
+    def _get_rclone_log_path(self, max_log_files: int = 5) -> Path:
         """
         Creates the rclone log file.
 
@@ -70,17 +120,15 @@ class _SyncTarget:
             self.log_dir.mkdir(parents=True)
 
         current_time = datetime.now.strftime("%Y-%m-%d %H.%M.%S")
-        log_file = self.log_dir / f"rclone {current_time}.log"
-        if not log_file.exists():
-            log_file.touch()
+        self.rclone_log_path = self.log_dir / f"rclone {current_time}.log"
 
         # remove extra log files
         all_log_files = sorted(self.log_dir.glob("rclone *.log"))
-        if len(all_log_files) > max_log_files:
+        if len(all_log_files) >= max_log_files:
             for old_log_file in all_log_files[:-max_log_files]:
                 old_log_file.unlink(missing_ok=True)
 
-        return log_file
+        return self.rclone_log_path
 
     def get_last_sync_log(self) -> str:
         """
@@ -103,106 +151,87 @@ class _SyncTarget:
             logger.error(err_msg)
             return err_msg
 
-    def is_bisync_enabled(self) -> bool:
+    def _get_sync_paths(self) -> tuple[str, str]:
         """
-        Retrieves the bisync config option.
+        Retrieves the sync root and destination directory from the configuration.
 
         Returns:
-        bool: bisync config option
+        tuple[str, str]: A tuple containing the sync root and destination directory.
         """
-        return Config.get_config_item("bisync")
+        sync_root, destination_dir = Config.get_config_items(
+            "sync_root", "destination_directory"
+        )
+        return sync_root, destination_dir
 
-    async def sync_now(self, winner: str = "", resync: bool = False) -> int | None:
+    async def _rclone_execute(
+        self, winner: RcloneSyncWinner, extra_args: list[str] = []
+    ) -> int:
         """
-        Do synchronization using rclone. Sync again if self.sync_again is set to True and
-        current sync finished successfully. Otherwise stop here and return the exit code.
+        Runs the rclone sync process.
 
         Parameters:
-        winner (str, optional): The winner of the resync operation. Defaults to "".
-        resync (bool, optional): Whether to perform a resync operation. Defaults to False.
+        winner (BisyncWinner): The winner of the sync, its data will be preserved as priority.
 
         Returns:
-        int | None: Exit code of this sync if this sync runs, None otherwise
+        int: Exit code of the rclone sync process if it runs, -1 if it cannot run.
         """
-        if (ongoing_sync := ONGOING_SYNCS.get(self.id)) is not None:
-            # ongoing_sync.sync_again = True
-            return None
+        additional_sync_args = Config.get_config_item("additional_sync_args")
+        sync_root, destination_dir = self._get_sync_paths()
+        sync_type = self._get_sync_type()
+        arguments = [sync_type.value]
 
-        sync_result = await self._sync_now_internal(winner, resync)
+        match winner:
+            case RcloneSyncWinner.LOCAL:
+                arguments.extend([sync_root, f"backend:{destination_dir}"])
+            case RcloneSyncWinner.CLOUD:
+                arguments.extend([f"backend:{destination_dir}", sync_root])
+            case _:
+                logger.error(f"Invalid winner: {winner}")
+                return -1
 
-        # ONGOING_SYNCS[self.id] = self
-        # while self.sync_again == True:
-        #     self.sync_again = False
-        #     sync_result = await self._sync_now_internal(winner, resync)
-        #     if sync_result != 0:
-        #         break
-
-        ONGOING_SYNCS.pop(self.id)
-        return sync_result
-
-    async def _sync_now_internal(self, winner: str, resync: bool) -> int | None:
-        """
-        Initiates a synchronization process using rclone.
-
-        Parameters:
-        winner (str): The winner of the resync operation
-        resync (bool): Whether to perform a resync operation.
-
-        Returns:
-        int | None: Exit code of this sync if the filter is not empty, None otherwise
-        """
-        self.rclone_log_path = self.create_rclone_log_file()
-        bisync = self.is_bisync_enabled()
-        args = []
-
-        if bisync:
-            args.extend(["bisync"])
-            logger.debug("Using bisync")
-        else:
-            args.extend(["copy"])
-            logger.debug("Using copy")
-
-        args.extend(self.get_filter_args())
-        if bisync:
-            if resync:
-                args.extend(["--resync-mode", winner, "--resync"])
-            else:
-                args.extend(["--conflict-resolve", winner])
-
-        args.extend(
+        arguments.extend(
             [
+                "--filter-from",
+                "-",
                 "--copy-links",
                 "--transfers",
                 "8",
                 "--checkers",
                 "16",
                 "--log-file",
-                str(self.rclone_log_path),
+                str(self._get_rclone_log_path()),
                 "--log-format",
                 "none",
                 "-v",
             ]
         )
+        arguments.extend(additional_sync_args)
+        arguments.extend(extra_args)
 
-        args.extend(Config.get_config_item("additional_sync_args"))
-
-        logger.info(f"Running command: {RCLONE_BIN_PATH} {list2cmdline(args)}")
-
+        logger.info(f"Running command: {RCLONE_BIN_PATH} {list2cmdline(arguments)}")
         current_sync = await create_subprocess_exec(
             str(RCLONE_BIN_PATH),
-            *args,
+            *arguments,
             stdin=PIPE,
             stdout=PIPE,
             stderr=PIPE,
         )
-        sync_stdcout, sync_stderr = await current_sync.communicate(self.get_filter_str_bytes())
+        sync_stdcout, sync_stderr = await current_sync.communicate(
+            self._get_filter_str_bytes()
+        )
         sync_result = current_sync.returncode
 
-        logger.info(f"Sync {self.rclone_log_path} finished with exit code: {sync_result}")
+        logger.info(
+            f"Sync {self.rclone_log_path} finished with exit code: {sync_result}"
+        )
         if sync_stdcout:
-            logger.info(f"Sync {self.rclone_log_path} stdout: {sync_stdcout.decode(STR_ENCODING)}")
+            logger.info(
+                f"Sync {self.rclone_log_path} stdout: {sync_stdcout.decode(STR_ENCODING)}"
+            )
         if sync_stderr:
-            logger.error(f"Sync {self.rclone_log_path} stderr: {sync_stderr.decode(STR_ENCODING)}")
+            logger.error(
+                f"Sync {self.rclone_log_path} stderr: {sync_stderr.decode(STR_ENCODING)}"
+            )
 
         return sync_result
 
@@ -275,33 +304,40 @@ class GameSyncTarget(_SyncTarget):
         super().__init__(str(app_id))
 
 
-class LibrarySyncTarget(_SyncTarget):
-    def __init__(self, library: str):
-        if not library:
-            raise ValueError("library is required")
-        super().__init__(library)
+class ScreenshotSyncTarget(_SyncTarget):
+    def __init__(self, screenshot_path: str):
+        if not screenshot_path:
+            raise ValueError("screenshot_path is required")
+        super().__init__(screenshot_path)
+        self.screenshot_path = Path(screenshot_path)
 
-    def get_filter_args(self) -> list[str]:
+    async def sync(self) -> int:
         """
-        Retrieves the filter arguments for rclone.
+        Runs the rclone sync process.
 
         Returns:
-        list: A list of filter arguments.
+        int: Exit code of the rclone sync process if it runs, -1 if it cannot run.
         """
-        destination_dir = Config.get_config_item("screenshot_sync_destination")
-        return [str(Path.home() / self.id), f"backend:{destination_dir}"]
+        return await super().sync(RcloneSyncWinner.LOCAL)
 
-    def is_bisync_enabled(self) -> bool:
-        """
-        Retrieves the bisync config option.
-
-        Returns:
-        bool: bisync config option
-        """
-        return False
-
-    def get_filter_str_bytes(self) -> None:
+    def _get_filter_str_bytes(self) -> None:
         """
         Returns None
         """
         return None
+
+    def _get_sync_paths(self) -> tuple[str, str]:
+        """
+        Retrieves the sync root and destination directory from the configuration.
+
+        Returns:
+        tuple[str, str]: A tuple containing the sync root and destination directory.
+        """
+        screenshot_destination_directory = Path(
+            Config.get_config_item("screenshot_destination_directory")
+        )
+        screenshot_destination_path = (
+            screenshot_destination_directory / self.screenshot_path.name
+        )
+
+        return str(self.screenshot_path), str(screenshot_destination_path)

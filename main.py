@@ -1,7 +1,6 @@
 import decky_plugin
 
 import signal
-import logger_utils
 from typing import Any
 
 from rclone_manager import RcloneManager
@@ -55,27 +54,41 @@ class Plugin:
 
     # Syncing
 
-    async def sync_now(self, winner: str, app_id: int = 0) -> int | None:
-        decky_plugin.logger.debug(f"Executing RcloneSyncManager.sync_now(winner={winner}, app_id={app_id})")
-        if app_id > 0:
-            return await GameSyncTarget(app_id).sync_now(winner)
-        else:
-            return await GlobalSyncTarget().sync_now(winner)
+    async def sync_local_first(self, app_id: int = 0) -> int:
+        decky_plugin.logger.debug(f"Executing sync_local_first(app_id={app_id})")
+        return await self._sync(RcloneSyncWinner.LOCAL, app_id)
 
-    async def resync_now(self, winner:str, app_id: int = 0) -> int | None:
-        decky_plugin.logger.debug(f"Executing RcloneSyncManager.resync_now(winner={winner}, app_id={app_id})")
-        if app_id > 0:
-            return await GameSyncTarget(app_id).sync_now(winner, True)
-        else:
-            return await GlobalSyncTarget().sync_now(winner, True)
+    async def sync_cloud_first(self, app_id: int = 0) -> int:
+        decky_plugin.logger.debug(f"Executing sync_cloud_first(app_id={app_id})")
+        return await self._sync(RcloneSyncWinner.CLOUD, app_id)
 
-    async def sync_now_screenshots(self) -> int | None:
+    async def resync_local_first(self, app_id: int = 0) -> int:
+        decky_plugin.logger.debug(f"Executing resync_local_first(app_id={app_id})")
+        return await self._resync(RcloneSyncWinner.LOCAL, app_id)
+
+    async def resync_cloud_first(self, app_id: int = 0) -> int:
+        decky_plugin.logger.debug(f"Executing resync_cloud_first(app_id={app_id})")
+        return await self._resync(RcloneSyncWinner.CLOUD, app_id)
+
+    async def sync_screenshots(self, screenshot_path: str) -> int:
         decky_plugin.logger.debug(f"Executing RcloneSyncManager.sync_now_screenshots()")
-        return await LibrarySyncTarget("Pictures").sync_now()
+        return await ScreenshotSyncTarget(screenshot_path).sync()
 
     async def delete_lock_files(self):
         decky_plugin.logger.debug(f"Executing RcloneSyncManager.delete_lock_files()")
         return utils.delete_lock_files()
+
+    async def _sync(self, winner: RcloneSyncWinner, app_id: int = 0) -> int:
+        if app_id > 0:
+            return await GameSyncTarget(app_id).sync(winner)
+        else:
+            return await GlobalSyncTarget().sync(winner)
+
+    async def _resync(self, winner: RcloneSyncWinner, app_id: int = 0) -> int:
+        if app_id > 0:
+            return await GameSyncTarget(app_id).sync(winner, True)
+        else:
+            return await GlobalSyncTarget().sync(winner, True)
 
     # Processes
 
@@ -113,11 +126,12 @@ class Plugin:
 
     async def get_last_sync_log(self) -> str:
         decky_plugin.logger.debug(f"Executing get_last_sync_log()")
-        return logger_utils.get_last_sync_log()
+        # return logger_utils.get_last_sync_log()
+        return "unimplemented"
 
     async def get_plugin_log(self) -> str:
         decky_plugin.logger.debug(f"Executing get_plugin_log()")
-        return logger_utils.get_plugin_log()
+        return utils.get_plugin_log()
 
     # Lifecycle
 

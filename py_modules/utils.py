@@ -4,6 +4,7 @@ from asyncio import sleep
 from asyncio.subprocess import Process
 from subprocess import Popen, PIPE
 from pathlib import Path
+from enum import Enum
 import os, signal, re
 
 from config import Config
@@ -16,6 +17,21 @@ RCLONE_CFG_PATH = Path(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR) / "rclone.conf"
 RCLONE_BISYNC_CACHE_DIR = Path(decky_plugin.HOME) / ".cache/rclone/bisync"
 
 PLUGIN_DEFAULT_CONFIG_PATH = Path(decky_plugin.DECKY_PLUGIN_DIR) / "bin/default_config.json"
+
+class RcloneSyncMode(Enum):
+    """
+    Enum representing the different modes of rclone sync operations.
+    """
+    COPY = "copy"
+    SYNC = "sync"
+    BISYNC = "bisync"
+
+class RcloneSyncWinner(Enum):
+    """
+    Enum representing the winner in rclone bisync
+    """
+    LOCAL = 1
+    CLOUD = 2
 
 logger = decky_plugin.logger
 
@@ -164,3 +180,18 @@ def open_file(file: Path, *args, **kwargs):
     file.parent.mkdir(parents=True, exist_ok=True)
     file.touch(exist_ok=True)
     return file.open(*args, **kwargs)
+
+def get_plugin_log() -> str:
+    """
+    Retrieves the entire plugin log.
+
+    Returns:
+    str: The plugin log.
+    """
+    log: str = ""
+    with open(decky_plugin.DECKY_PLUGIN_LOG) as f:
+        for line in reversed(list(f)):
+            log = line + '\n' + log
+            if "Logger initialized at level" in line.strip():
+                break
+    return log

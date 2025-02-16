@@ -1,4 +1,3 @@
-// import { ServerAPI } from "decky-frontend-lib";
 import { callable } from "@decky/api"
 
 // rclone.conf Setup
@@ -13,9 +12,11 @@ export const remove_syncpath = callable<[path: string, exclude: boolean, app_id:
 export const test_syncpath = callable<[path: string], number>("test_syncpath");
 
 // Syncing
-export const sync_now = callable<[winner: string, app_id: number], number | void>("sync_now");
-export const resync_now = callable<[winner: string, app_id: number], number | void>("resync_now");
-// export const sync_now_screenshots
+export const sync_local_first = callable<[app_id: number], number>("sync_local_first");
+export const sync_cloud_first = callable<[app_id: number], number>("sync_cloud_first");
+export const resync_local_first = callable<[app_id: number], number>("resync_local_first");
+export const resync_cloud_first = callable<[app_id: number], number>("resync_cloud_first");
+export const sync_screenshots = callable<[screenshot_path: string], number>("sync_screenshots");
 export const delete_lock_files = callable<[], void>("delete_lock_files");
 
 // Processes

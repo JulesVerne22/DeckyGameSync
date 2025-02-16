@@ -1,15 +1,15 @@
-import { ButtonItem, showContextMenu, Menu, MenuItem, FilePickerRes, showModal, ConfirmModal } from "decky-frontend-lib";
+import { ButtonItem, showContextMenu, Menu, MenuItem, showModal, ConfirmModal } from "@decky/ui";
+import { FilePickerRes } from "@decky/api";
 import { useState } from "react";
 import { PageProps } from "../helpers/types";
 import { Toast } from "../helpers/toast";
-import { Translator } from "../helpers/translator";
 
 export default function AddNewPathButton({ serverApi, onPathAdded, file }: PageProps<{ onPathAdded?: () => void; file: "includes" | "excludes" }>) {
   const [buttonDisabled, setButtonDisabled] = useState(false);
 
   const onFileChosen = (res: FilePickerRes, mode: "file" | "directory" | "directory-norecurse") => {
     if (res.realpath === "/") {
-      showModal(<ConfirmModal strTitle={Translator.translate("you.mad")} strDescription={Translator.translate("warning.root")} />);
+      showModal(<ConfirmModal strTitle="Are you mad??" strDescription="For your own safety, ability to sync the whole file system is disabled" />);
       return;
     }
 
@@ -18,7 +18,7 @@ export default function AddNewPathButton({ serverApi, onPathAdded, file }: PageP
     const path = mode === "directory" ? `${res.realpath}/**` : mode === "directory-norecurse" ? `${res.realpath}/*` : res.realpath;
     serverApi
       .callPluginMethod<{ path: string }, number>("test_syncpath", { path })
-      .then((r) => {
+      .then((r: { success: any; result: any; }) => {
         if (!r.success) {
           Toast.toast(r.result);
           setButtonDisabled(false);
@@ -27,8 +27,8 @@ export default function AddNewPathButton({ serverApi, onPathAdded, file }: PageP
 
         showModal(
           <ConfirmModal
-            strTitle={Translator.translate("confirm.add")}
-            strDescription={Translator.translate("confirm.add.path", { "path": path, "count": r.result })}
+            strTitle="Confirm Add"
+            strDescription={`Path ${path} matches ${r.result} file(s). Proceed?`}
             onCancel={() => setButtonDisabled(false)}
             onEscKeypress={() => setButtonDisabled(false)}
             onOK={() => {
@@ -37,13 +37,13 @@ export default function AddNewPathButton({ serverApi, onPathAdded, file }: PageP
                 .then(() => {
                   if (onPathAdded) onPathAdded();
                 })
-                .catch((e) => Toast.toast(e))
+                .catch((e: any) => Toast.toast(e))
                 .finally(() => setButtonDisabled(false));
             }}
           />
         );
       })
-      .catch((e) => {
+      .catch((e: any) => {
         Toast.toast(e);
         setButtonDisabled(false);
       });
@@ -55,43 +55,43 @@ export default function AddNewPathButton({ serverApi, onPathAdded, file }: PageP
       layout="below"
       onClick={() =>
         showContextMenu(
-          <Menu label={Translator.translate("select.path")}>
+          <Menu label="Select Path to Sync">
             <MenuItem
               onSelected={() =>
                 serverApi
                   .openFilePicker("/home/deck", true)
-                  .then((e) => onFileChosen(e, "file"))
+                  .then((e: any) => onFileChosen(e, "file"))
                   .catch()
               }
             >
-              {Translator.translate("file")}
+              File
             </MenuItem>
             <MenuItem
               onSelected={() =>
                 serverApi
                   .openFilePicker("/home/deck", false)
-                  .then((e) => onFileChosen(e, "directory"))
+                  .then((e: any) => onFileChosen(e, "directory"))
                   .catch()
               }
             >
-              {Translator.translate("folder")}
+              Folder
             </MenuItem>
             <MenuItem
               onSelected={() =>
                 serverApi
                   .openFilePicker("/home/deck", false)
-                  .then((e) => onFileChosen(e, "directory-norecurse"))
+                  .then((e: any) => onFileChosen(e, "directory-norecurse"))
                   .catch()
               }
             >
-              {Translator.translate("folder.exclude")}
+              Folder (exclude subfolders)
             </MenuItem>
           </Menu>
         )
       }
       disabled={buttonDisabled}
     >
-      {file === "includes" ? Translator.translate("add.to.sync") : Translator.translate("exclude.from.sync")}
+      {file === "includes" ? "Add Path to Sync" : "Exclude Path from Sync"}
     </ButtonItem>
   );
 }

@@ -1,15 +1,12 @@
-import { ButtonItem, Navigation, PanelSection, PanelSectionRow, ToggleField } from "decky-frontend-lib";
+import { ButtonItem, Navigation, PanelSection, PanelSectionRow } from "decky-frontend-lib";
 import { useEffect, useState, VFC } from "react";
-import { FaCloudUploadAlt, FaPlug, FaSave } from "react-icons/fa";
+import { FaSave } from "react-icons/fa";
 import { FiEdit3 } from "react-icons/fi";
 import { AiOutlineCloudUpload } from "react-icons/ai";
 import { ApiClient } from "../helpers/apiClient";
 import Head from "../components/Head";
 import DeckyStoreButton from "../components/DeckyStoreButton";
 import { ApplicationState } from "../helpers/state";
-import { Translator } from "../helpers/translator";
-import { Storage } from "../helpers/storage";
-import { Backend } from "../helpers/backend";
 
 // TODO
 export const Content: VFC<{}> = () => {
@@ -23,7 +20,7 @@ export const Content: VFC<{}> = () => {
   return (
     <>
       <Head />
-      <PanelSection title={Translator.translate("sync")}>
+      <PanelSection title="Sync">
         <PanelSectionRow>
           <ButtonItem
             layout="below"
@@ -33,30 +30,14 @@ export const Content: VFC<{}> = () => {
             }}
           >
             <DeckyStoreButton icon={<FaSave className={appState.syncing ? "dcs-rotate" : ""} />}>
-              {Translator.translate("sync.now")}
+              Sync Now
             </DeckyStoreButton>
           </ButtonItem>
-          {hasProvider === false && <small>{Translator.translate("provider.not.configured")}.</small>}
+          {hasProvider === false && <small>"Cloud Storage Provider is not configured. Please configure it in Cloud Provider"</small>}
         </PanelSectionRow>
       </PanelSection>
 
-      <PanelSection title={Translator.translate("configuration")}>
-        <PanelSectionRow>
-          <ToggleField
-            label={Translator.translate("sync.start.stop")}
-            checked={appState.sync_on_game_exit}
-            onChange={(e) => ApplicationState.setAppState("sync_on_game_exit", e, true)}
-          />
-        </PanelSectionRow>
-        <PanelSectionRow>
-          <ToggleField
-            disabled={!appState.sync_on_game_exit}
-            label={Translator.translate("toast.auto.sync")}
-            checked={appState.toast_auto_sync}
-            onChange={(e) => ApplicationState.setAppState("toast_auto_sync", e, true)}
-          />
-        </PanelSectionRow>
-
+      <PanelSection title="Configuration">
         <PanelSectionRow>
           <ButtonItem
             layout="below"
@@ -65,7 +46,7 @@ export const Content: VFC<{}> = () => {
               Navigation.Navigate("/dcs-configure-paths");
             }}
           >
-            <DeckyStoreButton icon={<FiEdit3 />}>{Translator.translate("sync.paths")}</DeckyStoreButton>
+            <DeckyStoreButton icon={<FiEdit3 />}>Sync Paths</DeckyStoreButton>
           </ButtonItem>
         </PanelSectionRow>
 
@@ -77,56 +58,8 @@ export const Content: VFC<{}> = () => {
               Navigation.Navigate("/dcs-configure-backend");
             }}
           >
-            <DeckyStoreButton icon={<AiOutlineCloudUpload />}>{Translator.translate("cloud.provider")}</DeckyStoreButton>
+            <DeckyStoreButton icon={<AiOutlineCloudUpload />}>Cloud Provider</DeckyStoreButton>
           </ButtonItem>
-        </PanelSectionRow>
-      </PanelSection>
-      <PanelSection title={Translator.translate("log.files")}>
-        <PanelSectionRow>
-          <ButtonItem
-            layout="below"
-            onClick={() => {
-              (async () => {
-                let logs = await Backend.getPluginLog();
-                if (logs == "" || logs == null || logs == undefined) {
-                  logs = Translator.translate("no.available.logs");
-                }
-                Storage.setSessionStorageItem("pluginLogs", logs);
-                Navigation.Navigate("/dcs-plugin-logs");
-                Navigation.CloseSideMenus();
-              })();
-            }}
-          >
-            <DeckyStoreButton icon={<FaPlug />}>{Translator.translate("app.logs")}</DeckyStoreButton>
-          </ButtonItem>
-        </PanelSectionRow>
-        <PanelSectionRow>
-          <ButtonItem
-            layout="below"
-            disabled={appState.syncing || (!hasProvider)}
-            onClick={() => {
-              (async () => {
-                let logs = await Backend.getLastSyncLog();
-                if (logs == "" || logs == null || logs == undefined) {
-                  logs = Translator.translate("no.available.logs");
-                }
-                Storage.setSessionStorageItem("syncLogs", logs);
-                Navigation.Navigate("/dcs-sync-logs");
-                Navigation.CloseSideMenus();
-              })();
-            }}
-          >
-            <DeckyStoreButton icon={<FaCloudUploadAlt />}>{Translator.translate("sync.logs")}</DeckyStoreButton>
-          </ButtonItem>
-        </PanelSectionRow>
-      </PanelSection>
-      <PanelSection title={Translator.translate("experimental.use.risk")}>
-        <PanelSectionRow>
-          <ToggleField
-            label={Translator.translate("bidirectional.sync")}
-            checked={appState.bisync_enabled}
-            onChange={(e) => ApplicationState.setAppState("bisync_enabled", e, true)}
-          />
         </PanelSectionRow>
       </PanelSection>
     </>

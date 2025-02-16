@@ -5,8 +5,7 @@ import { BsGearFill, BsPatchQuestionFill } from "react-icons/bs";
 import Container from "../components/Container";
 import { PageProps } from "../helpers/types";
 import { ApiClient } from "../helpers/apiClient";
-import { Translator } from "../helpers/translator"
-import { Logger } from "../helpers/logger";
+import Logger from "../helpers/logger";
 
 export default function ConfigureBackendPage({ serverApi }: PageProps<{}>) {
   const openConfig = async (backend: "onedrive" | "drive" | "dropbox") => {
@@ -41,12 +40,12 @@ export default function ConfigureBackendPage({ serverApi }: PageProps<{}>) {
   }, []);
 
   return (
-    <Container title={Translator.translate("configure.provider")}>
+    <Container title="Configure Cloud Storage Provider">
       <PanelSection>
-        <strong>{Translator.translate("currently.using")}: {provider}</strong>
+        <strong>Currently using: {provider}</strong>
       </PanelSection>
       <PanelSection>
-        <small>{Translator.translate("click.providers")}</small>
+        <small>Click one of the providers below to configure the backup destination.</small>
         <PanelSectionRow>
           <ButtonItem onClick={() => openConfig("onedrive")} icon={<ImOnedrive />} label="OneDrive">
             <BsGearFill />
@@ -71,19 +70,17 @@ export default function ConfigureBackendPage({ serverApi }: PageProps<{}>) {
             onClick={() =>
               showModal(
                 <ConfirmModal
-                  strTitle={Translator.translate("other.providers")}
+                  strTitle="Adding other providers"
                   strDescription={
                     <span style={{ whiteSpace: "pre-wrap" }}>
-                      {
-                        Translator.translate("manually.desktop")
-                      }
+                      In addition to the 2 providers listed above, others can also be configured. Unfortunately, setup for them can only be done in desktop mode.\n\nSome providers (such as Google Drive) will have install scripts ready for your convenience. For those, simply run the install script found in the plugin install directory (default: /home/deck/homebrew/plugins/decky-cloud-save/quickstart/).\n\nFor all other providers read instructions found in the README.md.
                     </span>
                   }
                 />
               )
             }
             icon={<ImHome />}
-            label={Translator.translate("other.advanced")}
+            label="Other (Advanced)"
           >
             <BsPatchQuestionFill />
           </ButtonItem>
