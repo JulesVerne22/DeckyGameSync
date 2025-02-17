@@ -4,27 +4,27 @@ import Logger from '../helpers/logger';
 import Toaster from "./toaster";
 
 const GLOBAL_SYNC_APP_ID = 0;
-const SYNC_STATE_MAP: Map<number, boolean> = new Map<number, boolean>();
+var sync_in_progress = false;
 
 export function setupAppLifetimeNotificationsHandler(): {unregister: () => void} {
-  return SteamClient.GameSessions.RegisterForAppLifetimeNotifications((e: LifetimeNotification) => {
+  return SteamClient.GameSessions.RegisterForAppLifetimeNotifications(async (e: LifetimeNotification) => {
     if (e.bRunning) {
       Logger.info(`Starting game ${e.unAppID}`);
+      await startSyncBlocked(Backend.sync_cloud_first, e);
       startSyncUnblocked(Backend.sync_cloud_first, GLOBAL_SYNC_APP_ID);
-      startSyncBlocked(Backend.sync_cloud_first, e);
     } else {
       Logger.info(`Stopping game ${e.unAppID}`);
+      await startSyncUnblocked(Backend.sync_local_first, e.unAppID);
       startSyncUnblocked(Backend.sync_local_first, GLOBAL_SYNC_APP_ID);
-      startSyncUnblocked(Backend.sync_local_first, e.unAppID);
     }
   });
 }
 
 async function startSyncUnblocked(syncFunction: (appId: number) => Promise<number>, appId: number) {
-  if (SYNC_STATE_MAP.get(appId) === true) {
+  if (sync_in_progress === true) {
     Logger.info(`Sync triggered for target "${appId}" while the previous one is still in progress`);
     let waitCount = 0;
-    while (SYNC_STATE_MAP.get(appId) === true) {
+    while (sync_in_progress === true) {
       await sleep(300);
       // if previous sync takes too long (>= 30 seconds), let the user know
       if ((++waitCount) == 100) {
@@ -33,11 +33,11 @@ async function startSyncUnblocked(syncFunction: (appId: number) => Promise<numbe
     }
   }
 
-  SYNC_STATE_MAP.set(appId, true);
+  sync_in_progress = true;
   let startTime = new Date().getTime();
   let exitCode = await syncFunction(appId);
   let timeDiff = (new Date().getTime() - startTime) / 1000;
-  SYNC_STATE_MAP.set(appId, false);
+  sync_in_progress = false;
 
   if (exitCode == 0 || exitCode == 6) {
     Logger.info(`Sync for "${appId}" finished in ${timeDiff}s`);

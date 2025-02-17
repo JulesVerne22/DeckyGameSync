@@ -110,14 +110,14 @@ class _SyncTarget:
             return None
 
         filter_string = ""
-        with open_file(self.syncpath_excludes_file, "r") as f:
+        with self.syncpath_excludes_file.open("r") as f:
             for line in f.readlines():
                 if stripped_line := line.strip():
                     filter_string += f"- {stripped_line}\n"
-        with open_file(self.syncpath_includes_file, "r") as f:
+        with self.syncpath_includes_file.open("r") as f:
             for line in f.readlines():
                 if stripped_line := line.strip():
-                    filter_string += f"+ {line.strip()}\n"
+                    filter_string += f"+ {stripped_line}\n"
         filter_string += "- **"
         logger.debug(f'Sync "{self.id}" filter string:\n{filter_string}')
         return filter_string.encode(STR_ENCODING)
