@@ -1,6 +1,7 @@
 {
   "name": "Decky Cloud Save",
   "author": "GedasFX",
+  "api_version": 1,
   "flags": [],
   "publish": {
     "tags": ["backup", "cloud", "rclone"],

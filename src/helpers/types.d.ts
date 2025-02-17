@@ -1,5 +1,3 @@
-import { AppDetails, ServerAPI } from "decky-frontend-lib";
-
 /**
  * Represents the content of an SVG file.
  */
@@ -23,11 +21,3 @@ declare module "*.jpg" {
   const content: string;
   export default content;
 }
-
-/**
- * Represents the properties of a page.
- * @typeparam T - The type of additional properties.
- */
-export type PageProps<T> = {
-  serverApi: ServerAPI;
-} & T;

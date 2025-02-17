@@ -1,4 +1,4 @@
-import decky_plugin
+import decky
 
 from asyncio import sleep
 from asyncio.subprocess import Process
@@ -7,13 +7,14 @@ from pathlib import Path
 from enum import Enum
 import os, signal, re
 
+logger = decky.logger
 from config import Config
 
 STR_ENCODING = "utf-8"
 RCLONE_PORT = 53682
-RCLONE_BIN_PATH = Path(decky_plugin.DECKY_PLUGIN_DIR) / "bin/rcloneLauncher"
-RCLONE_CFG_PATH = Path(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR) / "rclone.conf"
-RCLONE_BISYNC_CACHE_DIR = Path(decky_plugin.HOME) / ".cache/rclone/bisync"
+RCLONE_BIN_PATH = Path(decky.DECKY_PLUGIN_DIR) / "bin/rcloneLauncher"
+RCLONE_CFG_PATH = Path(decky.DECKY_PLUGIN_SETTINGS_DIR) / "rclone.conf"
+RCLONE_BISYNC_CACHE_DIR = Path(decky.HOME) / ".cache/rclone/bisync"
 
 class RcloneSyncMode(Enum):
     """
@@ -27,8 +28,8 @@ class RcloneSyncWinner(Enum):
     """
     Enum representing the winner in rclone bisync
     """
-    LOCAL = 1
-    CLOUD = 2
+    LOCAL = "path1"
+    CLOUD = "path2"
 
 class SyncPathType(Enum):
     """
@@ -36,8 +37,6 @@ class SyncPathType(Enum):
     """
     INCLUDE = True
     EXCLUDE = False
-
-logger = decky_plugin.logger
 
 def kill_previous_spawn(process: Process):
     """
@@ -193,7 +192,7 @@ def get_plugin_log() -> str:
     str: The plugin log.
     """
     log: str = ""
-    with open(decky_plugin.DECKY_PLUGIN_LOG) as f:
+    with open(decky.DECKY_PLUGIN_LOG) as f:
         for line in reversed(list(f)):
             log = line + '\n' + log
             if "Logger initialized at level" in line.strip():

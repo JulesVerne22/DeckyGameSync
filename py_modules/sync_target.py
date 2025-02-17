@@ -4,19 +4,20 @@ from asyncio.subprocess import create_subprocess_exec, PIPE
 from subprocess import list2cmdline
 from typing import Awaitable, Callable
 
-import decky_plugin
+import decky
 from config import Config
 from utils import *
 
 ONGOING_SYNCS = set()
+
 
 class _SyncTarget:
     def __init__(self, id: str):
         self.id = id
         # self.sync_again = False
 
-        # self.config_dir = Path(decky_plugin.DECKY_PLUGIN_SETTINGS_DIR) / subdir
-        self.log_dir = Path(decky_plugin.DECKY_PLUGIN_LOG_DIR) / id
+        # self.config_dir = Path(decky.DECKY_PLUGIN_SETTINGS_DIR) / subdir
+        self.log_dir = Path(decky.DECKY_PLUGIN_LOG_DIR) / self.id
 
         self.rclone_log_path = None
         self.syncpath_includes_file = Config.config_dir / f"{self.id}.include"
@@ -62,8 +63,8 @@ class _SyncTarget:
         """
         extra_args = []
         if self._get_sync_mode() == RcloneSyncMode.BISYNC:
-            extra_args.extend(["--conflict-resolve", "path1"])
-        sync_result = await self._rclone_execute(winner, extra_args)
+            extra_args.extend(["--conflict-resolve", winner.value])
+        sync_result = await self._rclone_execute(extra_args)
 
         return sync_result
 
@@ -87,9 +88,7 @@ class _SyncTarget:
             logger.error(f"Resync not supported for sync type: {self._get_sync_mode()}")
             return -1
 
-        return await self._rclone_execute(
-            winner, ["--resync-mode", "path1", "--resync"]
-        )
+        return await self._rclone_execute(["--resync-mode", winner.value, "--resync"])
 
     def _get_sync_mode(self):
         """
@@ -98,11 +97,7 @@ class _SyncTarget:
         Returns:
         RcloneSyncMode: The sync mode.
         """
-        strict_sync_enabled = Config.get_config_item("strict_sync")
-        if strict_sync_enabled:
-            return RcloneSyncMode.SYNC
-        else:
-            return RcloneSyncMode.BISYNC
+        return RcloneSyncMode.BISYNC
 
     def _get_filter_str_bytes(self) -> bytes | None:
         """
@@ -124,7 +119,7 @@ class _SyncTarget:
                 if stripped_line := line.strip():
                     filter_string += f"+ {line.strip()}\n"
         filter_string += "- **"
-        logger.debug(f"Sync {self.rclone_log_path} filter string:\n{filter_string}")
+        logger.debug(f'Sync "{self.id}" filter string:\n{filter_string}')
         return filter_string.encode(STR_ENCODING)
 
     def _get_rclone_log_path(self, max_log_files: int = 5) -> Path:
@@ -140,12 +135,12 @@ class _SyncTarget:
         if not self.log_dir.exists():
             self.log_dir.mkdir(parents=True)
 
-        current_time = datetime.now.strftime("%Y-%m-%d %H.%M.%S")
+        current_time = datetime.now().strftime("%Y-%m-%d %H.%M.%S")
         self.rclone_log_path = self.log_dir / f"rclone {current_time}.log"
 
         # remove extra log files
         all_log_files = sorted(self.log_dir.glob("rclone *.log"))
-        if len(all_log_files) >= max_log_files:
+        if len(all_log_files) >= (max_log_files - 1):
             for old_log_file in all_log_files[:-max_log_files]:
                 old_log_file.unlink(missing_ok=True)
 
@@ -184,31 +179,27 @@ class _SyncTarget:
         )
         return sync_root, destination_dir
 
-    async def _rclone_execute(
-        self, winner: RcloneSyncWinner, extra_args: list[str] = []
-    ) -> int:
+    async def _rclone_execute(self, extra_args: list[str] = []) -> int:
         """
         Runs the rclone sync process.
 
         Parameters:
-        winner (BisyncWinner): The winner of the sync, its data will be preserved as priority.
+        extra_args (list[str]): Extra arguemnts to be passed to rclone
 
         Returns:
         int: Exit code of the rclone sync process if it runs, -1 if it cannot run.
         """
+        filter_str_bytes = self._get_filter_str_bytes()
+        if not filter_str_bytes:
+            logger.info(f'No filter for sync "{self.id}"')
+            return 0
+
         additional_sync_args = Config.get_config_item("additional_sync_args")
         sync_root, destination_dir = self._get_sync_paths()
         sync_mode = self._get_sync_mode()
-        arguments = [sync_mode.value]
 
-        match winner:
-            case RcloneSyncWinner.LOCAL:
-                arguments.extend([sync_root, f"backend:{destination_dir}"])
-            case RcloneSyncWinner.CLOUD:
-                arguments.extend([f"backend:{destination_dir}", sync_root])
-            case _:
-                logger.error(f"Invalid winner: {winner}")
-                return -1
+        arguments = [sync_mode.value]
+        arguments.extend([sync_root, f"backend:{destination_dir}"])
 
         arguments.extend(
             [
@@ -237,9 +228,7 @@ class _SyncTarget:
             stdout=PIPE,
             stderr=PIPE,
         )
-        sync_stdcout, sync_stderr = await current_sync.communicate(
-            self._get_filter_str_bytes()
-        )
+        sync_stdcout, sync_stderr = await current_sync.communicate(filter_str_bytes)
         sync_result = current_sync.returncode
 
         logger.info(
@@ -266,7 +255,7 @@ class _SyncTarget:
         Returns:
         list[str]: A list of sync paths.
         """
-        match(path_type):
+        match (path_type):
             case SyncPathType.INCLUDE:
                 file = self.syncpath_includes_file
             case SyncPathType.EXCLUDE:
@@ -285,7 +274,7 @@ class _SyncTarget:
         path (str): The path to add.
         path_type (SyncPathType): The type of the sync paths to add.
         """
-        match(path_type):
+        match (path_type):
             case SyncPathType.INCLUDE:
                 file = self.syncpath_includes_file
             case SyncPathType.EXCLUDE:
@@ -293,7 +282,7 @@ class _SyncTarget:
         logger.info(f"Adding path '{path}' to sync '{file}'")
 
         # Replace the beginning of path to replace the root.
-        path = f"{path.strip().replace(Config.get_config_item("sync_root"), "/", 1)}\n"
+        path = f"{path.strip().replace(Config.get_config_item('sync_root'), '/', 1)}\n"
 
         if path in self.get_syncpaths(path_type):
             return
@@ -309,7 +298,7 @@ class _SyncTarget:
         path (str): The path to remove.
         path_type (SyncPathType): The type of the sync paths to add.
         """
-        match(path_type):
+        match (path_type):
             case SyncPathType.INCLUDE:
                 file = self.syncpath_includes_file
             case SyncPathType.EXCLUDE:

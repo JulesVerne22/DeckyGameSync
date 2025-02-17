@@ -1,4 +1,4 @@
-import decky_plugin
+import decky
 
 from asyncio import create_subprocess_exec
 from asyncio.subprocess import Process, PIPE
@@ -20,7 +20,7 @@ class RcloneManager:
         Returns:
         str: The URL for authentication.
         """
-        decky_plugin.logger.info("Updating rclone.conf")
+        decky.logger.info("Updating rclone.conf")
 
         kill_previous_spawn(cls.current_spawn)
         if is_port_in_use(RCLONE_PORT):
@@ -31,7 +31,7 @@ class RcloneManager:
         )
 
         url = get_url_from_rclone_process(cls.current_spawn)
-        decky_plugin.logger.info("Login URL: %s", url)
+        decky.logger.info("Login URL: %s", url)
 
         return url
 
