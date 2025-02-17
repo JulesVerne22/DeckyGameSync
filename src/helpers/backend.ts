@@ -23,11 +23,13 @@ export const sync_screenshot = callable<[screenshot_path: string], number>("sync
 export const delete_lock_files = callable<[], void>("delete_lock_files");
 
 // Processes
-export const signal = callable<[pid: number, s: string], void>("signal");
+export const pause_process = callable<[pid: number], void>("pause_process");
+export const resume_process = callable<[pid: number], void>("resume_process");
 
 // Configuration
 export const get_config = callable<[], Map<string, any>>("get_config");
 export const set_config = callable<[key: string, value: any], void>("set_config");
+export const mkdir_dest_dir = callable<[], void>("mkdir_dest_dir");
 
 // Logger
 export const log_debug = callable<[msg: string], void>("log_debug");

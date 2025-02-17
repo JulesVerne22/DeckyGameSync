@@ -83,7 +83,7 @@ def is_port_in_use(port: int) -> bool:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(('localhost', port)) == 0
 
-def get_process_tree(pid):
+def _get_process_tree(pid):
     """
     Retrieves the process tree of a given process ID.
 
@@ -119,7 +119,7 @@ def send_signal(pid: int, signal: signal.Signals):
         os.kill(pid, signal)
         logger.info("Process with PID %d received signal %s.", pid, signal)
 
-        child_pids = get_process_tree(pid)
+        child_pids = _get_process_tree(pid)
 
         for child_pid in child_pids:
             send_signal(child_pid, signal)
@@ -198,3 +198,10 @@ def get_plugin_log() -> str:
             if "Logger initialized at level" in line.strip():
                 break
     return log
+
+def mkdir_dest_dir():
+    """
+    Creates the destination directory
+    """
+    destination_directory = Config.get_config_item("destination_directory")
+    Popen([str(RCLONE_BIN_PATH), "mkdir", f"backend:{destination_directory}"])

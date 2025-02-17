@@ -34,7 +34,7 @@ class _SyncTarget:
         int: Exit code of the sync process.
         """
         if self.id in ONGOING_SYNCS:
-            return 0
+            return -1
 
         ONGOING_SYNCS.add(self.id)
         try:
@@ -122,7 +122,7 @@ class _SyncTarget:
         logger.debug(f'Sync "{self.id}" filter string:\n{filter_string}')
         return filter_string.encode(STR_ENCODING)
 
-    def _get_rclone_log_path(self, max_log_files: int = 5) -> Path:
+    def _get_rclone_log_path(self, max_log_files: int = 2) -> Path:
         """
         Creates the rclone log file.
 
@@ -140,8 +140,8 @@ class _SyncTarget:
 
         # remove extra log files
         all_log_files = sorted(self.log_dir.glob("rclone *.log"))
-        if len(all_log_files) >= (max_log_files - 1):
-            for old_log_file in all_log_files[:-max_log_files]:
+        if len(all_log_files) >= (max_log_files):
+            for old_log_file in all_log_files[:-(max_log_files - 1)]:
                 old_log_file.unlink(missing_ok=True)
 
         return self.rclone_log_path
@@ -232,15 +232,15 @@ class _SyncTarget:
         sync_result = current_sync.returncode
 
         logger.info(
-            f"Sync {self.rclone_log_path} finished with exit code: {sync_result}"
+            f'Sync "{self.rclone_log_path}" finished with exit code: {sync_result}'
         )
         if sync_stdcout:
             logger.info(
-                f"Sync {self.rclone_log_path} stdout: {sync_stdcout.decode(STR_ENCODING)}"
+                f'Sync "{self.rclone_log_path}" stdout: {sync_stdcout.decode(STR_ENCODING)}'
             )
         if sync_stderr:
             logger.error(
-                f"Sync {self.rclone_log_path} stderr: {sync_stderr.decode(STR_ENCODING)}"
+                f'Sync "{self.rclone_log_path}" stderr: {sync_stderr.decode(STR_ENCODING)}'
             )
 
         return sync_result
@@ -284,11 +284,13 @@ class _SyncTarget:
         # Replace the beginning of path to replace the root.
         path = f"{path.strip().replace(Config.get_config_item('sync_root'), '/', 1)}\n"
 
-        if path in self.get_syncpaths(path_type):
+        current_syncpaths = self.get_syncpaths(path_type)
+        if path in current_syncpaths:
             return
+        current_syncpaths.append(current_syncpaths)
 
-        with open_file(file, "a") as f:
-            f.write(path)
+        with file.open("w") as f:
+            f.writelines(sorted(current_syncpaths))
 
     def remove_syncpath(self, path: str, path_type: SyncPathType):
         """
@@ -307,12 +309,14 @@ class _SyncTarget:
 
         # Replace the beginning of path to replace the root.
         path = f"{path.strip()}\n"
-        lines = self.get_syncpaths(path_type)
+        current_syncpaths = self.get_syncpaths(path_type)
+        if path in current_syncpaths:
+            current_syncpaths.remove(path)
+        else:
+            return
 
-        with open_file(file, "w") as f:
-            for line in lines:
-                if line != path:
-                    f.write(line)
+        with file.open("w") as f:
+            f.writelines(current_syncpaths)
 
 
 class GlobalSyncTarget(_SyncTarget):

@@ -1,4 +1,4 @@
-import * as plugin from "../json/plugin.json"
+import plugin from "../json/plugin.json"
 import {
     log_debug,
     log_error,

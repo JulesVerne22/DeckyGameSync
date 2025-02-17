@@ -29,27 +29,27 @@ class Plugin:
 
     async def get_syncpaths_include(self, app_id: int = 0) -> list[str]:
         utils.logger.debug(f"Executing get_syncpaths_include(app_id={app_id})")
-        get_sync_target(app_id).get_syncpaths(SyncPathType.INCLUDE)
+        return get_sync_target(app_id).get_syncpaths(SyncPathType.INCLUDE)
 
     async def get_syncpaths_exclude(self, app_id: int = 0) -> list[str]:
         utils.logger.debug(f"Executing get_syncpaths_exclude(app_id={app_id})")
-        get_sync_target(app_id).get_syncpaths(SyncPathType.EXCLUDE)
+        return get_sync_target(app_id).get_syncpaths(SyncPathType.EXCLUDE)
 
     async def add_syncpath_include(self, path: str, app_id: int = 0) -> None:
         utils.logger.debug(f"Executing add_syncpath_include(path={path}, app_id={app_id})")
-        get_sync_target(app_id).add_syncpath(SyncPathType.INCLUDE)
+        return get_sync_target(app_id).add_syncpath(SyncPathType.INCLUDE)
 
     async def add_syncpath_exclude(self, path: str, app_id: int = 0) -> None:
         utils.logger.debug(f"Executing add_syncpath_exclude(path={path}, app_id={app_id})")
-        get_sync_target(app_id).add_syncpath(SyncPathType.EXCLUDE)
+        return get_sync_target(app_id).add_syncpath(SyncPathType.EXCLUDE)
 
     async def remove_syncpath_include(self, path: str, app_id: int = 0) -> None:
         utils.logger.debug(f"Executing remove_syncpath_include(path={path}, app_id={app_id})")
-        get_sync_target(app_id).remove_syncpath(SyncPathType.INCLUDE)
+        return get_sync_target(app_id).remove_syncpath(SyncPathType.INCLUDE)
 
     async def remove_syncpath_exclude(self, path: str, app_id: int = 0) -> None:
         utils.logger.debug(f"Executing remove_syncpath_exclude(path={path}, app_id={app_id})")
-        get_sync_target(app_id).remove_syncpath(SyncPathType.EXCLUDE)
+        return get_sync_target(app_id).remove_syncpath(SyncPathType.EXCLUDE)
 
     async def test_syncpath(self, path: str) -> int:
         utils.logger.debug(f"Executing test_syncpath({path})")
@@ -82,16 +82,20 @@ class Plugin:
         return utils.delete_lock_files()
 
     async def _sync(self, winner: RcloneSyncWinner, app_id: int = 0) -> int:
-        await get_sync_target(app_id).sync(winner)
+        return await get_sync_target(app_id).sync(winner)
 
     async def _resync(self, winner: RcloneSyncWinner, app_id: int = 0) -> int:
-        await get_sync_target(app_id).resync(winner)
+        return await get_sync_target(app_id).resync(winner)
 
     # Processes
 
-    async def signal(self, pid: int, s: str) -> None:
-        utils.logger.debug(f"Executing signal(pid={pid}, s={s})")
-        utils.send_signal(pid, getattr(signal, s))
+    async def pause_process(self, pid: int) -> None:
+        utils.logger.debug(f"Executing pause_process(pid={pid})")
+        utils.send_signal(pid, signal.SIGSTOP)
+
+    async def resume_process(self, pid: int) -> None:
+        utils.logger.debug(f"Executing resume_process(pid={pid})")
+        utils.send_signal(pid, signal.SIGCONT)
 
     # Configuration
 
@@ -102,6 +106,10 @@ class Plugin:
     async def set_config(self, key: str, value: Any):
         utils.logger.debug(f"Executing set_config(key={key}, value={value})")
         Config.set_config(key, value)
+
+    async def mkdir_dest_dir(self):
+        utils.logger.debug(f"Executing cloud_mkdir()")
+        utils.mkdir_dest_dir()
 
     # Logger
 

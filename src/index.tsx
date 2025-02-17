@@ -1,4 +1,4 @@
-import * as plugin from "./json/plugin.json"
+import plugin from "./json/plugin.json"
 import { definePlugin } from "@decky/api";
 import { Patch } from "@decky/ui";
 import { FaSave } from "react-icons/fa";

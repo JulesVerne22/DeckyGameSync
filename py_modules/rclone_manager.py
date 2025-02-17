@@ -58,7 +58,7 @@ class RcloneManager:
         """
         with RCLONE_CFG_PATH.open("r") as f:
             l = f.readlines()
-            return l[1]
+            return l[1].strip().split(' ')[-1]
 
     @classmethod
     def cleanup(cls):
