@@ -19,7 +19,7 @@ export const sync_local_first = callable<[app_id: number], number>("sync_local_f
 export const sync_cloud_first = callable<[app_id: number], number>("sync_cloud_first");
 export const resync_local_first = callable<[app_id: number], number>("resync_local_first");
 export const resync_cloud_first = callable<[app_id: number], number>("resync_cloud_first");
-export const sync_screenshot = callable<[screenshot_path: string], number>("sync_screenshot");
+export const sync_screenshot = callable<[user_id: number, screenshot_url: string], number>("sync_screenshot");
 export const delete_lock_files = callable<[], void>("delete_lock_files");
 
 // Processes
@@ -27,7 +27,7 @@ export const pause_process = callable<[pid: number], void>("pause_process");
 export const resume_process = callable<[pid: number], void>("resume_process");
 
 // Configuration
-export const get_config = callable<[], Map<string, any>>("get_config");
+export const get_config = callable<[], object>("get_config");
 export const set_config = callable<[key: string, value: any], void>("set_config");
 export const mkdir_dest_dir = callable<[], void>("mkdir_dest_dir");
 

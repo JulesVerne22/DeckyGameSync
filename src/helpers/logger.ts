@@ -1,4 +1,4 @@
-import plugin from "../json/plugin.json"
+import Plugin from "../json/plugin.json"
 import {
     log_debug,
     log_error,
@@ -33,5 +33,5 @@ class Logger extends DeckyLogger {
     }
 }
 
-const logger = new Logger(plugin.name.replaceAll(' ', ''));
+const logger = new Logger(Plugin.name.replaceAll(' ', ''));
 export default logger;

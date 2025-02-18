@@ -1,20 +1,22 @@
+import DefaultConfig from "../json/default_config.json";
 import { get_config, set_config } from "./backend";
-import * as default_config from "../json/default_config.json";
+import Logger from "./logger";
 
 class Config {
-    private data = default_config;
+    private data = structuredClone(DefaultConfig);
 
     public async load(): Promise<void> {
-        let backend_config = await get_config();
+        let backendConfig = await get_config() as Record<string, any>;
         for (let key in this.data) {
-            if (key in backend_config) {
+            if (key in backendConfig) {
                 try {
-                    this.data[key] = backend_config.get(key);
+                    this.data[key] = backendConfig[key];
                 } catch (e) {
                     console.log(e);
                 }
             }
         }
+        Logger.debug("Config loaded", this.data);
     }
 
     public get(key: string) {

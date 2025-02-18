@@ -1,6 +1,5 @@
-import plugin from "./json/plugin.json"
+import Plugin from "./json/plugin.json"
 import { definePlugin } from "@decky/api";
-import { Patch } from "@decky/ui";
 import { FaSave } from "react-icons/fa";
 
 import * as ApiClient from "./helpers/apiClient";
@@ -19,11 +18,11 @@ function Content() {
 }
 
 export default definePlugin(() => {
-  const patchArray: Array<Patch> = []
-  const registrationArray: Array<{unregister: () => void}> = [];
+  const registrationArray: Array<Unregisterable> = [];
   // const routeArray: Array<string> = ["/dcs-configure-paths", "/dcs-configure-backend", "/dcs-sync-logs", "/dcs-plugin-logs"];
 
   registrationArray.push(ApiClient.setupAppLifetimeNotificationsHandler());
+  registrationArray.push(ApiClient.setupScreenshotNotification());
 
 
   // routerHook.addRoute("/dcs-configure-paths", () => <ConfigurePathsPage serverApi={serverApi} />, { exact: true });
@@ -32,11 +31,10 @@ export default definePlugin(() => {
   // routerHook.addRoute("/dcs-plugin-logs", () => <RenderPluginLogPage />, { exact: true });
 
   return {
-    name: plugin.name,
+    name: Plugin.name,
     content: <Content />,
     icon: <FaSave />,
     onDismount() {
-      patchArray.forEach(patch => patch.unpatch());
       registrationArray.forEach(registration => registration.unregister());
       // routerHook.removeRoute("/dcs-configure-paths");
       // routerHook.removeRoute("/dcs-configure-backend");

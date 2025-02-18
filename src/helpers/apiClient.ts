@@ -2,11 +2,39 @@ import { sleep, LifetimeNotification, Navigation } from "@decky/ui";
 import * as Backend from "./backend";
 import Logger from '../helpers/logger';
 import Toaster from "./toaster";
+import Config from "./config";
 
 const GLOBAL_SYNC_APP_ID = 0;
 var sync_in_progress = false;
 
-export function setupAppLifetimeNotificationsHandler(): {unregister: () => void} {
+export function setupScreenshotNotification(): Unregisterable {
+  return SteamClient.GameSessions.RegisterForScreenshotNotification(async (e: ScreenshotNotification) => {
+    if (Config.get("screenshot_sync_enable") && e.details && e.strOperation == "written") {
+      let exitCode = await Backend.sync_screenshot(getCurrentUserId(), e.details.strUrl);
+      if (exitCode == 0 && Config.get("screenshot_delete_after_sync")) {
+        if (await SteamClient.Screenshots.DeleteLocalScreenshot(e.details.strGameID, e.details.hHandle)) {
+          Logger.info(`Screenshot ${e.details.strUrl} uploaded and deleted locally`);
+        } else {
+          Logger.error(`Failed to delete screenshot ${e.details.strUrl} locally`);
+          Toaster.toast("Failed to delete the screenshot locally");
+        }
+      } else {
+        Logger.error(`Failed to upload screenshot ${e.details.strUrl}, exit code: ${exitCode}`);
+        Toaster.toast(`Failed to upload the screenshot, exit code: ${exitCode}`);
+      }
+    }
+  });
+}
+
+/**
+ * Gets the current user's steam id.
+ * @returns The user's steam id.
+ */
+function getCurrentUserId(): number {
+  return Number(BigInt.asUintN(32, BigInt(window.App.m_CurrentUser.strSteamID)));
+};
+
+export function setupAppLifetimeNotificationsHandler(): Unregisterable {
   return SteamClient.GameSessions.RegisterForAppLifetimeNotifications(async (e: LifetimeNotification) => {
     if (e.bRunning) {
       Logger.info(`Starting game ${e.unAppID}`);
@@ -57,10 +85,6 @@ async function startSyncUnblocked(syncFunction: (appId: number) => Promise<numbe
 async function startSyncBlocked(syncFunction: (appId: number) => Promise<number>, e: LifetimeNotification) {
   await Backend.pause_process(e.nInstanceID);
   await startSyncUnblocked(syncFunction, e.unAppID);
-  for (let i = 0; i < 10; i++) {
-    console.log("Sleeping to emulate slow sync");
-    await sleep(1000);
-  }
   await Backend.resume_process(e.nInstanceID);
 }
 

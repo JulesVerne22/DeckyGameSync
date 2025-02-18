@@ -1,5 +1,5 @@
 import toastIcon from "../../assets/images/toastIcon.png";
-import plugin from "../json/plugin.json"
+import Plugin from "../json/plugin.json"
 import { toaster } from "@decky/api";
 
 /**
@@ -18,6 +18,6 @@ export default class Toaster {
    * @param clickAction - The action to perform when the toast notification is clicked (default is an empty function).
    */
   public static toast(msg: any, ms: number = 2000, clickAction = () => { }) {
-    toaster.toast({ title: plugin.name, body: msg, duration: ms, logo: Toaster.ico, onClick: clickAction });
+    toaster.toast({ title: Plugin.name, body: msg, duration: ms, logo: Toaster.ico, onClick: clickAction });
   }
 }

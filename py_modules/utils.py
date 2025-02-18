@@ -21,7 +21,7 @@ class RcloneSyncMode(Enum):
     Enum representing the different modes of rclone sync operations.
     """
     COPY = "copy"
-    SYNC = "sync"
+    # SYNC = "sync"
     BISYNC = "bisync"
 
 class RcloneSyncWinner(Enum):
@@ -205,3 +205,22 @@ def mkdir_dest_dir():
     """
     destination_directory = Config.get_config_item("destination_directory")
     Popen([str(RCLONE_BIN_PATH), "mkdir", f"backend:{destination_directory}"])
+
+def getLocalScreenshotPath(user_id: int, screenshot_url: str) -> str:
+    """
+    Returns the local screenshot path for a given user and screenshot URL.
+
+    Parameters:
+    user_id (int): The user ID.
+    screenshot_url (str): The URL of the screenshot,
+                          example: "https://steamloopback.host/screenshots/7/screenshots/20250218080004_1.jpg"
+
+    Returns:
+    str: The local screenshot path,
+         example: /home/deck/.steam/steam/userdata/9999999/760/remote/7/screenshots/20250218080004_1.jpg
+    """
+    subpath = "/".join(screenshot_url.split("/")[-3:])
+    if not subpath:
+        logger.error(f"Invalid screenshot URL: {screenshot_url}")
+
+    return f"{decky.DECKY_USER_HOME}/.steam/steam/userdata/{user_id}/760/remote/{subpath}"

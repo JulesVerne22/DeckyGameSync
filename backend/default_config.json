@@ -4,5 +4,6 @@
     "additional_sync_args": [],
     "sync_root": "/",
     "screenshot_sync_enable": false,
-    "screenshot_destination_directory": "Pictures/Screenshots"
+    "screenshot_destination_directory": "Pictures/Screenshots",
+    "screenshot_delete_after_sync": true
 }

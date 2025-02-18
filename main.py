@@ -73,9 +73,9 @@ class Plugin:
         utils.logger.debug(f"Executing resync_cloud_first(app_id={app_id})")
         return await self._resync(RcloneSyncWinner.CLOUD, app_id)
 
-    async def sync_screenshot(self, screenshot_path: str) -> int:
+    async def sync_screenshot(self, user_id: int, screenshot_url: str) -> int:
         utils.logger.debug(f"Executing sync_screenshot()")
-        return await ScreenshotSyncTarget(screenshot_path).sync()
+        return await ScreenshotSyncTarget(utils.getLocalScreenshotPath(user_id, screenshot_url)).sync()
 
     async def delete_lock_files(self):
         utils.logger.debug(f"Executing delete_lock_files()")
@@ -99,7 +99,7 @@ class Plugin:
 
     # Configuration
 
-    async def get_config(self):
+    async def get_config(self) -> dict[str, Any]:
         utils.logger.debug(f"Executing get_config()")
         return Config.get_config()
 

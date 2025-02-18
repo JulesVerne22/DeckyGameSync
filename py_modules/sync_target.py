@@ -14,9 +14,7 @@ ONGOING_SYNCS = set()
 class _SyncTarget:
     def __init__(self, id: str):
         self.id = id
-        # self.sync_again = False
 
-        # self.config_dir = Path(decky.DECKY_PLUGIN_SETTINGS_DIR) / subdir
         self.log_dir = Path(decky.DECKY_PLUGIN_LOG_DIR) / self.id
 
         self.rclone_log_path = None
@@ -141,7 +139,7 @@ class _SyncTarget:
         # remove extra log files
         all_log_files = sorted(self.log_dir.glob("rclone *.log"))
         if len(all_log_files) >= (max_log_files):
-            for old_log_file in all_log_files[:-(max_log_files - 1)]:
+            for old_log_file in all_log_files[: -(max_log_files - 1)]:
                 old_log_file.unlink(missing_ok=True)
 
         return self.rclone_log_path
@@ -190,7 +188,7 @@ class _SyncTarget:
         int: Exit code of the rclone sync process if it runs, -1 if it cannot run.
         """
         filter_str_bytes = self._get_filter_str_bytes()
-        if not filter_str_bytes:
+        if self._is_filter_required() and (not filter_str_bytes):
             logger.info(f'No filter for sync "{self.id}"')
             return 0
 
@@ -201,10 +199,11 @@ class _SyncTarget:
         arguments = [sync_mode.value]
         arguments.extend([sync_root, f"backend:{destination_dir}"])
 
+        if filter_str_bytes:
+            arguments.extend(["--filter-from", "-"])
+
         arguments.extend(
             [
-                "--filter-from",
-                "-",
                 "--copy-links",
                 "--transfers",
                 "8",
@@ -220,7 +219,7 @@ class _SyncTarget:
         arguments.extend(additional_sync_args)
         arguments.extend(extra_args)
 
-        logger.info(f"Running command: {RCLONE_BIN_PATH} {list2cmdline(arguments)}")
+        logger.info(f'Running command: "{RCLONE_BIN_PATH}" {list2cmdline(arguments)}')
         current_sync = await create_subprocess_exec(
             str(RCLONE_BIN_PATH),
             *arguments,
@@ -231,16 +230,14 @@ class _SyncTarget:
         sync_stdcout, sync_stderr = await current_sync.communicate(filter_str_bytes)
         sync_result = current_sync.returncode
 
-        logger.info(
-            f'Sync "{self.rclone_log_path}" finished with exit code: {sync_result}'
-        )
+        logger.info(f'Sync for "{self.id}" finished with exit code: {sync_result}')
         if sync_stdcout:
             logger.info(
-                f'Sync "{self.rclone_log_path}" stdout: {sync_stdcout.decode(STR_ENCODING)}'
+                f'Sync for "{self.id}" stdout: {sync_stdcout.decode(STR_ENCODING)}'
             )
         if sync_stderr:
             logger.error(
-                f'Sync "{self.rclone_log_path}" stderr: {sync_stderr.decode(STR_ENCODING)}'
+                f'Sync for "{self.id}" stderr: {sync_stderr.decode(STR_ENCODING)}'
             )
 
         return sync_result
@@ -318,6 +315,12 @@ class _SyncTarget:
         with file.open("w") as f:
             f.writelines(current_syncpaths)
 
+    def _is_filter_required(self) -> bool:
+        """
+        Returns True if a filter is required for the sync.
+        """
+        return True
+
 
 class GlobalSyncTarget(_SyncTarget):
     def __init__(self):
@@ -360,14 +363,33 @@ class ScreenshotSyncTarget(_SyncTarget):
         Returns:
         tuple[str, str]: A tuple containing the sync root and destination directory.
         """
-        screenshot_destination_directory = Path(
-            Config.get_config_item("screenshot_destination_directory")
-        )
-        screenshot_destination_path = (
-            screenshot_destination_directory / self.screenshot_path.name
+        return str(self.screenshot_path), Config.get_config_item(
+            "screenshot_destination_directory"
         )
 
-        return str(self.screenshot_path), str(screenshot_destination_path)
+    def _get_rclone_log_path(self) -> Path:
+        """
+        Returns the rclone log file path, for screenshots it will be the config log
+
+        Returns:
+        Path: The path to the created rclone log file.
+        """
+        return Path(decky.DECKY_PLUGIN_LOG)
+
+    def _get_sync_mode(self):
+        """
+        Determines the sync type based on the configuration.
+
+        Returns:
+        RcloneSyncMode: The sync mode.
+        """
+        return RcloneSyncMode.COPY
+
+    def _is_filter_required(self) -> bool:
+        """
+        Returns True if a filter is required for the sync.
+        """
+        return False
 
 
 def get_sync_target(app_id: int) -> _SyncTarget:
