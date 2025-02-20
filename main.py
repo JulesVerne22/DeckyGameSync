@@ -1,5 +1,3 @@
-import decky
-
 import signal
 from typing import Any
 
@@ -36,19 +34,27 @@ class Plugin:
         return get_sync_target(app_id).get_syncpaths(SyncPathType.EXCLUDE)
 
     async def add_syncpath_include(self, path: str, app_id: int = 0) -> None:
-        utils.logger.debug(f"Executing add_syncpath_include(path={path}, app_id={app_id})")
+        utils.logger.debug(
+            f"Executing add_syncpath_include(path={path}, app_id={app_id})"
+        )
         return get_sync_target(app_id).add_syncpath(SyncPathType.INCLUDE)
 
     async def add_syncpath_exclude(self, path: str, app_id: int = 0) -> None:
-        utils.logger.debug(f"Executing add_syncpath_exclude(path={path}, app_id={app_id})")
+        utils.logger.debug(
+            f"Executing add_syncpath_exclude(path={path}, app_id={app_id})"
+        )
         return get_sync_target(app_id).add_syncpath(SyncPathType.EXCLUDE)
 
     async def remove_syncpath_include(self, path: str, app_id: int = 0) -> None:
-        utils.logger.debug(f"Executing remove_syncpath_include(path={path}, app_id={app_id})")
+        utils.logger.debug(
+            f"Executing remove_syncpath_include(path={path}, app_id={app_id})"
+        )
         return get_sync_target(app_id).remove_syncpath(SyncPathType.INCLUDE)
 
     async def remove_syncpath_exclude(self, path: str, app_id: int = 0) -> None:
-        utils.logger.debug(f"Executing remove_syncpath_exclude(path={path}, app_id={app_id})")
+        utils.logger.debug(
+            f"Executing remove_syncpath_exclude(path={path}, app_id={app_id})"
+        )
         return get_sync_target(app_id).remove_syncpath(SyncPathType.EXCLUDE)
 
     async def test_syncpath(self, path: str) -> int:
@@ -65,17 +71,19 @@ class Plugin:
         utils.logger.debug(f"Executing sync_cloud_first(app_id={app_id})")
         return await self._sync(RcloneSyncWinner.CLOUD, app_id)
 
-    async def resync_local_first(self, app_id: int = 0) -> int:
-        utils.logger.debug(f"Executing resync_local_first(app_id={app_id})")
-        return await self._resync(RcloneSyncWinner.LOCAL, app_id)
+    async def resync_local_first(self) -> int:
+        utils.logger.debug(f"Executing resync_local_first()")
+        return await GlobalSyncTarget().resync(RcloneSyncWinner.LOCAL)
 
-    async def resync_cloud_first(self, app_id: int = 0) -> int:
-        utils.logger.debug(f"Executing resync_cloud_first(app_id={app_id})")
-        return await self._resync(RcloneSyncWinner.CLOUD, app_id)
+    async def resync_cloud_first(self) -> int:
+        utils.logger.debug(f"Executing resync_cloud_first()")
+        return await GlobalSyncTarget().resync(RcloneSyncWinner.CLOUD)
 
     async def sync_screenshot(self, user_id: int, screenshot_url: str) -> int:
         utils.logger.debug(f"Executing sync_screenshot()")
-        return await ScreenshotSyncTarget(utils.getLocalScreenshotPath(user_id, screenshot_url)).sync()
+        return await ScreenshotSyncTarget(
+            utils.getLocalScreenshotPath(user_id, screenshot_url)
+        ).sync()
 
     async def delete_lock_files(self):
         utils.logger.debug(f"Executing delete_lock_files()")
@@ -83,9 +91,6 @@ class Plugin:
 
     async def _sync(self, winner: RcloneSyncWinner, app_id: int = 0) -> int:
         return await get_sync_target(app_id).sync(winner)
-
-    async def _resync(self, winner: RcloneSyncWinner, app_id: int = 0) -> int:
-        return await get_sync_target(app_id).resync(winner)
 
     # Processes
 
@@ -107,9 +112,9 @@ class Plugin:
         utils.logger.debug(f"Executing set_config(key={key}, value={value})")
         Config.set_config(key, value)
 
-    async def mkdir_dest_dir(self):
-        utils.logger.debug(f"Executing cloud_mkdir()")
-        utils.mkdir_dest_dir()
+    # async def mkdir_dest_dir(self):
+    #     utils.logger.debug(f"Executing cloud_mkdir()")
+    #     utils.mkdir_dest_dir()
 
     # Logger
 

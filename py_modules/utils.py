@@ -17,27 +17,34 @@ RCLONE_BIN_PATH = Path(decky.DECKY_PLUGIN_DIR) / "bin/rcloneLauncher"
 RCLONE_CFG_PATH = Config.config_dir / "rclone.conf"
 RCLONE_BISYNC_CACHE_DIR = Path(decky.HOME) / ".cache/rclone/bisync"
 
+
 class RcloneSyncMode(Enum):
     """
     Enum representing the different modes of rclone sync operations.
     """
+
     COPY = "copy"
     SYNC = "sync"
     BISYNC = "bisync"
+
 
 class RcloneSyncWinner(Enum):
     """
     Enum representing the winner in rclone bisync
     """
+
     LOCAL = "path1"
     CLOUD = "path2"
+
 
 class SyncPathType(Enum):
     """
     Enum representing the different types of sync paths.
     """
-    INCLUDE = True
-    EXCLUDE = False
+
+    INCLUDE = "+"
+    EXCLUDE = "-"
+
 
 def kill_previous_spawn(process: Process):
     """
@@ -53,6 +60,7 @@ def kill_previous_spawn(process: Process):
 
         sleep(0.1)  # Give time for OS to clear up the port
 
+
 async def get_url_from_rclone_process(process: Process):
     """
     Extracts the URL from the stderr of the rclone process.
@@ -66,9 +74,11 @@ async def get_url_from_rclone_process(process: Process):
     while True:
         line = (await process.stderr.readline()).decode()
         url_re_match = re.search(
-            f"(http:\/\/127\.0\.0\.1:{RCLONE_PORT}\/auth\?state=.*)\\n$", line)
+            f"(http:\/\/127\.0\.0\.1:{RCLONE_PORT}\/auth\?state=.*)\\n$", line
+        )
         if url_re_match:
             return url_re_match.group(1)
+
 
 def is_port_in_use(port: int) -> bool:
     """
@@ -81,8 +91,10 @@ def is_port_in_use(port: int) -> bool:
     bool: True if the port is in use, False otherwise.
     """
     import socket
+
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('localhost', port)) == 0
+        return s.connect_ex(("localhost", port)) == 0
+
 
 def _get_process_tree(pid):
     """
@@ -103,7 +115,8 @@ def _get_process_tree(pid):
             continue
         children.extend([int(chldPid.decode())])
 
-    return children;
+    return children
+
 
 def send_signal(pid: int, signal: signal.Signals):
     """
@@ -126,7 +139,8 @@ def send_signal(pid: int, signal: signal.Signals):
             send_signal(child_pid, signal)
 
     except Exception as e:
-         logger.error("Error sending signal to process with PID %d: %s", pid, e)
+        logger.error("Error sending signal to process with PID %d: %s", pid, e)
+
 
 def test_syncpath(syncpath: str):
     """
@@ -161,6 +175,7 @@ def test_syncpath(syncpath: str):
 
     return count
 
+
 def delete_lock_files():
     """
     Deletes rclone lock files
@@ -168,6 +183,7 @@ def delete_lock_files():
     logger.info("Deleting lock files.")
     for lck_file in RCLONE_BISYNC_CACHE_DIR.glob("*.lck"):
         lck_file.unlink(missing_ok=True)
+
 
 def open_file(file: Path, *args, **kwargs):
     """
@@ -185,6 +201,7 @@ def open_file(file: Path, *args, **kwargs):
     file.touch(exist_ok=True)
     return file.open(*args, **kwargs)
 
+
 def get_plugin_log() -> str:
     """
     Retrieves the entire plugin log.
@@ -195,17 +212,19 @@ def get_plugin_log() -> str:
     log: str = ""
     with open(decky.DECKY_PLUGIN_LOG) as f:
         for line in reversed(list(f)):
-            log = line + '\n' + log
+            log = line + "\n" + log
             if "Logger initialized at level" in line.strip():
                 break
     return log
 
-def mkdir_dest_dir():
-    """
-    Creates the destination directory
-    """
-    destination_directory = Config.get_config_item("destination_directory")
-    Popen([str(RCLONE_BIN_PATH), "mkdir", f"backend:{destination_directory}"])
+
+# def mkdir_dest_dir():
+#     """
+#     Creates the destination directory
+#     """
+#     destination_directory = Config.get_config_item("destination_directory")
+#     Popen([str(RCLONE_BIN_PATH), "mkdir", f"backend:{destination_directory}"])
+
 
 def getLocalScreenshotPath(user_id: int, screenshot_url: str) -> str:
     """
@@ -224,4 +243,6 @@ def getLocalScreenshotPath(user_id: int, screenshot_url: str) -> str:
     if not subpath:
         logger.error(f"Invalid screenshot URL: {screenshot_url}")
 
-    return f"{decky.DECKY_USER_HOME}/.steam/steam/userdata/{user_id}/760/remote/{subpath}"
+    return (
+        f"{decky.DECKY_USER_HOME}/.steam/steam/userdata/{user_id}/760/remote/{subpath}"
+    )

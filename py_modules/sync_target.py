@@ -1,11 +1,13 @@
+import decky
+
 from datetime import datetime
 from pathlib import Path
 from asyncio.subprocess import create_subprocess_exec, PIPE
 from subprocess import list2cmdline
 from typing import Awaitable, Callable
+import logging
 
-import decky
-from config import Config
+from config import *
 from utils import *
 
 ONGOING_SYNCS = set()
@@ -15,8 +17,7 @@ PLUGIN_EXCLUDE_ALL_FILTER_PATH = Path(decky.DECKY_PLUGIN_DIR) / "exclude_all.fil
 class _SyncTarget:
     _filter_required = True
     _sync_mode = RcloneSyncMode.COPY
-    _verbose_log = True
-    _syncpath_excludes_file = Config.config_dir / "all.exclude"
+    _syncpath_excludes_file = Config.config_dir / "general.exclude"
 
     def __init__(self, id: str):
         self._id = id
@@ -90,8 +91,7 @@ class _SyncTarget:
         Returns:
         Path: The path to the created rclone log file.
         """
-        if not self._log_dir.exists():
-            self._log_dir.mkdir(parents=True)
+        self._log_dir.mkdir(parents=True, exist_ok=True)
 
         current_time = datetime.now().strftime("%Y-%m-%d %H.%M.%S")
         self._rclone_log_path = self._log_dir / f"rclone {current_time}.log"
@@ -195,9 +195,7 @@ class _SyncTarget:
         )
         arguments.extend(additional_sync_args)
         arguments.extend(extra_args)
-
-        if self._verbose_log:
-            arguments.append("-v")
+        arguments.extend(self._get_verbose_flag())
 
         logger.info(f'Running command: "{RCLONE_BIN_PATH}" {list2cmdline(arguments)}')
         current_sync = await create_subprocess_exec(
@@ -256,18 +254,19 @@ class _SyncTarget:
                 file = self._syncpath_includes_file
             case SyncPathType.EXCLUDE:
                 file = self._syncpath_excludes_file
-        logger.info(f"Adding path '{path}' to sync '{file}'")
+        logger.info(f'Adding path "{path}" to "{file}"')
 
         # Replace the beginning of path to replace the root.
-        path = f"{path.strip().replace(Config.get_config_item('sync_root'), '/', 1)}\n"
+        path = f"{path_type.value} {path.strip().replace(Config.get_config_item('sync_root'), '/', 1)}\n"
 
         current_syncpaths = self.get_syncpaths(path_type)
         if path in current_syncpaths:
             return
-        current_syncpaths.append(current_syncpaths)
 
+        current_syncpaths.append(current_syncpaths)
+        sorted_syncpaths = sorted(current_syncpaths)
         with file.open("w") as f:
-            f.writelines(sorted(current_syncpaths))
+            f.writelines(sorted_syncpaths)
 
     def remove_syncpath(self, path: str, path_type: SyncPathType):
         """
@@ -282,18 +281,32 @@ class _SyncTarget:
                 file = self._syncpath_includes_file
             case SyncPathType.EXCLUDE:
                 file = self._syncpath_excludes_file
-        logger.info(f"Removing path '{path}' to sync '{file}'")
+        logger.info(f'Removing path "{path}" from "{file}"')
 
         # Replace the beginning of path to replace the root.
         path = f"{path.strip()}\n"
         current_syncpaths = self.get_syncpaths(path_type)
-        if path in current_syncpaths:
-            current_syncpaths.remove(path)
-        else:
+        if path not in current_syncpaths:
+            logger.warning(f'Path "{path}" not found in "{file}", skipping removal')
             return
 
+        updated_syncpaths = [p for p in current_syncpaths if p != path]
         with file.open("w") as f:
-            f.writelines(current_syncpaths)
+            f.writelines(updated_syncpaths)
+
+    def _get_verbose_flag(self) -> list[str]:
+        """
+        Returns the verbose flag for the rclone command.
+
+        Returns:
+        list[str]: The verbose flag in a list.
+        """
+        if logger.level <= logging.DEBUG:
+            return ["-vv"]
+        elif logger.level <= logging.WARNING:
+            return ["-v"]
+        else:
+            return []
 
 
 class GlobalSyncTarget(_SyncTarget):
@@ -331,7 +344,6 @@ class GameSyncTarget(_SyncTarget):
 class ScreenshotSyncTarget(_SyncTarget):
     _filter_required = False
     _sync_mode = RcloneSyncMode.COPY
-    _verbose_log = False
 
     def __init__(self, screenshot_path: str):
         if not screenshot_path:
@@ -367,6 +379,15 @@ class ScreenshotSyncTarget(_SyncTarget):
         Path: The path to the created rclone log file.
         """
         return Path(decky.DECKY_PLUGIN_LOG)
+
+    def _get_verbose_flag(self) -> list[str]:
+        """
+        Returns the verbose flag for the rclone command.
+
+        Returns:
+        list[str]: The verbose flag in a list.
+        """
+        return []
 
 
 def get_sync_target(app_id: int) -> _SyncTarget:
