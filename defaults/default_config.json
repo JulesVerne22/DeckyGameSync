@@ -1,7 +1,13 @@
 {
     "log_level": "INFO",
     "destination_directory": "decky-cloud-save",
-    "additional_sync_args": [],
+    "additional_sync_args": [
+        "--copy-links",
+        "--transfers",
+        "8",
+        "--checkers",
+        "16"
+    ],
     "sync_root": "/",
     "screenshot_sync_enable": false,
     "screenshot_destination_directory": "Pictures/Screenshots",

@@ -182,11 +182,6 @@ class _SyncTarget:
 
         arguments.extend(
             [
-                "--copy-links",
-                "--transfers",
-                "8",
-                "--checkers",
-                "16",
                 "--log-file",
                 str(self._get_rclone_log_path()),
                 "--log-format",
