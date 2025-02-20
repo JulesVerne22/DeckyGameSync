@@ -9,13 +9,13 @@ var sync_in_progress = false;
 
 export function setupScreenshotNotification(): Unregisterable {
   return SteamClient.GameSessions.RegisterForScreenshotNotification(async (e: ScreenshotNotification) => {
-    if (Config.get("screenshot_sync_enable") && e.details && e.strOperation == "written") {
+    if (Config.get("screenshot_upload_enable") && e.details && e.strOperation == "written") {
       let exitCode = await Backend.sync_screenshot(getCurrentUserId(), e.details.strUrl);
-      if (exitCode == 0 && Config.get("screenshot_delete_after_sync")) {
+      if (exitCode == 0 && Config.get("screenshot_delete_after_upload")) {
         if (await SteamClient.Screenshots.DeleteLocalScreenshot(e.details.strGameID, e.details.hHandle)) {
           Logger.info(`Screenshot ${e.details.strUrl} uploaded and deleted locally`);
         } else {
-          Logger.error(`Failed to delete screenshot ${e.details.strUrl} locally`);
+          Logger.warning(`Failed to delete screenshot ${e.details.strUrl} locally`);
           Toaster.toast("Failed to delete the screenshot locally");
         }
       } else {
