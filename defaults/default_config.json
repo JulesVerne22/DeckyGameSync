@@ -8,6 +8,7 @@
         "--checkers",
         "16"
     ],
+    "additional_bisync_args": [],
     "sync_root": "/",
     "screenshot_sync_enable": false,
     "screenshot_destination_directory": "Pictures/Screenshots",

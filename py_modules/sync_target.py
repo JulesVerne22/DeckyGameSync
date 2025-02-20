@@ -59,27 +59,9 @@ class _SyncTarget:
         """
 
         async def sync_task():
-            return await self._sync_internal(winner)
+            return await self._rclone_execute(winner)
 
         return await self._start_sync_task(sync_task)
-
-    async def _sync_internal(
-        self, winner: RcloneSyncWinner, extra_args: list[str] = []
-    ) -> int:
-        """
-        Runs the rclone sync process.
-
-        Parameters:
-        winner (RcloneSyncWinner): The winner of the sync, its data will be preserved as priority.
-        extra_args (list[str]): Extra arguemnts to be passed to rclone
-
-        Returns:
-        int: Exit code of the rclone sync process if it runs, -1 if it cannot run.
-        """
-        if self._sync_mode == RcloneSyncMode.BISYNC:
-            extra_args.extend(["--conflict-resolve", winner.value])
-
-        return await self._rclone_execute(extra_args)
 
     def _get_rclone_log_path(self, max_log_files: int = 5) -> Path:
         """
@@ -163,8 +145,6 @@ class _SyncTarget:
             logger.info(f'No filter for sync "{self._id}"')
             return 0
 
-        additional_sync_args = Config.get_config_item("additional_sync_args")
-
         arguments = [self._sync_mode.value]
         arguments.extend(self._get_sync_paths(winner))
 
@@ -188,7 +168,12 @@ class _SyncTarget:
                 "none",
             ]
         )
-        arguments.extend(additional_sync_args)
+
+        if self._sync_mode == RcloneSyncMode.BISYNC:
+            arguments.extend(["--conflict-resolve", winner.value])
+            arguments.extend(Config.get_config_item("additional_bisync_args"))
+
+        arguments.extend(Config.get_config_item("additional_sync_args"))
         arguments.extend(extra_args)
         arguments.extend(self._get_verbose_flag())
 
@@ -322,7 +307,7 @@ class GlobalSyncTarget(_SyncTarget):
         """
 
         async def sync_task():
-            return await self._sync_internal(winner, ["--resync"])
+            return await self._rclone_execute(winner, ["--resync"])
 
         return await self._start_sync_task(sync_task)
 
