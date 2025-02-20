@@ -8,7 +8,10 @@
         "--checkers",
         "16"
     ],
-    "additional_bisync_args": [],
+    "additional_bisync_args": [
+        "--conflict-loser",
+        "num"
+    ],
     "sync_root": "/",
     "screenshot_upload_enable": false,
     "screenshot_destination_directory": "Pictures/Screenshots",
