@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 QUICKSTART_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-PLUGIN_DIR="$QUICKSTART_DIR/.."
-CONFIG_DIR="$PLUGIN_DIR/../../settings/decky-cloud-save"
+PLUGIN_DIR=$(realpath "$QUICKSTART_DIR/..")
+CONFIG_DIR=$(realpath "$PLUGIN_DIR"/../../settings/"$(basename "$PLUGIN_DIR")")
 
 exec "$PLUGIN_DIR/bin/rclone" "--config" "$CONFIG_DIR/rclone.conf" "$@"

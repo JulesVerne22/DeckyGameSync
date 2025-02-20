@@ -6,18 +6,17 @@ import decky
 from settings import SettingsManager
 from utils import *
 
-PLUGIN_DEFAULT_CONFIG_PATH = Path(decky.DECKY_PLUGIN_DIR) / "bin/default_config.json"
+PLUGIN_DEFAULT_CONFIG_PATH = Path(decky.DECKY_PLUGIN_DIR) / "default_config.json"
+PLUGIN_CONFIG_DIR = Path(decky.DECKY_PLUGIN_SETTINGS_DIR)
 
 class Config():
-    _DEFAULT_CONFIG = dict()
+    _config = SettingsManager(name="config")
+    _default_config = dict()
     try:
         with PLUGIN_DEFAULT_CONFIG_PATH.open('r') as f:
-            _DEFAULT_CONFIG.update(json.load(f))
+            _default_config.update(json.load(f))
     except Exception as e:
         logger.error(f"Failed to load default config: {e}")
-
-    config_dir = Path(decky.DECKY_PLUGIN_SETTINGS_DIR)
-    config = SettingsManager(name="config", settings_directory=str(config_dir))
 
     @classmethod
     def get_config(cls) -> dict[str, Any]:
@@ -28,11 +27,11 @@ class Config():
         dict[str, Any]: The plugin configuration.
         """
         # cls.read()
-        if not cls.config.settings:
-            cls.config.settings = cls._DEFAULT_CONFIG
+        if not cls._config.settings:
+            cls._config.settings = cls._default_config
             cls.commit()
 
-        return cls.config.settings
+        return cls._config.settings
 
     @classmethod
     def get_config_item(cls, key: str) -> Any:
@@ -49,7 +48,7 @@ class Config():
         """
         value = cls.get_config().get(key)
         if not value:
-            value = cls._DEFAULT_CONFIG.get(key)
+            value = cls._default_config.get(key)
             cls.set_config(key, value)
 
         return value
@@ -76,4 +75,4 @@ class Config():
         key (str): The key to set.
         value (Any): The value to set for the key.
         """
-        cls.config.setSetting(key, value)
+        cls._config.setSetting(key, value)

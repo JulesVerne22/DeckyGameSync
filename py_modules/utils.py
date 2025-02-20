@@ -12,8 +12,9 @@ from config import Config
 
 STR_ENCODING = "utf-8"
 RCLONE_PORT = 53682
+
 RCLONE_BIN_PATH = Path(decky.DECKY_PLUGIN_DIR) / "bin/rcloneLauncher"
-RCLONE_CFG_PATH = Path(decky.DECKY_PLUGIN_SETTINGS_DIR) / "rclone.conf"
+RCLONE_CFG_PATH = Config.config_dir / "rclone.conf"
 RCLONE_BISYNC_CACHE_DIR = Path(decky.HOME) / ".cache/rclone/bisync"
 
 class RcloneSyncMode(Enum):
@@ -21,7 +22,7 @@ class RcloneSyncMode(Enum):
     Enum representing the different modes of rclone sync operations.
     """
     COPY = "copy"
-    # SYNC = "sync"
+    SYNC = "sync"
     BISYNC = "bisync"
 
 class RcloneSyncWinner(Enum):
