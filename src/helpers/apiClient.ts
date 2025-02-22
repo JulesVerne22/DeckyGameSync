@@ -39,11 +39,11 @@ export function setupAppLifetimeNotificationsHandler(): Unregisterable {
     if (e.bRunning) {
       Logger.info(`Starting game ${e.unAppID}`);
       await startSyncBlocked(Backend.sync_cloud_first, e);
-      startSyncUnblocked(Backend.sync_cloud_first, GLOBAL_SYNC_APP_ID);
+      startSyncUnblocked(Backend.sync_local_first, GLOBAL_SYNC_APP_ID);
     } else {
       Logger.info(`Stopping game ${e.unAppID}`);
       await startSyncUnblocked(Backend.sync_local_first, e.unAppID);
-      startSyncUnblocked(Backend.sync_local_first, GLOBAL_SYNC_APP_ID);
+      startSyncUnblocked(Backend.sync_cloud_first, GLOBAL_SYNC_APP_ID);
     }
   });
 }
