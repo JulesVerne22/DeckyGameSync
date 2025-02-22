@@ -6,12 +6,10 @@ export const spawn_probe = callable<[], number>("spawn_probe");
 export const get_backend_type = callable<[], string>("get_backend_type");
 
 // Sync Paths
-export const get_syncpaths_include = callable<[app_id: number], Array<string>>("get_syncpaths");
-export const get_syncpaths_exclude = callable<[app_id: number], Array<string>>("get_syncpaths");
-export const add_syncpath_include = callable<[path: string, app_id: number], void>("add_syncpath");
-export const add_syncpath_exclude = callable<[path: string, app_id: number], void>("add_syncpath");
-export const remove_syncpath_include = callable<[path: string, app_id: number], void>("remove_syncpath");
-export const remove_syncpath_exclude = callable<[path: string, app_id: number], void>("remove_syncpath");
+export const get_syncpaths_target = callable<[app_id: number], Array<string>>("get_syncpaths_target");
+export const get_syncpaths_general = callable<[app_id: number], Array<string>>("get_syncpaths_general");
+export const set_syncpaths_target = callable<[paths: Array<string>, app_id: number], void>("set_syncpaths_target");
+export const set_syncpaths_general = callable<[paths: Array<string>, app_id: number], void>("set_syncpaths_general");
 export const test_syncpath = callable<[path: string], number>("test_syncpath");
 
 // Syncing

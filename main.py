@@ -25,37 +25,25 @@ class Plugin:
 
     # Sync Paths
 
-    async def get_syncpaths_include(self, app_id: int = 0) -> list[str]:
-        utils.logger.debug(f"Executing get_syncpaths_include(app_id={app_id})")
-        return get_sync_target(app_id).get_syncpaths(SyncPathType.INCLUDE)
+    async def get_syncpaths_target(self, app_id: int = 0) -> list[str]:
+        utils.logger.debug(f"Executing get_syncpaths_target(app_id={app_id})")
+        return get_sync_target(app_id).get_syncpaths(SyncPathType.TARGET)
 
-    async def get_syncpaths_exclude(self, app_id: int = 0) -> list[str]:
-        utils.logger.debug(f"Executing get_syncpaths_exclude(app_id={app_id})")
-        return get_sync_target(app_id).get_syncpaths(SyncPathType.EXCLUDE)
+    async def get_syncpaths_general(self, app_id: int = 0) -> list[str]:
+        utils.logger.debug(f"Executing get_syncpaths_general(app_id={app_id})")
+        return get_sync_target(app_id).get_syncpaths(SyncPathType.GENERAL)
 
-    async def add_syncpath_include(self, path: str, app_id: int = 0) -> None:
+    async def set_syncpaths_target(self, paths: list[str], app_id: int = 0) -> None:
         utils.logger.debug(
-            f"Executing add_syncpath_include(path={path}, app_id={app_id})"
+            f"Executing set_syncpaths_target(path={paths}, app_id={app_id})"
         )
-        return get_sync_target(app_id).add_syncpath(SyncPathType.INCLUDE)
+        return get_sync_target(app_id).set_syncpaths(SyncPathType.TARGET)
 
-    async def add_syncpath_exclude(self, path: str, app_id: int = 0) -> None:
+    async def set_syncpaths_general(self, paths: list[str], app_id: int = 0) -> None:
         utils.logger.debug(
-            f"Executing add_syncpath_exclude(path={path}, app_id={app_id})"
+            f"Executing set_syncpaths_general(path={paths}, app_id={app_id})"
         )
-        return get_sync_target(app_id).add_syncpath(SyncPathType.EXCLUDE)
-
-    async def remove_syncpath_include(self, path: str, app_id: int = 0) -> None:
-        utils.logger.debug(
-            f"Executing remove_syncpath_include(path={path}, app_id={app_id})"
-        )
-        return get_sync_target(app_id).remove_syncpath(SyncPathType.INCLUDE)
-
-    async def remove_syncpath_exclude(self, path: str, app_id: int = 0) -> None:
-        utils.logger.debug(
-            f"Executing remove_syncpath_exclude(path={path}, app_id={app_id})"
-        )
-        return get_sync_target(app_id).remove_syncpath(SyncPathType.EXCLUDE)
+        return get_sync_target(app_id).set_syncpaths(SyncPathType.GENERAL)
 
     async def test_syncpath(self, path: str) -> int:
         utils.logger.debug(f"Executing test_syncpath({path})")

@@ -42,8 +42,8 @@ class SyncPathType(Enum):
     Enum representing the different types of sync paths.
     """
 
-    INCLUDE = "+"
-    EXCLUDE = "-"
+    TARGET = True
+    GENERAL = False
 
 
 def kill_previous_spawn(process: Process):
