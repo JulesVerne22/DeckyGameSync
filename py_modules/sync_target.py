@@ -318,8 +318,11 @@ class ScreenshotSyncTarget(_SyncTarget):
         Returns:
         tuple[str, str]: A tuple containing the source sync path and destination sync path.
         """
-        return str(self._screenshot_path), Config.get_config_item(
+        return (
+            str(self._screenshot_path),
+            f'backend:{Config.get_config_item(
             "screenshot_destination_directory"
+        )}',
         )
 
     def _get_rclone_log_path(self) -> Path:
