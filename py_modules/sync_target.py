@@ -17,7 +17,7 @@ PLUGIN_EXCLUDE_ALL_FILTER_PATH = Path(decky.DECKY_PLUGIN_DIR) / "exclude_all.fil
 class _SyncTarget:
     _filter_required = True
     _sync_mode = RcloneSyncMode.COPY
-    _general_filter_file = Config.config_dir / "general.filter"
+    _general_filter_file = PLUGIN_CONFIG_DIR / "general.filter"
 
     def __init__(self, id: str):
         self._id = id

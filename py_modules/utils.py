@@ -4,46 +4,10 @@ from asyncio import sleep
 from asyncio.subprocess import Process
 from subprocess import Popen, PIPE
 from pathlib import Path
-from enum import Enum
 import os, signal, re
 
-logger = decky.logger
+from common_defs import *
 from config import Config
-
-STR_ENCODING = "utf-8"
-RCLONE_PORT = 53682
-
-RCLONE_BIN_PATH = Path(decky.DECKY_PLUGIN_DIR) / "bin/rcloneLauncher"
-RCLONE_CFG_PATH = Config.config_dir / "rclone.conf"
-RCLONE_BISYNC_CACHE_DIR = Path(decky.HOME) / ".cache/rclone/bisync"
-
-
-class RcloneSyncMode(Enum):
-    """
-    Enum representing the different modes of rclone sync operations.
-    """
-
-    COPY = "copy"
-    SYNC = "sync"
-    BISYNC = "bisync"
-
-
-class RcloneSyncWinner(Enum):
-    """
-    Enum representing the winner in rclone bisync
-    """
-
-    LOCAL = "path1"
-    CLOUD = "path2"
-
-
-class SyncPathType(Enum):
-    """
-    Enum representing the different types of sync paths.
-    """
-
-    TARGET = True
-    GENERAL = False
 
 
 def kill_previous_spawn(process: Process):

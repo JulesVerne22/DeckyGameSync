@@ -3,23 +3,18 @@ import { get_config, set_config } from "./backend";
 import Logger from "./logger";
 
 class Config {
-    private data = structuredClone(DefaultConfig);
+    private data: Record<string, any> = {};
 
     public async load(): Promise<void> {
-        let backendConfig = await get_config() as Record<string, any>;
-        for (let key in this.data) {
-            if (key in backendConfig) {
-                try {
-                    this.data[key] = backendConfig[key];
-                } catch (e) {
-                    console.log(e);
-                }
-            }
-        }
+        this.data = await get_config() as Record<string, any>;
         Logger.debug("Config loaded", this.data);
     }
 
     public get(key: string) {
+        if (!(key in this.data)) {
+            this.set(key, DefaultConfig[key]);
+        }
+
         return this.data[key];
     }
 

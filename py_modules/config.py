@@ -1,16 +1,13 @@
-from pathlib import Path
+import decky
+
 from typing import Any
 import json
 
-import decky
 from settings import SettingsManager
-from utils import *
-
-PLUGIN_DEFAULT_CONFIG_PATH = Path(decky.DECKY_PLUGIN_DIR) / "default_config.json"
-PLUGIN_CONFIG_DIR = Path(decky.DECKY_PLUGIN_SETTINGS_DIR)
+from common_defs import *
 
 class Config():
-    _config = SettingsManager(name="config")
+    _config = SettingsManager("config", decky.DECKY_PLUGIN_SETTINGS_DIR)
     _default_config = dict()
     try:
         with PLUGIN_DEFAULT_CONFIG_PATH.open('r') as f:
@@ -26,10 +23,9 @@ class Config():
         Returns:
         dict[str, Any]: The plugin configuration.
         """
-        # cls.read()
         if not cls._config.settings:
             cls._config.settings = cls._default_config
-            cls.commit()
+            cls._config.commit()
 
         return cls._config.settings
 
