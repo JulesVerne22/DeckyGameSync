@@ -34,7 +34,7 @@ class RcloneSyncWinner(Enum):
     CLOUD = "path2"
 
 
-class SyncPathType(Enum):
+class FilterType(Enum):
     """
     Enum representing the different types of sync paths.
     """

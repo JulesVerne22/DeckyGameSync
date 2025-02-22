@@ -123,7 +123,9 @@ class _SyncTarget:
             "sync_root", "destination_directory"
         )
 
-        if winner == RcloneSyncWinner.CLOUD:
+        if (winner == RcloneSyncWinner.CLOUD) and (
+            self._sync_mode != RcloneSyncMode.BISYNC
+        ):
             return f"backend:{destination_dir}", sync_root
         else:
             return sync_root, f"backend:{destination_dir}"
@@ -200,20 +202,20 @@ class _SyncTarget:
 
         return sync_result
 
-    def get_syncpaths(self, path_type: SyncPathType) -> list[str]:
+    def get_filters(self, filter_type: FilterType) -> list[str]:
         """
-        Retrieves sync paths from the specified file.
+        Retrieves sync filters from the specified file.
 
         Parameters:
-        path_type (SyncPathType): The type of the sync paths to retrieve.
+        filter_type (FilterType): The type of the filters to retrieve.
 
         Returns:
-        list[str]: A list of sync paths, '\\n's will be stripped.
+        list[str]: A list of filters, '\\n's will be stripped.
         """
-        match (path_type):
-            case SyncPathType.TARGET:
+        match (filter_type):
+            case FilterType.TARGET:
                 file = self._target_filter_file
-            case SyncPathType.GENERAL:
+            case FilterType.GENERAL:
                 file = self._general_filter_file
 
         if not file.exists():
@@ -223,22 +225,22 @@ class _SyncTarget:
                 stripped for line in f.read().splitlines() if (stripped := line.strip())
             ]
 
-    def set_syncpaths(self, paths: list[str], path_type: SyncPathType):
+    def set_filters(self, filters: list[str], filter_type: FilterType):
         """
-        Updates sync paths to the specified file.
+        Updates sync filters to the specified file.
 
         Parameters:
-        paths (list[str]): The paths to set, elements inside should not contain '\\n'.
-        path_type (SyncPathType): The type of the sync paths to set.
+        filters (list[str]): The filters to set, elements inside should not contain '\\n'.
+        filter_type (FilterType): The type of the filters to set.
         """
-        match (path_type):
-            case SyncPathType.TARGET:
+        match (filter_type):
+            case FilterType.TARGET:
                 file = self._target_filter_file
-            case SyncPathType.GENERAL:
+            case FilterType.GENERAL:
                 file = self._general_filter_file
 
         str_to_write = "\n".join(
-            stripped for path in paths if (stripped := path.strip())
+            stripped for path in filters if (stripped := path.strip())
         )
         with file.open("w") as f:
             f.write(str_to_write)
