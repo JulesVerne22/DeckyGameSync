@@ -27,7 +27,6 @@ export const resume_process = callable<[pid: number], void>("resume_process");
 // Configuration
 export const get_config = callable<[], object>("get_config");
 export const set_config = callable<[key: string, value: any], void>("set_config");
-// export const mkdir_dest_dir = callable<[], void>("mkdir_dest_dir");
 
 // Logger
 export const log_debug = callable<[msg: string], void>("log_debug");

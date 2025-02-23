@@ -95,7 +95,7 @@ class _SyncTarget:
         """
         if not self._rclone_log_path:
             all_log_files = sorted(self._log_dir.glob("rclone *.log"))
-            if len(all_log_files) > 0:
+            if all_log_files:
                 self._rclone_log_path = all_log_files[-1]
             else:
                 return "No logs available."
@@ -103,7 +103,7 @@ class _SyncTarget:
             with self._rclone_log_path.open() as f:
                 return f.read()
         except Exception as e:
-            err_msg = f"Error reading log file {self._rclone_log_path}:\n{e}"
+            err_msg = f'Error reading log file "{self._rclone_log_path}":\n{e}'
             logger.error(err_msg)
             return err_msg
 
@@ -284,12 +284,14 @@ class GlobalSyncTarget(_SyncTarget):
 
 
 class GameSyncTarget(_SyncTarget):
-    _sync_mode = RcloneSyncMode.SYNC
+    _sync_mode = RcloneSyncMode.COPY
 
     def __init__(self, app_id: int):
         if app_id <= 0:
             raise ValueError(f"Invalid app_id {app_id}, it is required to be > 0")
         super().__init__(str(app_id))
+        if Config.get_config_item("strict_mode"):
+            self._sync_mode = RcloneSyncMode.SYNC
 
 
 class ScreenshotSyncTarget(_SyncTarget):

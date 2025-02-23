@@ -95,15 +95,14 @@ def send_signal(pid: int, signal: signal.Signals):
     """
     try:
         os.kill(pid, signal)
-        logger.info("Process with PID %d received signal %s.", pid, signal)
+        logger.debug(f"Process {pid} received signal {signal}")
 
         child_pids = _get_process_tree(pid)
-
         for child_pid in child_pids:
             send_signal(child_pid, signal)
 
     except Exception as e:
-        logger.error("Error sending signal to process with PID %d: %s", pid, e)
+        logger.warning(f"Error sending signal {signal} to process {pid}: {e}")
 
 
 def test_syncpath(syncpath: str):
@@ -130,7 +129,7 @@ def test_syncpath(syncpath: str):
 
     count = 0
     for root, os_dirs, os_files in os.walk(syncpath, followlinks=True):
-        logger.debug("%s %s %s", root, os_dirs, os_files)
+        logger.debug(f"{root} {os_dirs} {os_files}")
         count += len(os_files)
         if count > 9000:
             return -1
@@ -149,23 +148,6 @@ def delete_lock_files():
         lck_file.unlink(missing_ok=True)
 
 
-def open_file(file: Path, *args, **kwargs):
-    """
-    Wrapper function of Path.open() to guarantee the file exists
-
-    Parameters:
-    file (Path): Path object to the file.
-    *args: Positional arguments to pass to the Path.open() function.
-    **kwargs: Keyword arguments to pass to the Path.open() function.
-
-    Returns:
-    Whatever file.open() returns
-    """
-    file.parent.mkdir(parents=True, exist_ok=True)
-    file.touch(exist_ok=True)
-    return file.open(*args, **kwargs)
-
-
 def get_plugin_log() -> str:
     """
     Retrieves the entire plugin log.
@@ -173,21 +155,8 @@ def get_plugin_log() -> str:
     Returns:
     str: The plugin log.
     """
-    log: str = ""
     with open(decky.DECKY_PLUGIN_LOG) as f:
-        for line in reversed(list(f)):
-            log = line + "\n" + log
-            if "Logger initialized at level" in line.strip():
-                break
-    return log
-
-
-# def mkdir_dest_dir():
-#     """
-#     Creates the destination directory
-#     """
-#     destination_directory = Config.get_config_item("destination_directory")
-#     Popen([str(RCLONE_BIN_PATH), "mkdir", f"backend:{destination_directory}"])
+        return f.read()
 
 
 def getLocalScreenshotPath(user_id: int, screenshot_url: str) -> str:

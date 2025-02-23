@@ -1,6 +1,11 @@
 {
     "log_level": "INFO",
+    "sync_root": "/",
     "destination_directory": "decky-cloud-save",
+    "strict_mode": false,
+    "screenshot_upload_enable": false,
+    "screenshot_destination_directory": "Pictures/Screenshots",
+    "screenshot_delete_after_upload": true,
     "additional_sync_args": [
         "--copy-links",
         "--transfers",
@@ -11,9 +16,5 @@
     "additional_bisync_args": [
         "--conflict-loser",
         "num"
-    ],
-    "sync_root": "/",
-    "screenshot_upload_enable": false,
-    "screenshot_destination_directory": "Pictures/Screenshots",
-    "screenshot_delete_after_upload": true
+    ]
 }
