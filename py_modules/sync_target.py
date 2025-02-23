@@ -17,7 +17,7 @@ PLUGIN_EXCLUDE_ALL_FILTER_PATH = Path(decky.DECKY_PLUGIN_DIR) / "exclude_all.fil
 class _SyncTarget:
     _filter_required = True
     _sync_mode = RcloneSyncMode.COPY
-    _general_filter_file = PLUGIN_CONFIG_DIR / "general.filter"
+    _shared_filter_file = PLUGIN_CONFIG_DIR / "shared.filter"
 
     def __init__(self, id: str):
         self._id = id
@@ -154,7 +154,7 @@ class _SyncTarget:
             arguments.extend(
                 [
                     "--filter-from",
-                    str(self._general_filter_file),
+                    str(self._shared_filter_file),
                     "--filter-from",
                     str(self._target_filter_file),
                     "--filter-from",
@@ -215,8 +215,8 @@ class _SyncTarget:
         match (filter_type):
             case FilterType.TARGET:
                 file = self._target_filter_file
-            case FilterType.GENERAL:
-                file = self._general_filter_file
+            case FilterType.SHARED:
+                file = self._shared_filter_file
 
         if not file.exists():
             return []
@@ -236,8 +236,8 @@ class _SyncTarget:
         match (filter_type):
             case FilterType.TARGET:
                 file = self._target_filter_file
-            case FilterType.GENERAL:
-                file = self._general_filter_file
+            case FilterType.SHARED:
+                file = self._shared_filter_file
 
         str_to_write = "\n".join(
             stripped for path in filters if (stripped := path.strip())

@@ -40,4 +40,4 @@ class FilterType(Enum):
     """
 
     TARGET = True
-    GENERAL = False
+    SHARED = False
