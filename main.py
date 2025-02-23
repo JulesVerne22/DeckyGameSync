@@ -30,20 +30,16 @@ class Plugin:
         logger.debug(f"Executing get_filters_target(app_id={app_id})")
         return get_sync_target(app_id).get_filters(FilterType.TARGET)
 
-    async def get_filters_general(self, app_id: int = 0) -> list[str]:
-        logger.debug(f"Executing get_filters_general(app_id={app_id})")
+    async def get_filters_shared(self, app_id: int = 0) -> list[str]:
+        logger.debug(f"Executing get_filters_shared(app_id={app_id})")
         return get_sync_target(app_id).get_filters(FilterType.SHARED)
 
     async def set_filters_target(self, paths: list[str], app_id: int = 0) -> None:
-        logger.debug(
-            f"Executing set_filters_target(path={paths}, app_id={app_id})"
-        )
+        logger.debug(f"Executing set_filters_target(path={paths}, app_id={app_id})")
         return get_sync_target(app_id).set_filters(FilterType.TARGET)
 
-    async def set_filters_general(self, paths: list[str], app_id: int = 0) -> None:
-        logger.debug(
-            f"Executing set_filters_general(path={paths}, app_id={app_id})"
-        )
+    async def set_filters_shared(self, paths: list[str], app_id: int = 0) -> None:
+        logger.debug(f"Executing set_filters_shared(path={paths}, app_id={app_id})")
         return get_sync_target(app_id).set_filters(FilterType.SHARED)
 
     async def test_syncpath(self, path: str) -> int:

@@ -7,9 +7,9 @@ export const get_backend_type = callable<[], string>("get_backend_type");
 
 // Sync Paths
 export const get_filters_target = callable<[app_id: number], Array<string>>("get_filters_target");
-export const get_filters_general = callable<[app_id: number], Array<string>>("get_filters_general");
+export const get_filters_shared = callable<[app_id: number], Array<string>>("get_filters_shared");
 export const set_filters_target = callable<[paths: Array<string>, app_id: number], void>("set_filters_target");
-export const set_filters_general = callable<[paths: Array<string>, app_id: number], void>("set_filters_general");
+export const set_filters_shared = callable<[paths: Array<string>, app_id: number], void>("set_filters_shared");
 export const test_syncpath = callable<[path: string], number>("test_syncpath");
 
 // Syncing

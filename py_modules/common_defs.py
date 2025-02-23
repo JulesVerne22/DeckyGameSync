@@ -15,6 +15,7 @@ RCLONE_BISYNC_CACHE_DIR = Path(decky.HOME) / ".cache/rclone/bisync"
 
 logger = decky.logger
 
+
 class RcloneSyncMode(Enum):
     """
     Enum representing the different modes of rclone sync operations.
