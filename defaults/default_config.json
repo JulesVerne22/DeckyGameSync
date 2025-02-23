@@ -8,13 +8,10 @@
     "screenshot_delete_after_upload": true,
     "additional_sync_args": [
         "--copy-links",
-        "--transfers",
-        "8",
-        "--checkers",
-        "16"
+        "--transfers", "8",
+        "--checkers", "16"
     ],
     "additional_bisync_args": [
-        "--conflict-loser",
-        "num"
+        "--conflict-loser", "num"
     ]
 }
