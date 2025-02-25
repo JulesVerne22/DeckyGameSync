@@ -2,7 +2,7 @@
   "name": "decky-cloud-save",
   "version": "1.4.2",
   "description": "Manage cloud saves for games that do not support it in [current year].",
-  "packageManager": "pnpm@10.4.1",
+  "packageManager": "pnpm@10.5.0",
   "type": "module",
   "scripts": {
     "build": "rollup -c",
@@ -40,7 +40,7 @@
   "dependencies": {
     "@decky/api": "^1.1.2",
     "@decky/ui": "^4.9.1",
-    "react-icons": "^5.4.0",
+    "react-icons": "^5.5.0",
     "tslib": "^2.8.1"
   },
   "pnpm": {
