@@ -1,10 +1,9 @@
 {
     "log_level": "INFO",
     "sync_root": "/",
-    "destination_directory": "decky-cloud-save",
-    "strict_mode": false,
+    "destination_directory": "cloud-save-fork",
     "screenshot_upload_enable": false,
-    "screenshot_destination_directory": "Pictures/Screenshots",
+    "screenshot_destination_directory": "steam-screenshots",
     "screenshot_delete_after_upload": true,
     "additional_sync_args": [
         "--copy-links",
@@ -13,5 +12,7 @@
     ],
     "additional_bisync_args": [
         "--conflict-loser", "num"
-    ]
+    ],
+    "advanced_options": false,
+    "strict_game_sync": false
 }

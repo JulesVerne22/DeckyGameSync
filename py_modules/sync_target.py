@@ -290,7 +290,7 @@ class GameSyncTarget(_SyncTarget):
         if app_id <= 0:
             raise ValueError(f"Invalid app_id {app_id}, it is required to be > 0")
         super().__init__(str(app_id))
-        if Config.get_config_item("strict_mode"):
+        if Config.get_config_item("strict_game_sync"):
             self._sync_mode = RcloneSyncMode.SYNC
 
 

@@ -21,3 +21,11 @@ declare module "*.jpg" {
   const content: string;
   export default content;
 }
+
+/**
+ * Represents the content of a CSS file.
+ */
+declare module '*.css' {
+	const content: string;
+	export default content;
+}

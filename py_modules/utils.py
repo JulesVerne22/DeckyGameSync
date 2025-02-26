@@ -95,14 +95,14 @@ def send_signal(pid: int, signal: signal.Signals):
     """
     try:
         os.kill(pid, signal)
-        logger.debug(f"Process {pid} received signal {signal}")
+        logger.debug(f"Process {pid} received signal {signal.name}")
 
         child_pids = _get_process_tree(pid)
         for child_pid in child_pids:
             send_signal(child_pid, signal)
 
     except Exception as e:
-        logger.warning(f"Error sending signal {signal} to process {pid}: {e}")
+        logger.warning(f"Error sending signal {signal.name} to process {pid}: {e}")
 
 
 def test_syncpath(syncpath: str):

@@ -3,7 +3,7 @@
     "outDir": "dist",
     "module": "ESNext",
     "target": "ES2020",
-    "jsx": "react",
+    "jsx": "react-jsx",
     "jsxFactory": "window.SP_REACT.createElement",
     "jsxFragmentFactory": "window.SP_REACT.Fragment",
     "declaration": false,

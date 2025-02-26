@@ -2,20 +2,13 @@ import Plugin from "./json/plugin.json"
 import { definePlugin } from "@decky/api";
 import { FaSave } from "react-icons/fa";
 
-import * as ApiClient from "./helpers/apiClient";
+import ApiClient from "./helpers/apiClient";
+import { Content } from "./pages/quickAccessMenu";
 // import { Content } from "./pages/RenderDCSMenu";
 // import ConfigurePathsPage from "./pages/ConfigurePathsPage";
 // import ConfigureBackendPage from "./pages/ConfigureBackendPage";
 // import RenderSyncLogPage from "./pages/RenderSyncLogPage";
 // import RenderPluginLogPage from "./pages/RenderPluginLogPage";
-
-function Content() {
-  return (
-    <div>
-      <h1>DCS Server Plugin</h1>
-    </div>
-  );
-}
 
 export default definePlugin(() => {
   const registrationArray: Array<Unregisterable> = [];
