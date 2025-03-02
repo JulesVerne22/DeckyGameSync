@@ -11,7 +11,7 @@ interface LogViewProps {
   getLog: () => Promise<string>;
 }
 
-export default async function LogView({ title, getLog, children }: PropsWithChildren<LogViewProps>) {
+export default function LogView({ title, getLog, children }: PropsWithChildren<LogViewProps>) {
   const [logContent, setLogContent] = useState('');
   const logPreRef = useRef<HTMLPreElement>(null);
 
@@ -20,12 +20,10 @@ export default async function LogView({ title, getLog, children }: PropsWithChil
   }, []);
 
   useEffect(() => {
-    if (logPreRef.current) {
-      logPreRef.current.scrollTo({
-        top: logPreRef.current.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
+    logPreRef.current?.scrollTo({
+      top: logPreRef.current.scrollHeight,
+      behavior: 'smooth'
+    });
   }, [logContent]);
 
   return (
