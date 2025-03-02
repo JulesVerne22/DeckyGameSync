@@ -1,6 +1,7 @@
+import { ReactNode } from "react";
 import { ConfirmModal, showModal, TextField } from "@decky/ui";
 
-export function textInputPopup(title: string, value: string, onOK: (value: string) => void) {
+export function textInputPopup(title: ReactNode, value: string, onOK: (value: string) => void) {
   let textFieldValue = value;
 
   showModal(
@@ -16,8 +17,7 @@ export function textInputPopup(title: string, value: string, onOK: (value: strin
   );
 }
 
-
-export function confirmPopup(title: string, text: string, onOK?: () => void) {
+export function confirmPopup(title: ReactNode, text: ReactNode, onOK?: () => void) {
   showModal(
     <ConfirmModal
       strTitle={title}

@@ -3,7 +3,6 @@ import decky
 from pathlib import Path
 from enum import Enum
 
-STR_ENCODING = "utf-8"
 RCLONE_PORT = 53682
 
 PLUGIN_DEFAULT_CONFIG_PATH = Path(decky.DECKY_PLUGIN_DIR) / "default_config.json"

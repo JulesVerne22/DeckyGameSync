@@ -1,47 +1,12 @@
 import decky
 
-from asyncio import sleep
-from asyncio.subprocess import Process
+import socket
 from subprocess import Popen, PIPE
 from pathlib import Path
-import os, signal, re
+import os, signal
 
 from common_defs import *
 from config import Config
-
-
-def kill_previous_spawn(process: Process):
-    """
-    Kills the previous spawned process.
-
-    Parameters:
-    process (asyncio.subprocess.Process): The process to be killed.
-    """
-    if process and process.returncode is None:
-        logger.warning("Killing previous Process")
-
-        process.kill()
-
-        sleep(0.1)  # Give time for OS to clear up the port
-
-
-async def get_url_from_rclone_process(process: Process):
-    """
-    Extracts the URL from the stderr of the rclone process.
-
-    Parameters:
-    process (asyncio.subprocess.Process): The rclone process.
-
-    Returns:
-    str: The URL extracted from the process output.
-    """
-    while True:
-        line = (await process.stderr.readline()).decode()
-        url_re_match = re.search(
-            f"(http:\/\/127\.0\.0\.1:{RCLONE_PORT}\/auth\?state=.*)\\n$", line
-        )
-        if url_re_match:
-            return url_re_match.group(1)
 
 
 def is_port_in_use(port: int) -> bool:
@@ -54,8 +19,6 @@ def is_port_in_use(port: int) -> bool:
     Returns:
     bool: True if the port is in use, False otherwise.
     """
-    import socket
-
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(("localhost", port)) == 0
 

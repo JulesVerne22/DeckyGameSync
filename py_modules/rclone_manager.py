@@ -10,7 +10,7 @@ class RcloneManager:
     current_spawn: Process | None = None
 
     @classmethod
-    def spawn(cls, cloud_type: str) -> str:
+    async def spawn(cls, cloud_type: str) -> str:
         """
         Spawns a new rclone process with the specified cloud type.
 
@@ -20,20 +20,60 @@ class RcloneManager:
         Returns:
         str: The URL for authentication.
         """
-        decky.logger.info("Updating rclone.conf")
+        logger.info("Updating rclone.conf")
 
-        kill_previous_spawn(cls.current_spawn)
+        cls.kill_current_spawn()
         if is_port_in_use(RCLONE_PORT):
             raise Exception("RCLONE_PORT_IN_USE")
 
-        cls.current_spawn = create_subprocess_exec(
-            str(RCLONE_BIN_PATH), *(["config", "create", "cloud", cloud_type]), stderr=PIPE
+        cls.current_spawn = await create_subprocess_exec(
+            str(RCLONE_BIN_PATH),
+            *(["config", "create", "cloud", cloud_type]),
+            stderr=PIPE,
         )
 
-        url = get_url_from_rclone_process(cls.current_spawn)
-        decky.logger.info("Login URL: %s", url)
-
+        url = await cls.get_url_from_rclone_process()
+        logger.debug(f"Login URL: {url}")
         return url
+
+    @classmethod
+    def kill_current_spawn(cls):
+        """
+        Kills the previous spawned process.
+
+        Parameters:
+        process (asyncio.subprocess.Process): The process to be killed.
+        """
+        if cls.current_spawn and cls.current_spawn.returncode is None:
+            logger.warning("Killing previous Process")
+            cls.current_spawn.kill()
+            sleep(0.1)  # Give time for OS to clear up the port
+            cls.current_spawn = None
+
+    @classmethod
+    async def get_url_from_rclone_process(cls):
+        """
+        Extracts the URL from the stderr of the rclone process.
+
+        Parameters:
+        process (asyncio.subprocess.Process): The rclone process.
+
+        Returns:
+        str: The URL extracted from the process output.
+        """
+        for _ in range(5):
+            line = (await cls.current_spawn.stderr.readline()).decode()
+            logger.debug(f"Rclone output: {line}")
+            if url_re_match := re.search(
+                rf"http://127.0.0.1:\d+/auth\?state=.*", line
+            ):
+                return url_re_match.group(0)
+
+        logger.warning(
+            f"Failed to extract URL from rclone process, current output: {await cls.current_spawn.stderr.read().decode()}"
+        )
+        cls.kill_current_spawn()
+        return ""
 
     @classmethod
     def probe(cls) -> int:
@@ -59,13 +99,6 @@ class RcloneManager:
         try:
             with RCLONE_CFG_PATH.open("r") as f:
                 l = f.readlines()
-                return l[1].strip().split(' ')[-1]
+                return l[1].strip().split(" ")[-1]
         except:
             return ""
-
-    @classmethod
-    def cleanup(cls):
-        """
-        Cleans up the resources.
-        """
-        kill_previous_spawn(cls.current_spawn)

@@ -1,0 +1,92 @@
+import { ReactNode, useEffect, useState } from "react";
+import { ImOnedrive, ImDropbox, ImHome, ImGoogleDrive } from "react-icons/im";
+import { BsGearFill, BsPatchQuestionFill } from "react-icons/bs";
+import { ButtonItem, Navigation, PanelSection, PanelSectionRow, sleep } from "@decky/ui";
+import Container from "../components/container";
+import ApiClient from "../helpers/apiClient";
+import { spawn, spawn_probe } from "../helpers/backend";
+import RoutePage from "../components/routePage";
+import { confirmPopup } from "../components/popups";
+
+async function openConfig(cloud: "onedrive" | "drive" | "dropbox") {
+  const url = await spawn(cloud);
+  async () => {
+    let count = 0; // For timeout in case user forgor 💀
+    while (count < 10_000 /* approx 1h */) {
+      if (await spawn_probe() === 0) {
+        Navigation.NavigateBack();
+        break;
+      }
+      await sleep(360);
+    }
+  };
+  Navigation.CloseSideMenus();
+  Navigation.NavigateToExternalWeb(url);
+}
+
+class ConfigCloudPage extends RoutePage {
+  readonly route = "cinfig-cloud-page";
+
+  render(): ReactNode {
+    const [provider, setProvider] = useState<string>("N/A");
+
+    useEffect(() => {
+      ApiClient.getCloudBackend().then((cloud) => {
+        if (cloud) {
+          setProvider(cloud);
+        } else {
+          setProvider("N/A");
+        }
+      })
+    }, []);
+
+    return (
+      <Container title="Configure Cloud Storage Provider">
+        <PanelSection>
+          <strong>Currently using: {provider}</strong>
+        </PanelSection>
+        <PanelSection>
+          <small>Click one of the providers below to configure the backup destination</small>
+          <PanelSectionRow>
+            <ButtonItem onClick={() => openConfig("onedrive")} icon={<ImOnedrive />} label="OneDrive">
+              <BsGearFill />
+            </ButtonItem>
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <ButtonItem
+              onClick={() => openConfig("drive")}
+              icon={<ImGoogleDrive />}
+              label="Google Drive (may not work if Google does not trust the Steam Browser)"
+            >
+              <BsGearFill />
+            </ButtonItem>
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <ButtonItem onClick={() => openConfig("dropbox")} icon={<ImDropbox />} label="Dropbox">
+              <BsGearFill />
+            </ButtonItem>
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <ButtonItem
+              onClick={() =>
+                confirmPopup("Adding Other Providers",
+                  <span style={{ whiteSpace: "pre-wrap" }}>
+                    In addition to the 2 providers listed above, others can also be configured. Unfortunately, setup for them can only be done in desktop mode.<br/><br/>
+                    Some providers (such as Google Drive) will have install scripts ready for your convenience. For those, simply run the install script found in the plugin install directory (default: /home/deck/homebrew/plugins/decky-cloud-save/quickstart/).<br/><br/>
+                    For all other providers read instructions found in the README.md.
+                  </span>
+                )}
+              icon={<ImHome />}
+              label="Other (Advanced)"
+            >
+              <BsPatchQuestionFill />
+            </ButtonItem>
+          </PanelSectionRow>
+        </PanelSection>
+      </Container >
+    );
+  }
+}
+
+const configCloudPage = new ConfigCloudPage();
+export default configCloudPage;

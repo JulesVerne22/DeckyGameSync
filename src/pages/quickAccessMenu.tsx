@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
 import { FaFileUpload, FaPlug, FaSave } from "react-icons/fa";
-// import { FiEdit3 } from "react-icons/fi";
-// import { AiOutlineCloudUpload } from "react-icons/ai";
+import { BiSolidCloudUpload } from "react-icons/bi";
 import { ButtonItem, PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
 // import Styles from "../styles.css";
 import ApiClient, { GLOBAL_SYNC_APP_ID } from "../helpers/apiClient";
 import DeckyStoreButton from "../components/deckyStoreButton";
-import * as Popups from "../components/popups";
-import PluginLogsPage from "./pluginLogsPage";
 import Config from "../helpers/config";
+import * as Popups from "../components/popups";
 import * as Backend from "../helpers/backend";
+import configCloudPage from "./configCloudPage";
+import PluginLogsPage from "./pluginLogsPage";
 
 export function Content() {
   const [auto_global_sync] = useState<boolean>(Config.get("auto_global_sync"));
@@ -53,7 +53,6 @@ export function Content() {
           </ButtonItem>
           {hasProvider === false && <small>{'Cloud Storage Provider is not configured. Please configure it in "Cloud Provider"'}.</small>}
         </PanelSectionRow>
-
         <PanelSectionRow>
           <ToggleField
             disabled={!hasProvider}
@@ -64,6 +63,16 @@ export function Content() {
             }}
           />
         </PanelSectionRow>
+        <PanelSectionRow>
+          <ButtonItem
+            layout="below"
+            onClick={configCloudPage.enter}
+          >
+            <DeckyStoreButton icon={<BiSolidCloudUpload />}>
+              Cloud Provider
+            </DeckyStoreButton>
+          </ButtonItem>
+        </PanelSectionRow>
       </PanelSection>
 
       <PanelSection title="Screenshots">
@@ -71,14 +80,14 @@ export function Content() {
           <ToggleField
             disabled={!hasProvider}
             label="Upload screenshots"
-            checked={screenshot_upload_enable}
+            checked={screenshot_upload_enable && hasProvider}
             onChange={(e) => {
               Config.set("screenshot_upload_enable", e);
               set_screenshot_upload_enable(e); // to trigger re-render
             }}
           />
         </PanelSectionRow>
-        {screenshot_upload_enable && (<>
+        {screenshot_upload_enable && hasProvider && (<>
           <PanelSectionRow>
             <ToggleField
               label="Delete local copy"
@@ -163,9 +172,11 @@ export function Content() {
             onChange={(e) => {
               if (e) {
                 Popups.confirmPopup("Show Advanced Options",
-                  "Advanced options are only for those who understand what they are doing. " +
-                  "Using them without caution may cause unrecoverable data loss! " +
-                  'Click "Confirm" to continue.',
+                  <span>
+                    Advanced options are only for those who understand what they are doing.<br/>
+                    <b>Using them without caution may cause unrecoverable data loss!</b><br/>
+                    Click "Confirm" to continue.
+                  </span>,
                   () => Config.set("advanced_options", true));
               } else {
                 Config.set("advanced_options", false);
@@ -182,9 +193,10 @@ export function Content() {
               onChange={(e) => {
                 if (e) {
                   Popups.confirmPopup("Enable Strict Game Sync",
-                    'This will change rclone to from "COPY" mode to "SYNC" mode, ' +
-                    "which allows it to DELETE ANY FILES on destination (local/cloud) to make it match the source (cloud/local). " +
-                    'Click "Confirm" to continue.',
+                    <span>
+                      This will change rclone to from "COPY" mode to "SYNC" mode, which allows it to <b>DELETE ANY FILES</b> on destination (local/cloud) to make it match the source (cloud/local).<br/>
+                      Click "Confirm" to continue.
+                    </span>,
                     () => Config.set("strict_game_sync", true))
                 } else {
                   Config.set("strict_game_sync", false);

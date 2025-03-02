@@ -193,11 +193,11 @@ class _SyncTarget:
         logger.info(f'Sync for "{self._id}" finished with exit code: {sync_result}')
         if sync_stdcout:
             logger.info(
-                f'Sync for "{self._id}" stdout:\n{sync_stdcout.decode(STR_ENCODING)}'
+                f'Sync for "{self._id}" stdout:\n{sync_stdcout.decode()}'
             )
         if sync_stderr:
             logger.error(
-                f'Sync for "{self._id}" stderr:\n{sync_stderr.decode(STR_ENCODING)}'
+                f'Sync for "{self._id}" stderr:\n{sync_stderr.decode()}'
             )
 
         return sync_result

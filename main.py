@@ -14,7 +14,7 @@ class Plugin:
 
     async def spawn(self, cloud_type: str) -> str:
         logger.debug(f"Executing spawn(cloud_type={cloud_type})")
-        return RcloneManager.spawn(cloud_type)
+        return await RcloneManager.spawn(cloud_type)
 
     async def spawn_probe(self) -> int:
         logger.debug(f"Executing probe()")
@@ -97,10 +97,6 @@ class Plugin:
         logger.debug(f"Executing set_config(key={key}, value={value})")
         Config.set_config(key, value)
 
-    # async def mkdir_dest_dir(self):
-    #     logger.debug(f"Executing cloud_mkdir()")
-    #     utils.mkdir_dest_dir()
-
     # Logger
 
     async def log_debug(self, msg: str) -> None:
@@ -134,7 +130,7 @@ class Plugin:
         logger.debug(f"rclone cfg path: {RCLONE_CFG_PATH}")
 
     async def _unload(self):
-        RcloneManager.cleanup()
+        RcloneManager.kill_current_spawn()
 
     async def _migration(self):
         # plugin_config.migrate()
