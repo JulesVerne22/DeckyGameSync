@@ -165,7 +165,7 @@ export function Content() {
                 Popups.confirmPopup("Show Advanced Options",
                   "Advanced options are only for those who understand what they are doing. " +
                   "Using them without caution may cause unrecoverable data loss! " +
-                  "Click OK to continue.",
+                  'Click "Confirm" to continue.',
                   () => Config.set("advanced_options", true));
               } else {
                 Config.set("advanced_options", false);
@@ -184,7 +184,7 @@ export function Content() {
                   Popups.confirmPopup("Enable Strict Game Sync",
                     'This will change rclone to from "COPY" mode to "SYNC" mode, ' +
                     "which allows it to DELETE ANY FILE on (cloud/local) to make it match the source (local/cloud). " +
-                    "Click OK to continue.",
+                    'Click "Confirm" to continue.',
                     () => Config.set("strict_game_sync", true))
                 } else {
                   Config.set("strict_game_sync", false);
