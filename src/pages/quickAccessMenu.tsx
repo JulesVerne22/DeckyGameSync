@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { FaFileUpload, FaPlug, FaSave } from "react-icons/fa";
+import { BsGearFill } from "react-icons/bs";
 // import { FiEdit3 } from "react-icons/fi";
 // import { AiOutlineCloudUpload } from "react-icons/ai";
-import { ButtonItem, PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
+import { ButtonItem, ConfirmModal, DialogButton, Focusable, PanelSection, PanelSectionRow, showModal, staticClasses, TextField, ToggleField } from "@decky/ui";
 // import Styles from "../styles.css";
 import ApiClient, { GLOBAL_SYNC_APP_ID } from "../helpers/apiClient";
 import DeckyStoreButton from "../components/deckyStoreButton";
@@ -10,6 +11,50 @@ import * as Popups from "../components/popups";
 import PluginLogsPage from "./pluginLogsPage";
 import Config from "../helpers/config";
 import * as Backend from "../helpers/backend";
+
+export function Title() {
+  // const onSettingsClick = () => {
+  //   Navigation.CloseSideMenus();
+  //   Navigation.Navigate("/cssloader/settings");
+  // };
+
+  return (
+    <Focusable
+      style={{
+        display: "flex",
+        padding: "0",
+        width: "100%",
+        boxShadow: "none",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}
+      className={staticClasses.Title}
+    >
+      {/* <style>
+        {`
+        @keyframes onboarding {
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.1);
+          }
+          100% {
+            transform: scale(1);
+          }
+        }
+        `}
+      </style>
+      <div style={{ marginRight: "auto" }}>CSS Loader</div> */}
+      <DialogButton
+        style={{ height: "28px", width: "40px", minWidth: 0, padding: "10px 12px" }}
+        // onClick={onSettingsClick}
+      >
+        <BsGearFill style={{ marginTop: "-4px", display: "block" }} />
+      </DialogButton>
+    </Focusable>
+  );
+}
 
 export function Content() {
   const [auto_global_sync, set_auto_global_sync] = useState<boolean>(Config.get("auto_global_sync"));
@@ -22,20 +67,16 @@ export function Content() {
     Config.set("screenshot_upload_enable", screenshot_upload_enable);
   }, [screenshot_upload_enable]);
 
-  const [screenshot_destination_directory, set_screenshot_destination_directory] = useState<string>(Config.get("screenshot_destination_directory"));
-  useEffect(() => {
-    Config.set("screenshot_destination_directory", screenshot_destination_directory);
-  }, [screenshot_destination_directory]);
-
   const [screenshot_delete_after_upload, set_screenshot_delete_after_upload] = useState<boolean>(Config.get("screenshot_delete_after_upload"));
   useEffect(() => {
     Config.set("screenshot_delete_after_upload", screenshot_delete_after_upload);
   }, [screenshot_delete_after_upload]);
 
   const [advanced_options, set_advanced_options] = useState<boolean>(Config.get("advanced_options"));
-  useEffect(() => {
-    Config.set("advanced_options", advanced_options);
-  }, [advanced_options]);
+  // useEffect(() => {
+  //   console.log('advanced_options changed:', advanced_options);
+  //   Config.set("advanced_options", advanced_options);
+  // }, [advanced_options]);
 
   const [strict_game_sync, set_strict_game_sync] = useState<boolean>(Config.get("strict_game_sync"));
   useEffect(() => {
@@ -44,19 +85,22 @@ export function Content() {
 
   const [hasProvider, setHasProvider] = useState<boolean>(false);
   useEffect(() => {
+    set_advanced_options(Config.get("advanced_options"))
     ApiClient.getCloudBackend().then((e) => setHasProvider(Boolean(e)));
   }, []);
+  const [textFieldValue, setTextFieldValue] = useState("");
 
-  const [syncInProgress, setSyncInProgress] = useState<boolean>((ApiClient.syncTaksQueue.size + ApiClient.syncTaksQueue.pending) <= 0);
-  useEffect(() => {
-    ApiClient.syncTaksQueue.on("add", () => setSyncInProgress(true));
-    ApiClient.syncTaksQueue.on("idle", () => setSyncInProgress(false));
+  const [syncInProgress, _] = useState<boolean>(false);
+  // const [syncInProgress, setSyncInProgress] = useState<boolean>((ApiClient.syncTaksQueue.size + ApiClient.syncTaksQueue.pending) <= 0);
+  // useEffect(() => {
+  //   ApiClient.syncTaksQueue.on("add", () => setSyncInProgress(true));
+  //   ApiClient.syncTaksQueue.on("idle", () => setSyncInProgress(false));
 
-    return () => {
-      ApiClient.syncTaksQueue.off("add");
-      ApiClient.syncTaksQueue.off("idle");
-    };
-  }, []);
+  //   return () => {
+  //     ApiClient.syncTaksQueue.off("add");
+  //     ApiClient.syncTaksQueue.off("idle");
+  //   };
+  // }, []);
 
 
   return (
@@ -91,7 +135,7 @@ export function Content() {
         <PanelSectionRow>
           <ToggleField
             disabled={!hasProvider}
-            label="Upload Screenshot"
+            label="Upload screenshots"
             checked={screenshot_upload_enable}
             onChange={set_screenshot_upload_enable}
           />
@@ -99,7 +143,7 @@ export function Content() {
         {screenshot_upload_enable && (<>
           <PanelSectionRow>
             <ToggleField
-              label="Delete Local Copy"
+              label="Delete local copy"
               checked={screenshot_delete_after_upload}
               onChange={set_screenshot_delete_after_upload}
             />
@@ -108,9 +152,14 @@ export function Content() {
             <ButtonItem
               layout="below"
               onClick={() =>
-                Popups.textInputPopup("Screenshot Upload Destination",
-                  screenshot_destination_directory,
-                  set_screenshot_destination_directory)}
+                showModal(
+                  <ConfirmModal
+                    strTitle="Screenshot Upload Destination"
+                    onOK={() => Config.set("screenshot_destination_directory", textFieldValue)}>
+                    <TextField
+                      defaultValue={Config.get("screenshot_destination_directory")}
+                      onBlur={(e) => setTextFieldValue(e.target.value)} />
+                  </ConfirmModal>)}
             >
               <DeckyStoreButton icon={<FaFileUpload />}>
                 Upload Destination
@@ -146,7 +195,7 @@ export function Content() {
         </PanelSectionRow>
       </PanelSection> */}
 
-      <PanelSection title="Log files">
+      <PanelSection title="Logs">
         <PanelSectionRow>
           <ButtonItem
             layout="below"
@@ -178,11 +227,10 @@ export function Content() {
             checked={advanced_options}
             onChange={(e) => {
               if (e) {
-                Popups.confirmPopup("Show Advanced Options",
-                  "Advanced options are only for those who understand what they are doing. " +
-                  "Using them without caution may cause unrecoverable data loss! " +
-                  "Click OK to continue.",
-                  set_advanced_options)
+                showModal(
+                  <ConfirmModal
+                    strTitle="Show Advanced Options"
+                    onOK={() => Config.set("advanced_options", true)} />);
               } else {
                 set_advanced_options(false);
               }
@@ -200,7 +248,7 @@ export function Content() {
                     'This will change rclone to from "COPY" mode to "SYNC" mode, ' +
                     "which allows it to DELETE ANY FILE on (cloud/local) to make it match the source (local/cloud). " +
                     "Click OK to continue.",
-                    set_strict_game_sync)
+                    () => set_strict_game_sync(true))
                 } else {
                   set_strict_game_sync(false);
                 }

@@ -1,21 +1,23 @@
 import { ReactNode } from "react";
+import Plugin from "../json/plugin.json";
 import { routerHook } from "@decky/api";
 import { Navigation } from "@decky/ui";
 
 export default abstract class RoutePage {
-  abstract readonly routeStr: string;
+  readonly routePrefix:string = `/${Plugin.name.replaceAll(' ', '-').toLowerCase()}/`;
+  abstract readonly route: string;
 
   register(): RoutePage {
-    routerHook.addRoute(this.routeStr, () => this.render(), { exact: true });
+    routerHook.addRoute(this.routePrefix + this.route, () => this.render(), { exact: true });
     return this;
   }
 
   unregister() {
-    routerHook.removeRoute(this.routeStr);
+    routerHook.removeRoute(this.routePrefix + this.route);
   }
 
   enter() {
-    Navigation.Navigate(this.routeStr);
+    Navigation.Navigate(this.routePrefix + this.route);
     Navigation.CloseSideMenus();
   }
 
