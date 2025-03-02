@@ -14,10 +14,10 @@ export function textInputPopup(title: string, value: string, onOK: (value: strin
     </ConfirmModal>)
 }
 
-export function confirmPopup(title: string, text: string, onOK: (value: boolean) => void) {
+export function confirmPopup(title: string, text: string, onOK: () => void) {
   showModal(
     <ConfirmModal
       strTitle={title}
       strDescription={text}
-      onOK={() => onOK(true)} />)
+      onOK={() => onOK()} />)
 }

@@ -1,5 +1,4 @@
 import { LifetimeNotification, Navigation } from "@decky/ui";
-import PQueue from 'p-queue';
 import * as Backend from "./backend";
 import Logger from '../helpers/logger';
 import Toaster from "./toaster";
@@ -8,9 +7,7 @@ import Config from "./config";
 export const GLOBAL_SYNC_APP_ID = 0;
 
 class ApiClient {
-  private syncTaskQueue = new PQueue({ concurrency: 1, autoStart: true });
-  get syncTaksQueue() { return this.syncTaskQueue; }
-
+  private syncInProgress: boolean = false;
 
   public setupScreenshotNotification(): Unregisterable {
     return SteamClient.GameSessions.RegisterForScreenshotNotification(async (e: ScreenshotNotification) => {
@@ -58,23 +55,23 @@ class ApiClient {
       return;
     }
 
-    // if (this.syncInProgress === true) {
-    //   Logger.info(`Sync triggered for target "${appId}" while the previous one is still in progress`);
-    //   let waitCount = 0;
-    //   while (this.syncInProgress === true) {
-    //     await sleep(300);
-    //     // if previous sync takes too long (>= 30 seconds), let the user know
-    //     if ((++waitCount) == 100) {
-    //       Toaster.toast("Waiting for previous sync to finish");
-    //     }
-    //   }
-    // }
+    if (this.syncInProgress === true) {
+      Logger.info(`Sync triggered for target "${appId}" while the previous one is still in progress`);
+      let waitCount = 0;
+      while (this.syncInProgress === true) {
+        // await sleep(300);
+        // if previous sync takes too long (>= 30 seconds), let the user know
+        if ((++waitCount) == 100) {
+          Toaster.toast("Waiting for previous sync to finish");
+        }
+      }
+    }
 
-    // this.syncInProgress = true;
+    this.syncInProgress = true;
     let startTime = new Date().getTime();
     let exitCode = await syncFunction(appId);
     let timeDiff = (new Date().getTime() - startTime) / 1000;
-    // this.syncInProgress = false;
+    this.syncInProgress = false;
 
     if (exitCode == 0 || exitCode == 6) {
       Logger.info(`Sync for "${appId}" finished in ${timeDiff}s`);
@@ -92,17 +89,13 @@ class ApiClient {
   }
 
   public async startSyncUnblocked(syncFunction: (appId: number) => Promise<number>, appId: number) {
-    await this.syncTaksQueue.add(async () => {
-      await this.startSync(syncFunction, appId);
-    });
+    await this.startSync(syncFunction, appId);
   }
 
   public async startSyncBlocked(syncFunction: (appId: number) => Promise<number>, appId: number, pId: number) {
     await Backend.pause_process(pId);
-    await this.syncTaksQueue.add(async () => {
-      await this.startSync(syncFunction, appId);
-      await Backend.resume_process(pId);
-    });
+    await this.startSync(syncFunction, appId);
+    await Backend.resume_process(pId);
   }
 
   /**
