@@ -61,7 +61,7 @@ class RcloneManager:
         Returns:
         str: The URL extracted from the process output.
         """
-        for _ in range(5):
+        for _ in range(2):
             line = (await cls.current_spawn.stderr.readline()).decode()
             logger.debug(f"Rclone output: {line}")
             if url_re_match := re.search(
