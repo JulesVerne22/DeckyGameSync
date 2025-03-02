@@ -1,5 +1,3 @@
-import decky
-
 from asyncio import create_subprocess_exec
 from asyncio.subprocess import Process, PIPE
 

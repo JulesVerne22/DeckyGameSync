@@ -6,6 +6,7 @@ import json
 from settings import SettingsManager
 from common_defs import *
 
+
 class Config():
     _config = SettingsManager("config", decky.DECKY_PLUGIN_SETTINGS_DIR)
     _default_config = dict()
