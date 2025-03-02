@@ -183,7 +183,7 @@ export function Content() {
                 if (e) {
                   Popups.confirmPopup("Enable Strict Game Sync",
                     'This will change rclone to from "COPY" mode to "SYNC" mode, ' +
-                    "which allows it to DELETE ANY FILE on (cloud/local) to make it match the source (local/cloud). " +
+                    "which allows it to DELETE ANY FILES on destination (local/cloud) to make it match the source (cloud/local). " +
                     'Click "Confirm" to continue.',
                     () => Config.set("strict_game_sync", true))
                 } else {
