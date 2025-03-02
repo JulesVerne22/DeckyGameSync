@@ -54,6 +54,10 @@ class ApiClient {
   }
 
   public async startSync(syncFunction: (appId: number) => Promise<number>, appId: number) {
+    if ((appId == GLOBAL_SYNC_APP_ID) && (!Config.get("auto_global_sync"))) {
+      return;
+    }
+
     // if (this.syncInProgress === true) {
     //   Logger.info(`Sync triggered for target "${appId}" while the previous one is still in progress`);
     //   let waitCount = 0;

@@ -2,6 +2,7 @@
     "log_level": "INFO",
     "sync_root": "/",
     "destination_directory": "cloud-save-fork",
+    "auto_global_sync": false,
     "screenshot_upload_enable": false,
     "screenshot_destination_directory": "steam-screenshots",
     "screenshot_delete_after_upload": true,

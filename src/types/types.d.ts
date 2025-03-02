@@ -26,6 +26,6 @@ declare module "*.jpg" {
  * Represents the content of a CSS file.
  */
 declare module '*.css' {
-	const content: string;
-	export default content;
+  const classes: { [key: string]: string };
+  export default classes;
 }

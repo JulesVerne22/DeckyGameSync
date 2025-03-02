@@ -54,11 +54,14 @@ class RcloneManager:
         Retrieves the current backend type from the rclone configuration.
 
         Returns:
-        str: The current backend type.
+        str: The current backend type, empty string if it doesn't exist
         """
-        with RCLONE_CFG_PATH.open("r") as f:
-            l = f.readlines()
-            return l[1].strip().split(' ')[-1]
+        try:
+            with RCLONE_CFG_PATH.open("r") as f:
+                l = f.readlines()
+                return l[1].strip().split(' ')[-1]
+        except:
+            return ""
 
     @classmethod
     def cleanup(cls):
