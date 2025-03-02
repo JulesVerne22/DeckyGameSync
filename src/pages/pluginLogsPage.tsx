@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import RoutePage from "../helpers/routePage";
+import RoutePage from "../components/routePage";
 import LogView from "../components/logView";
 import { get_plugin_log } from "../helpers/backend";
 

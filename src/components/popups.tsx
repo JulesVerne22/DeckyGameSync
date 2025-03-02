@@ -1,8 +1,7 @@
-import { useState } from "react";
 import { ConfirmModal, showModal, TextField } from "@decky/ui";
 
 export function textInputPopup(title: string, value: string, onOK: (value: string) => void) {
-  const [textFieldValue, setTextFieldValue] = useState(value);
+  let textFieldValue = value;
 
   showModal(
     <ConfirmModal
@@ -10,9 +9,13 @@ export function textInputPopup(title: string, value: string, onOK: (value: strin
       onOK={() => onOK(textFieldValue)}>
       <TextField
         defaultValue={value}
-        onBlur={(e) => setTextFieldValue(e.target.value)} />
-    </ConfirmModal>)
+        onBlur={(e) => {
+          textFieldValue = e.target.value;
+        }} />
+    </ConfirmModal>
+  );
 }
+
 
 export function confirmPopup(title: string, text: string, onOK: () => void) {
   showModal(
