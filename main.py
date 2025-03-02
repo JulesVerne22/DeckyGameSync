@@ -12,17 +12,17 @@ class Plugin:
 
     # rclone.conf Setup
 
-    async def spawn(self, backend_type: str) -> str:
-        logger.debug(f"Executing spawn(backend_type={backend_type})")
-        return RcloneManager.spawn(backend_type)
+    async def spawn(self, cloud_type: str) -> str:
+        logger.debug(f"Executing spawn(cloud_type={cloud_type})")
+        return RcloneManager.spawn(cloud_type)
 
     async def spawn_probe(self) -> int:
         logger.debug(f"Executing probe()")
         return RcloneManager.probe()
 
-    async def get_backend_type(self) -> str:
-        logger.debug(f"Executing get_backend_type()")
-        return RcloneManager.get_backend_type()
+    async def get_cloud_type(self) -> str:
+        logger.debug(f"Executing get_cloud_type()")
+        return RcloneManager.get_cloud_type()
 
     # Sync Paths
 

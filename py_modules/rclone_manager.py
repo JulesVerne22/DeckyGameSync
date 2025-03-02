@@ -10,12 +10,12 @@ class RcloneManager:
     current_spawn: Process | None = None
 
     @classmethod
-    def spawn(cls, backend_type: str) -> str:
+    def spawn(cls, cloud_type: str) -> str:
         """
-        Spawns a new rclone process with the specified backend type.
+        Spawns a new rclone process with the specified cloud type.
 
         Parameters:
-        backend_type (str): The type of backend to use.
+        cloud_type (str): The type of cloud to use.
 
         Returns:
         str: The URL for authentication.
@@ -27,7 +27,7 @@ class RcloneManager:
             raise Exception("RCLONE_PORT_IN_USE")
 
         cls.current_spawn = create_subprocess_exec(
-            str(RCLONE_BIN_PATH), *(["config", "create", "backend", backend_type]), stderr=PIPE
+            str(RCLONE_BIN_PATH), *(["config", "create", "cloud", cloud_type]), stderr=PIPE
         )
 
         url = get_url_from_rclone_process(cls.current_spawn)
@@ -49,12 +49,12 @@ class RcloneManager:
         return cls.current_spawn.returncode
 
     @classmethod
-    def get_backend_type(cls) -> str:
+    def get_cloud_type(cls) -> str:
         """
-        Retrieves the current backend type from the rclone configuration.
+        Retrieves the current cloud type from the rclone configuration.
 
         Returns:
-        str: The current backend type, empty string if it doesn't exist
+        str: The current cloud type, empty string if it doesn't exist
         """
         try:
             with RCLONE_CFG_PATH.open("r") as f:

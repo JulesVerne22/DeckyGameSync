@@ -99,20 +99,22 @@ class ApiClient {
   }
 
   /**
-   * Retrieves the cloud backend type.
-   * @returns A string representing the cloud backend type.
+   * Retrieves the cloud cloud type.
+   * @returns A string representing the cloud cloud type.
    */
   public async getCloudBackend(): Promise<string> {
-    const backend_type = await Backend.get_backend_type();
-    switch (backend_type) {
-      case "onedrive\n":
+    const cloud_type = await Backend.get_cloud_type();
+    switch (cloud_type) {
+      case "":
+        return "";
+      case "onedrive":
         return "OneDrive";
-      case "drive\n":
+      case "drive":
         return "Google Drive";
-      case "dropbox\n":
+      case "dropbox":
         return "Dropbox";
       default:
-        return "Other: " + backend_type;
+        return "Other: " + cloud_type;
     }
   }
 }

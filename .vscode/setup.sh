@@ -31,7 +31,7 @@ if [[ "$PNPM_INSTALLED" =~ "which" ]]; then
 fi
 
 if [[ "$DOCKER_INSTALLED" =~ "which" ]]; then
-    echo "Docker is not currently installed, in order build plugins with a backend you will need to have Docker installed. Please install Docker via the preferred method for your distribution."
+    echo "Docker is not currently installed, in order build plugins with a cloud you will need to have Docker installed. Please install Docker via the preferred method for your distribution."
 fi
 
 if ! test -f "$CLI_INSTALLED"; then

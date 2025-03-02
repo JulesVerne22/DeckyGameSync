@@ -126,9 +126,9 @@ class _SyncTarget:
         if (winner == RcloneSyncWinner.CLOUD) and (
             self._sync_mode != RcloneSyncMode.BISYNC
         ):
-            return f"backend:{destination_dir}", sync_root
+            return f"cloud:{destination_dir}", sync_root
         else:
-            return sync_root, f"backend:{destination_dir}"
+            return sync_root, f"cloud:{destination_dir}"
 
     async def _rclone_execute(
         self, winner: RcloneSyncWinner, extra_args: list[str] = []
@@ -324,7 +324,7 @@ class ScreenshotSyncTarget(_SyncTarget):
 
         return (
             str(self._screenshot_path),
-            f"backend:{destination}",
+            f"cloud:{destination}",
         )
 
     def _get_rclone_log_path(self) -> Path:

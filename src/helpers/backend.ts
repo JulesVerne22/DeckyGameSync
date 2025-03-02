@@ -3,7 +3,7 @@ import { callable } from "@decky/api"
 // rclone.conf Setup
 export const spawn = callable<[backend_type: string], string>("spawn");
 export const spawn_probe = callable<[], number>("spawn_probe");
-export const get_backend_type = callable<[], string>("get_backend_type");
+export const get_cloud_type = callable<[], string>("get_cloud_type");
 
 // Sync Paths
 export const get_filters_target = callable<[app_id: number], Array<string>>("get_filters_target");
