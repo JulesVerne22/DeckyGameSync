@@ -22,12 +22,15 @@ export function Content() {
 
   const [syncInProgress, setSyncInProgress] = useState<boolean>(SyncTaskQeueue.busy);
   const [hasProvider, setHasProvider] = useState<boolean>(false);
+
   useEffect(() => {
     get_cloud_type().then((e) => setHasProvider(Boolean(e)));
-    SyncTaskQeueue.on(SyncTaskQeueue.events.BUSY, setSyncInProgress);
+
+    const syncInProgressUpdateHandler = ((event: CustomEvent) => setSyncInProgress(event.detail)) as EventListener;
+    SyncTaskQeueue.addEventListener(SyncTaskQeueue.events.BUSY, syncInProgressUpdateHandler);
 
     return () => {
-      SyncTaskQeueue.off(SyncTaskQeueue.events.BUSY, setSyncInProgress);
+      SyncTaskQeueue.removeEventListener(SyncTaskQeueue.events.BUSY, syncInProgressUpdateHandler);
     }
   }, []);
 
@@ -43,8 +46,8 @@ export function Content() {
             }}
           >
             {/* <DeckyStoreButton icon={<FaSave className={syncInProgress ? Styles.cloudSaveForkRotatingIcon : ""} />}> */}
-            <DeckyStoreButton icon={<FaSave/>}>
-            Sync Now
+            <DeckyStoreButton icon={<FaSave />}>
+              Sync Now
             </DeckyStoreButton>
           </ButtonItem>
           {hasProvider === false && <small>{'Cloud Storage Provider is not configured. Please configure it in "Cloud Provider"'}.</small>}
@@ -129,7 +132,7 @@ export function Content() {
             layout="below"
             onClick={PluginLogsPage.enter}
           >
-            <DeckyStoreButton icon={<FaPlug/>}>Plugin Log</DeckyStoreButton>
+            <DeckyStoreButton icon={<FaPlug />}>Plugin Log</DeckyStoreButton>
           </ButtonItem>
         </PanelSectionRow>
       </PanelSection>
@@ -144,7 +147,7 @@ export function Content() {
                 Popups.confirmPopup("Show Advanced Options",
                   <span>
                     Advanced options are only for those who understand what they are doing.<br />
-                    <b>Using them without caution may cause unrecoverable data loss!</b><br />
+                    <b>Using them without caution may cause unrecoverable data loss!</b><br /><br />
                     Click "Confirm" to continue.
                   </span>,
                   () => Config.set("advanced_options", true));
@@ -164,7 +167,7 @@ export function Content() {
                 if (e) {
                   Popups.confirmPopup("Enable Strict Game Sync",
                     <span>
-                      This will change rclone to from "COPY" mode to "SYNC" mode, which allows it to <b>DELETE ANY FILES</b> on destination (local/cloud) to make it match the source (cloud/local).<br />
+                      This will change rclone to from "COPY" mode to "SYNC" mode, which allows it to <b>DELETE ANY FILES</b> on destination (local/cloud) to make it match the source (cloud/local).<br /><br />
                       Click "Confirm" to continue.
                     </span>,
                     () => Config.set("strict_game_sync", true))

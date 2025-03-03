@@ -85,9 +85,8 @@ class ConfigCloudPage extends RoutePage {
               onClick={() =>
                 confirmPopup("Adding Other Providers",
                   <span style={{ whiteSpace: "pre-wrap" }}>
-                    In addition to the 2 providers listed above, others can also be configured. Unfortunately, setup for them can only be done in desktop mode.<br/><br/>
-                    Some providers (such as Google Drive) will have install scripts ready for your convenience. For those, simply run the install script found in the plugin install directory (default: /home/deck/homebrew/plugins/decky-cloud-save/quickstart/).<br/><br/>
-                    For all other providers read instructions found in the README.md.
+                    In addition to the providers listed above, others can also be configured. Unfortunately, setup for them can only be done in desktop mode.<br />
+                    Please refer to rclone config documents (<a href="https://rclone.org/flags/#config">https://rclone.org/flags/#config</a>) for more information.
                   </span>
                 )}
               icon={<ImHome />}

@@ -1,4 +1,3 @@
-import { EventEmitter } from "stream";
 import fastq from "fastq";
 import type { queueAsPromised } from "fastq";
 import { Navigation } from "@decky/ui";
@@ -18,7 +17,7 @@ async function worker(fn: () => Promise<number>): Promise<number | undefined> {
   return undefined;
 }
 
-class SyncTaskQueue extends EventEmitter {
+class SyncTaskQueue extends EventTarget {
   public readonly events = {
     BUSY: 'busy'
   }
@@ -31,7 +30,7 @@ class SyncTaskQueue extends EventEmitter {
     this.queue = fastq.promise(worker, 1)
     this.queue.drain = () => {
       Logger.debug("All tasks finished")
-      this.emit(this.events.BUSY, false);
+      this.dispatchEvent(new CustomEvent(this.events.BUSY, { detail: false }));
     };
     this.updateAvailableSyncTargets();
   }
@@ -41,7 +40,10 @@ class SyncTaskQueue extends EventEmitter {
   }
 
   public async addSyncTask(syncFunction: (appId: number) => Promise<number>, appId: number, pId?: number) {
-    if (appId in this.availableSyncTargets) {
+    console.log("Adding sync task for", appId);
+    console.log("Available targets:", this.availableSyncTargets);
+    console.log("PID:", pId);
+    if (this.availableSyncTargets.has(appId)) {
       if (pId) {
         await pause_process(pId);
       }
@@ -90,7 +92,7 @@ class SyncTaskQueue extends EventEmitter {
   private async pushTask(fn: () => Promise<number>): Promise<number | undefined> {
     if (this.queue.idle()) {
       Logger.debug("Starting task");
-      this.emit(this.events.BUSY, true);
+      this.dispatchEvent(new CustomEvent(this.events.BUSY, { detail: true }));
     }
     return await this.queue.push(fn);
   }

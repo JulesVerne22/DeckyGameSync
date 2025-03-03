@@ -147,6 +147,9 @@ class _SyncTarget:
             logger.info(f'No filter for sync "{self._id}"')
             return 0
 
+        if not self._shared_filter_file.exists():
+            self._shared_filter_file.touch(exist_ok=True)
+
         arguments = [self._sync_mode.value]
         arguments.extend(self._get_sync_paths(winner))
 
