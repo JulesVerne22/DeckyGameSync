@@ -3,7 +3,9 @@ import { FaFileUpload, FaPlug, FaSave } from "react-icons/fa";
 import { BiSolidCloudUpload } from "react-icons/bi";
 import { ButtonItem, PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
 // import Styles from "../styles.css";
-import ApiClient, { GLOBAL_SYNC_APP_ID } from "../helpers/apiClient";
+import * as Defs from "../helpers/commonDefs";
+import SyncTaskQeueue from "../helpers/syncTaskQueue";
+import { get_cloud_type } from "../helpers/backend";
 import DeckyStoreButton from "../components/deckyStoreButton";
 import Config from "../helpers/config";
 import * as Popups from "../components/popups";
@@ -18,23 +20,16 @@ export function Content() {
   const [advanced_options, set_advanced_options] = useState<boolean>(Config.get("advanced_options"));
   const [strict_game_sync] = useState<boolean>(Config.get("strict_game_sync"));
 
-
+  const [syncInProgress, setSyncInProgress] = useState<boolean>(true);
   const [hasProvider, setHasProvider] = useState<boolean>(false);
   useEffect(() => {
-    ApiClient.getCloudBackend().then((e) => setHasProvider(Boolean(e)));
+    get_cloud_type().then((e) => setHasProvider(Boolean(e)));
+    SyncTaskQeueue.on(SyncTaskQeueue.events.BUSY, setSyncInProgress);
+
+    return () => {
+      SyncTaskQeueue.off(SyncTaskQeueue.events.BUSY, setSyncInProgress);
+    }
   }, []);
-
-  const [syncInProgress] = useState<boolean>(false);
-  // const [syncInProgress, setSyncInProgress] = useState<boolean>((ApiClient.syncTaksQueue.size + ApiClient.syncTaksQueue.pending) <= 0);
-  // useEffect(() => {
-  //   ApiClient.syncTaksQueue.on("add", () => setSyncInProgress(true));
-  //   ApiClient.syncTaksQueue.on("idle", () => setSyncInProgress(false));
-
-  //   return () => {
-  //     ApiClient.syncTaksQueue.off("add");
-  //     ApiClient.syncTaksQueue.off("idle");
-  //   };
-  // }, []);
 
   return (
     <>
@@ -44,12 +39,13 @@ export function Content() {
             layout="below"
             disabled={syncInProgress || (!hasProvider)}
             onClick={() => {
-              ApiClient.startSyncUnblocked(Backend.sync_cloud_first, GLOBAL_SYNC_APP_ID);
+              SyncTaskQeueue.addSyncTask(Backend.sync_cloud_first, Defs.GLOBAL_SYNC_APP_ID);
             }}
           >
-            {/* <DeckyStoreButton icon={<FaSave className={syncInProgress ? Styles.cloudSaveForkRotatingIcon : ""} />}>
-              Sync Now
-            </DeckyStoreButton> */}
+            {/* <DeckyStoreButton icon={<FaSave className={syncInProgress ? Styles.cloudSaveForkRotatingIcon : ""} />}> */}
+            <DeckyStoreButton icon={<FaSave/>}>
+            Sync Now
+            </DeckyStoreButton>
           </ButtonItem>
           {hasProvider === false && <small>{'Cloud Storage Provider is not configured. Please configure it in "Cloud Provider"'}.</small>}
         </PanelSectionRow>
@@ -173,8 +169,8 @@ export function Content() {
               if (e) {
                 Popups.confirmPopup("Show Advanced Options",
                   <span>
-                    Advanced options are only for those who understand what they are doing.<br/>
-                    <b>Using them without caution may cause unrecoverable data loss!</b><br/>
+                    Advanced options are only for those who understand what they are doing.<br />
+                    <b>Using them without caution may cause unrecoverable data loss!</b><br />
                     Click "Confirm" to continue.
                   </span>,
                   () => Config.set("advanced_options", true));
@@ -194,7 +190,7 @@ export function Content() {
                 if (e) {
                   Popups.confirmPopup("Enable Strict Game Sync",
                     <span>
-                      This will change rclone to from "COPY" mode to "SYNC" mode, which allows it to <b>DELETE ANY FILES</b> on destination (local/cloud) to make it match the source (cloud/local).<br/>
+                      This will change rclone to from "COPY" mode to "SYNC" mode, which allows it to <b>DELETE ANY FILES</b> on destination (local/cloud) to make it match the source (cloud/local).<br />
                       Click "Confirm" to continue.
                     </span>,
                     () => Config.set("strict_game_sync", true))

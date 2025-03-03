@@ -11,13 +11,11 @@ export default abstract class RoutePage {
     return `/${this.routePrefix}/${this.route}`;
   }
 
-  public register = (): RoutePage => {
+  public register = (): Unregisterable => {
     routerHook.addRoute(this.fullRoute, this.render, { exact: true });
-    return this;
-  }
-
-  public unregister = (): void => {
-    routerHook.removeRoute(this.fullRoute);
+    return {
+      unregister: () => routerHook.removeRoute(this.fullRoute)
+    };
   }
 
   public enter = (): void => {

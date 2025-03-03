@@ -1,4 +1,4 @@
-import { call, callable } from "@decky/api"
+import { callable } from "@decky/api"
 
 // rclone.conf Setup
 export const spawn = callable<[backend_type: string], string>("spawn");
