@@ -1,10 +1,8 @@
 {
     "log_level": "INFO",
-    "sync_root": "/",
-    "destination_directory": "cloud-save-fork",
     "auto_global_sync": false,
     "screenshot_upload_enable": false,
-    "screenshot_destination_directory": "steam-screenshots",
+    "screenshot_upload_destination": "steam-screenshots",
     "screenshot_delete_after_upload": true,
     "additional_sync_args": [
         "--copy-links",
@@ -15,5 +13,7 @@
         "--conflict-loser", "num"
     ],
     "advanced_options": false,
-    "strict_game_sync": false
+    "strict_game_sync": false,
+    "sync_root": "/",
+    "sync_destination": "cloud-save-fork"
 }

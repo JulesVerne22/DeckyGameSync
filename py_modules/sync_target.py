@@ -119,16 +119,16 @@ class _SyncTarget:
         Returns:
         tuple[str, str]: A tuple containing the source sync path and destination sync path.
         """
-        sync_root, destination_dir = Config.get_config_items(
-            "sync_root", "destination_directory"
+        sync_root, sync_dest = Config.get_config_items(
+            "sync_root", "sync_destination"
         )
 
         if (winner == RcloneSyncWinner.CLOUD) and (
             self._sync_mode != RcloneSyncMode.BISYNC
         ):
-            return f"cloud:{destination_dir}", sync_root
+            return f"cloud:{sync_dest}", sync_root
         else:
-            return sync_root, f"cloud:{destination_dir}"
+            return sync_root, f"cloud:{sync_dest}"
 
     async def _rclone_execute(
         self, winner: RcloneSyncWinner, extra_args: list[str] = []
@@ -323,7 +323,7 @@ class ScreenshotSyncTarget(_SyncTarget):
         Returns:
         tuple[str, str]: A tuple containing the source sync path and destination sync path.
         """
-        destination = Config.get_config_item("screenshot_destination_directory")
+        destination = Config.get_config_item("screenshot_upload_destination")
 
         return (
             str(self._screenshot_path),

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { FaFileUpload, FaPlug, FaSave } from "react-icons/fa";
 import { BiSolidCloudUpload } from "react-icons/bi";
 import { ButtonItem, PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
-// import Styles from "../styles.css";
 import * as Defs from "../helpers/commonDefs";
 import SyncTaskQeueue from "../helpers/syncTaskQueue";
 import { get_cloud_type } from "../helpers/backend";
@@ -45,8 +44,21 @@ export function Content() {
               SyncTaskQeueue.addSyncTask(Backend.sync_cloud_first, Defs.GLOBAL_SYNC_APP_ID);
             }}
           >
-            {/* <DeckyStoreButton icon={<FaSave className={syncInProgress ? Styles.cloudSaveForkRotatingIcon : ""} />}> */}
-            <DeckyStoreButton icon={<FaSave />}>
+            <style>{`
+              .cloudSaveForkRotatingIcon {
+                animation: cloudSaveForkRotatingIconAnimation 1s infinite cubic-bezier(0.46, 0.03, 0.52, 0.96);
+              }
+              @keyframes cloudSaveForkRotatingIconAnimation {
+                from {
+                  transform: rotate(0deg);
+                }
+                to {
+                  transform: rotate(360deg);
+                }
+              }
+            `}
+            </style>
+            <DeckyStoreButton icon={<FaSave className={syncInProgress ? "cloudSaveForkRotatingIcon" : ""} />}>
               Sync Now
             </DeckyStoreButton>
           </ButtonItem>
@@ -91,8 +103,8 @@ export function Content() {
               layout="below"
               onClick={() =>
                 Popups.textInputPopup("Screenshot Upload Destination",
-                  Config.get("screenshot_destination_directory"),
-                  (e) => Config.set("screenshot_destination_directory", e))}
+                  Config.get("screenshot_upload_destination"),
+                  (e) => Config.set("screenshot_upload_destination", e))}
             >
               <DeckyStoreButton icon={<FaFileUpload />}>
                 Upload Destination
@@ -167,7 +179,7 @@ export function Content() {
                 if (e) {
                   Popups.confirmPopup("Enable Strict Game Sync",
                     <span>
-                      This will change rclone to from "COPY" mode to "SYNC" mode, which allows it to <b>DELETE ANY FILES</b> on destination (local/cloud) to make it match the source (cloud/local).<br /><br />
+                      This will change rclone to from "COPY" mode to "SYNC" mode when doing game sync, which allows it to <b>DELETE ANY FILES</b> on destination (local/cloud) to make it match the source (cloud/local).<br /><br />
                       Click "Confirm" to continue.
                     </span>,
                     () => Config.set("strict_game_sync", true))
@@ -176,6 +188,62 @@ export function Content() {
                 }
               }}
             />
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <ButtonItem
+              layout="below"
+              onClick={() =>
+                Popups.textInputPopup("Global & Game Sync Root",
+                  Config.get("sync_root"),
+                  (e) => {
+                    if (e != Config.get("sync_root")) {
+                      if (Config.get("strict_game_sync")) {
+                        Popups.confirmPopup("Modify Sync Root",
+                          <span>
+                            You are modifying the sync root with "Strict Game Sync" enabled.<br />
+                            Please make sure all the data are aligned in local and cloud, otherwise data may be lost or even <b>fully deleted</b>!<br /><br />
+                            Click "Confirm" to continue.
+                          </span>,
+                          () => Config.set("sync_root", e)
+                        )
+                      } else {
+                        Config.set("sync_root", e);
+                      }
+                    }
+                  })}
+            >
+              <DeckyStoreButton icon={<FaFileUpload />}>
+                Sync Root
+              </DeckyStoreButton>
+            </ButtonItem>
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <ButtonItem
+              layout="below"
+              onClick={() =>
+                Popups.textInputPopup("Global & Game Sync Destination",
+                  Config.get("sync_destination"),
+                  (e) => {
+                    if (e != Config.get("sync_destination")) {
+                      if (Config.get("strict_game_sync")) {
+                        Popups.confirmPopup("Modify Sync Destination",
+                          <span>
+                            You are modifying the sync destination with "Strict Game Sync" enabled.<br />
+                            Please make sure all the data are aligned in local and cloud, otherwise data may be lost or even <b>fully deleted</b>!<br /><br />
+                            Click "Confirm" to continue.
+                          </span>,
+                          () => Config.set("sync_destination", e)
+                        )
+                      } else {
+                        Config.set("sync_destination", e);
+                      }
+                    }
+                  })}
+            >
+              <DeckyStoreButton icon={<FaFileUpload />}>
+                Sync Destination
+              </DeckyStoreButton>
+            </ButtonItem>
           </PanelSectionRow>
         </>)}
       </PanelSection>

@@ -1,5 +1,7 @@
 from asyncio import create_subprocess_exec
 from asyncio.subprocess import Process, PIPE
+from time import sleep
+import re
 
 from utils import *
 
@@ -62,14 +64,10 @@ class RcloneManager:
         for _ in range(2):
             line = (await cls.current_spawn.stderr.readline()).decode()
             logger.debug(f"Rclone output: {line}")
-            if url_re_match := re.search(
-                rf"http://127.0.0.1:\d+/auth\?state=.*", line
-            ):
+            if url_re_match := re.search(r"http://127.0.0.1:\d+/auth\?state=.*", line):
                 return url_re_match.group(0)
 
-        logger.warning(
-            f"Failed to extract URL from rclone process, current output: {await cls.current_spawn.stderr.read().decode()}"
-        )
+        logger.warning("Failed to extract URL from rclone process")
         cls.kill_current_spawn()
         return ""
 
