@@ -20,7 +20,7 @@ export function Content() {
   const [advanced_options, set_advanced_options] = useState<boolean>(Config.get("advanced_options"));
   const [strict_game_sync] = useState<boolean>(Config.get("strict_game_sync"));
 
-  const [syncInProgress, setSyncInProgress] = useState<boolean>(true);
+  const [syncInProgress, setSyncInProgress] = useState<boolean>(SyncTaskQeueue.busy);
   const [hasProvider, setHasProvider] = useState<boolean>(false);
   useEffect(() => {
     get_cloud_type().then((e) => setHasProvider(Boolean(e)));
@@ -58,16 +58,6 @@ export function Content() {
               Config.set("auto_global_sync", e);
             }}
           />
-        </PanelSectionRow>
-        <PanelSectionRow>
-          <ButtonItem
-            layout="below"
-            onClick={configCloudPage.enter}
-          >
-            <DeckyStoreButton icon={<BiSolidCloudUpload />}>
-              Cloud Provider
-            </DeckyStoreButton>
-          </ButtonItem>
         </PanelSectionRow>
       </PanelSection>
 
@@ -109,8 +99,8 @@ export function Content() {
         </>)}
       </PanelSection>
 
-      {/* <PanelSection title="Configuration">
-        <PanelSectionRow>
+      <PanelSection title="Configuration">
+        {/* <PanelSectionRow>
           <ButtonItem
             layout="below"
             onClick={() => {
@@ -120,20 +110,18 @@ export function Content() {
           >
             <DeckyStoreButton icon={<FiEdit3 />}>Sync Paths</DeckyStoreButton>
           </ButtonItem>
-        </PanelSectionRow>
-
+        </PanelSectionRow> */}
         <PanelSectionRow>
           <ButtonItem
             layout="below"
-            onClick={() => {
-              Navigation.CloseSideMenus();
-              Navigation.Navigate("/dcs-configure-backend");
-            }}
+            onClick={configCloudPage.enter}
           >
-            <DeckyStoreButton icon={<AiOutlineCloudUpload />}>Cloud Provider</DeckyStoreButton>
+            <DeckyStoreButton icon={<BiSolidCloudUpload />}>
+              Cloud Provider
+            </DeckyStoreButton>
           </ButtonItem>
         </PanelSectionRow>
-      </PanelSection> */}
+      </PanelSection>
 
       <PanelSection title="Logs">
         <PanelSectionRow>
@@ -141,23 +129,9 @@ export function Content() {
             layout="below"
             onClick={PluginLogsPage.enter}
           >
-            <DeckyStoreButton icon={<FaPlug />}>Plugin Log</DeckyStoreButton>
+            <DeckyStoreButton icon={<FaPlug/>}>Plugin Log</DeckyStoreButton>
           </ButtonItem>
         </PanelSectionRow>
-        {/* <PanelSectionRow>
-          <ButtonItem
-            layout="below"
-            disabled={syncInProgress || (!hasProvider)}
-            onClick={() => {
-              (async () => {
-                Navigation.Navigate("/dcs-sync-logs");
-                Navigation.CloseSideMenus();
-              })();
-            }}
-          >
-            <DeckyStoreButton icon={<FaCloudUploadAlt />}>Global Sync Log</DeckyStoreButton>
-          </ButtonItem>
-        </PanelSectionRow> */}
       </PanelSection>
 
       <PanelSection title="Advanced Options">

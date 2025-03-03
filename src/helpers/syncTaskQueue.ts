@@ -36,6 +36,10 @@ class SyncTaskQueue extends EventEmitter {
     this.updateAvailableSyncTargets();
   }
 
+  public get busy() {
+    return (!this.queue.idle());
+  }
+
   public async addSyncTask(syncFunction: (appId: number) => Promise<number>, appId: number, pId?: number) {
     if (appId in this.availableSyncTargets) {
       if (pId) {
@@ -59,7 +63,7 @@ class SyncTaskQueue extends EventEmitter {
         })
         .finally(() => {
           if (pId) {
-            resume_process(pId)
+            resume_process(pId);
           }
         });
     }
@@ -85,7 +89,7 @@ class SyncTaskQueue extends EventEmitter {
 
   private async pushTask(fn: () => Promise<number>): Promise<number | undefined> {
     if (this.queue.idle()) {
-      Logger.debug("Starting task")
+      Logger.debug("Starting task");
       this.emit(this.events.BUSY, true);
     }
     return await this.queue.push(fn);
