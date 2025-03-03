@@ -142,3 +142,19 @@ def getLocalScreenshotPath(user_id: int, screenshot_url: str) -> str:
     return (
         f"{decky.DECKY_USER_HOME}/.steam/steam/userdata/{user_id}/760/remote/{subpath}"
     )
+
+def get_available_sync_targets() -> list[int]:
+    """
+    Returns a list of available sync targets.
+
+    Returns:
+    list[int]: A list of available sync targets.
+    """
+    sync_paths = list()
+    for filter in PLUGIN_CONFIG_DIR.glob("*.filter"):
+        if filter.stem.isdigit():
+            sync_paths.append(int(filter.stem))
+        elif filter.stem == GLOBAL_SYNC_ID:
+            sync_paths.append(0)
+
+    return sync_paths

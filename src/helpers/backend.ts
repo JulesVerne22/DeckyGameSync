@@ -1,4 +1,4 @@
-import { callable } from "@decky/api"
+import { call, callable } from "@decky/api"
 
 // rclone.conf Setup
 export const spawn = callable<[backend_type: string], string>("spawn");
@@ -19,6 +19,7 @@ export const resync_local_first = callable<[], number>("resync_local_first");
 export const resync_cloud_first = callable<[], number>("resync_cloud_first");
 export const sync_screenshot = callable<[user_id: number, screenshot_url: string], number>("sync_screenshot");
 export const delete_lock_files = callable<[], void>("delete_lock_files");
+export const get_available_sync_targets = callable<[], Array<number>>("get_available_sync_targets");
 
 // Processes
 export const pause_process = callable<[pid: number], void>("pause_process");

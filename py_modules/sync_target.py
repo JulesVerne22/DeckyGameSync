@@ -264,7 +264,7 @@ class GlobalSyncTarget(_SyncTarget):
     _sync_mode = RcloneSyncMode.BISYNC
 
     def __init__(self):
-        super().__init__("global")
+        super().__init__(GLOBAL_SYNC_ID)
 
     async def resync(self, winner: RcloneSyncWinner) -> int:
         """

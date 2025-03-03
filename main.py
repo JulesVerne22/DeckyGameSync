@@ -74,6 +74,10 @@ class Plugin:
         logger.debug(f"Executing delete_lock_files()")
         return utils.delete_lock_files()
 
+    async def get_available_sync_targets(self) -> list[int]:
+        logger.debug(f"Executing get_available_sync_targets()")
+        return utils.get_available_sync_targets()
+
     async def _sync(self, winner: RcloneSyncWinner, app_id: int = 0) -> int:
         return await get_sync_target(app_id).sync(winner)
 

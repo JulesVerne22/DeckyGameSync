@@ -3,10 +3,10 @@ import { ImOnedrive, ImDropbox, ImHome, ImGoogleDrive } from "react-icons/im";
 import { BsGearFill, BsPatchQuestionFill } from "react-icons/bs";
 import { ButtonItem, Navigation, PanelSection, PanelSectionRow, sleep } from "@decky/ui";
 import Container from "../components/container";
-import ApiClient from "../helpers/apiClient";
 import { spawn, spawn_probe } from "../helpers/backend";
 import RoutePage from "../components/routePage";
 import { confirmPopup } from "../components/popups";
+import { get_cloud_type } from "../helpers/backend";
 
 async function openConfig(cloud: "onedrive" | "drive" | "dropbox") {
   const url = await spawn(cloud);
@@ -24,14 +24,28 @@ async function openConfig(cloud: "onedrive" | "drive" | "dropbox") {
   Navigation.NavigateToExternalWeb(url);
 }
 
+async function getCloudBackend(): Promise<string> {
+  const cloud_type = await get_cloud_type();
+  switch (cloud_type) {
+    case "onedrive":
+      return "OneDrive";
+    case "drive":
+      return "Google Drive";
+    case "dropbox":
+      return "Dropbox";
+    default:
+      return "Other: " + cloud_type;
+  }
+}
+
 class ConfigCloudPage extends RoutePage {
-  readonly route = "cinfig-cloud-page";
+  readonly route = "config-cloud-page";
 
   render(): ReactNode {
     const [provider, setProvider] = useState<string>("N/A");
 
     useEffect(() => {
-      ApiClient.getCloudBackend().then((cloud) => {
+      getCloudBackend().then((cloud) => {
         if (cloud) {
           setProvider(cloud);
         } else {
