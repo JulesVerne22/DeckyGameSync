@@ -96,8 +96,8 @@ class SyncTaskQueue extends EventTarget {
 
   public updateAvailableSyncTargets() {
     get_available_sync_targets().then((targets) => {
+      Logger.debug("Available sync targets:", targets);
       this.availableSyncTargets = new Set(targets);
-      Logger.debug("Available sync targets:", this.availableSyncTargets);
     })
   }
 }
