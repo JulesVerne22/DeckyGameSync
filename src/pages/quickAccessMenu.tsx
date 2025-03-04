@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { FaFileUpload, FaPlug, FaSave } from "react-icons/fa";
+import { FaFileUpload, FaSave } from "react-icons/fa";
+import { IoDocumentText } from "react-icons/io5";
 import { BiSolidCloudUpload } from "react-icons/bi";
+import { BsFillGearFill } from "react-icons/bs";
 import { ButtonItem, PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
 import * as Defs from "../helpers/commonDefs";
 import SyncTaskQeueue from "../helpers/syncTaskQueue";
@@ -11,6 +13,7 @@ import * as Popups from "../components/popups";
 import * as Backend from "../helpers/backend";
 import configCloudPage from "./configCloudPage";
 import PluginLogsPage from "./pluginLogsPage";
+import SyncTargetConfigPage from "./syncTargetConfigPage";
 
 export function Content() {
   const [auto_global_sync] = useState<boolean>(Config.get("auto_global_sync"));
@@ -67,7 +70,7 @@ export function Content() {
         <PanelSectionRow>
           <ToggleField
             disabled={!hasProvider}
-            label="Sync on game start/stop"
+            label="Sync on game start & stop"
             checked={auto_global_sync}
             onChange={(e) => {
               Config.set("auto_global_sync", e);
@@ -115,36 +118,32 @@ export function Content() {
       </PanelSection>
 
       <PanelSection title="Configuration">
-        {/* <PanelSectionRow>
-          <ButtonItem
-            layout="below"
-            onClick={() => {
-              Navigation.CloseSideMenus();
-              Navigation.Navigate("/dcs-configure-paths");
-            }}
-          >
-            <DeckyStoreButton icon={<FiEdit3 />}>Sync Paths</DeckyStoreButton>
-          </ButtonItem>
-        </PanelSectionRow> */}
         <PanelSectionRow>
           <ButtonItem
             layout="below"
-            onClick={configCloudPage.enter}
+            onClick={() => SyncTargetConfigPage.enter({ syncTargetId: String(Defs.GLOBAL_SYNC_APP_ID) })}
+          >
+            <DeckyStoreButton icon={<BsFillGearFill />}>
+              Global Sync Config
+            </DeckyStoreButton>
+          </ButtonItem>
+        </PanelSectionRow>
+        <PanelSectionRow>
+          <ButtonItem
+            layout="below"
+            onClick={() => configCloudPage.enter()}
           >
             <DeckyStoreButton icon={<BiSolidCloudUpload />}>
               Cloud Provider
             </DeckyStoreButton>
           </ButtonItem>
         </PanelSectionRow>
-      </PanelSection>
-
-      <PanelSection title="Logs">
         <PanelSectionRow>
           <ButtonItem
             layout="below"
-            onClick={PluginLogsPage.enter}
+            onClick={() => PluginLogsPage.enter()}
           >
-            <DeckyStoreButton icon={<FaPlug />}>Plugin Log</DeckyStoreButton>
+            <DeckyStoreButton icon={<IoDocumentText />}>Plugin Logs</DeckyStoreButton>
           </ButtonItem>
         </PanelSectionRow>
       </PanelSection>

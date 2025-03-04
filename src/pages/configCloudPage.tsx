@@ -39,7 +39,7 @@ async function getCloudBackend(): Promise<string> {
 }
 
 class ConfigCloudPage extends RoutePage {
-  readonly route = "config-cloud-page";
+  readonly route = "config-cloud";
 
   render(): ReactNode {
     const [provider, setProvider] = useState<string>("N/A");
@@ -86,7 +86,8 @@ class ConfigCloudPage extends RoutePage {
                 confirmPopup("Adding Other Providers",
                   <span style={{ whiteSpace: "pre-wrap" }}>
                     In addition to the providers listed above, others can also be configured. Unfortunately, setup for them can only be done in desktop mode.<br />
-                    Please refer to rclone config documents (<a href="https://rclone.org/flags/#config">https://rclone.org/flags/#config</a>) for more information.
+                    Please refer to rclone config documents (<a href="https://rclone.org/commands/rclone_config_create/">https://rclone.org/commands/rclone_config_create/</a>) for more information.<br />
+                    Use "cloud" for remote name if you are doing it.
                   </span>
                 )}
               icon={<ImHome />}

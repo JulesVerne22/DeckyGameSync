@@ -3,7 +3,7 @@ import { routerHook } from "@decky/api";
 import { Navigation } from "@decky/ui";
 import Plugin from "../json/plugin.json";
 
-export default abstract class RoutePage {
+export default abstract class RoutePage<T extends { [K in keyof T]: string } = Record<string, string>> {
   readonly routePrefix: string = `${Plugin.name.replaceAll(' ', '-').toLowerCase()}`;
   abstract readonly route: string;
 
@@ -12,14 +12,16 @@ export default abstract class RoutePage {
   }
 
   public register = (): Unregisterable => {
-    routerHook.addRoute(this.fullRoute, this.render, { exact: true });
+    const route = this.fullRoute;
+    routerHook.addRoute(route, this.render, { exact: true });
     return {
-      unregister: () => routerHook.removeRoute(this.fullRoute)
+      unregister: () => routerHook.removeRoute(route)
     };
   }
 
-  public enter = (): void => {
-    Navigation.Navigate(this.fullRoute);
+  public enter = (params?: T): void => {
+    const routeParams = new URLSearchParams(params).toString();
+    Navigation.Navigate(routeParams ? `${this.fullRoute}?${routeParams}` : this.fullRoute);
     Navigation.CloseSideMenus();
   }
 
