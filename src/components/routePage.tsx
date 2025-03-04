@@ -1,10 +1,11 @@
 import { ReactNode } from "react";
 import { routerHook } from "@decky/api";
 import { Navigation } from "@decky/ui";
-import Plugin from "../json/plugin.json";
+import { PLUGIN_NAME_AS_PATH } from "../helpers/commonDefs";
+import Logger from "../helpers/logger";
 
 export default abstract class RoutePage<T extends { [K in keyof T]: string } = Record<string, string>> {
-  readonly routePrefix: string = `${Plugin.name.replaceAll(' ', '-').toLowerCase()}`;
+  readonly routePrefix: string = PLUGIN_NAME_AS_PATH;
   abstract readonly route: string;
 
   private get fullRoute(): string {
@@ -21,7 +22,9 @@ export default abstract class RoutePage<T extends { [K in keyof T]: string } = R
 
   public enter = (params?: T): void => {
     const routeParams = new URLSearchParams(params).toString();
-    Navigation.Navigate(routeParams ? `${this.fullRoute}?${routeParams}` : this.fullRoute);
+    const route = routeParams ? `${this.fullRoute}?${routeParams}` : this.fullRoute;
+    Logger.debug(`Navigating to ${route}`)
+    Navigation.Navigate(route);
     Navigation.CloseSideMenus();
   }
 

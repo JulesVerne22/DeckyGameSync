@@ -1,7 +1,7 @@
 import fastq from "fastq";
 import type { queueAsPromised } from "fastq";
 import { Navigation } from "@decky/ui";
-import * as Defs from "./commonDefs"
+import { GLOBAL_SYNC_APP_ID } from "./commonDefs"
 import Logger from "./logger"
 import Toaster from "./toaster";
 import Config from "./config";
@@ -40,9 +40,6 @@ class SyncTaskQueue extends EventTarget {
   }
 
   public async addSyncTask(syncFunction: (appId: number) => Promise<number>, appId: number, pId?: number) {
-    console.log("Adding sync task for", appId);
-    console.log("Available targets:", this.availableSyncTargets);
-    console.log("PID:", pId);
     if (this.availableSyncTargets.has(appId)) {
       if (pId) {
         await pause_process(pId);
@@ -53,7 +50,7 @@ class SyncTaskQueue extends EventTarget {
             Logger.info(`Sync for "${appId}" finished`);
           } else {
             let appName: string | undefined;
-            if (appId == Defs.GLOBAL_SYNC_APP_ID) {
+            if (appId == GLOBAL_SYNC_APP_ID) {
               appName = "global";
             } else {
               appName = window.appStore.GetAppOverviewByAppID(appId)?.display_name;

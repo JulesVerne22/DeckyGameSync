@@ -4,14 +4,14 @@ import { IoDocumentText } from "react-icons/io5";
 import { BiSolidCloudUpload } from "react-icons/bi";
 import { BsFillGearFill } from "react-icons/bs";
 import { ButtonItem, PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
-import * as Defs from "../helpers/commonDefs";
+import { GLOBAL_SYNC_APP_ID } from "../helpers/commonDefs";
 import SyncTaskQeueue from "../helpers/syncTaskQueue";
 import { get_cloud_type } from "../helpers/backend";
 import DeckyStoreButton from "../components/deckyStoreButton";
 import Config from "../helpers/config";
 import * as Popups from "../components/popups";
 import * as Backend from "../helpers/backend";
-import configCloudPage from "./configCloudPage";
+import ConfigCloudPage from "./configCloudPage";
 import PluginLogsPage from "./pluginLogsPage";
 import SyncTargetConfigPage from "./syncTargetConfigPage";
 
@@ -44,7 +44,7 @@ export function Content() {
             layout="below"
             disabled={syncInProgress || (!hasProvider)}
             onClick={() => {
-              SyncTaskQeueue.addSyncTask(Backend.sync_cloud_first, Defs.GLOBAL_SYNC_APP_ID);
+              SyncTaskQeueue.addSyncTask(Backend.sync_cloud_first, GLOBAL_SYNC_APP_ID);
             }}
           >
             <style>{`
@@ -121,7 +121,7 @@ export function Content() {
         <PanelSectionRow>
           <ButtonItem
             layout="below"
-            onClick={() => SyncTargetConfigPage.enter({ syncTargetId: String(Defs.GLOBAL_SYNC_APP_ID) })}
+            onClick={() => SyncTargetConfigPage.enter({ syncTargetId: String(GLOBAL_SYNC_APP_ID) })}
           >
             <DeckyStoreButton icon={<BsFillGearFill />}>
               Global Sync Config
@@ -131,7 +131,7 @@ export function Content() {
         <PanelSectionRow>
           <ButtonItem
             layout="below"
-            onClick={() => configCloudPage.enter()}
+            onClick={() => ConfigCloudPage.enter()}
           >
             <DeckyStoreButton icon={<BiSolidCloudUpload />}>
               Cloud Provider

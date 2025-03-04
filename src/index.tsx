@@ -1,4 +1,4 @@
-import Plugin from "./json/plugin.json"
+import { PLUGIN_NAME } from "./helpers/commonDefs";
 import { definePlugin } from "@decky/api";
 import { FaSave } from "react-icons/fa";
 import ApiClient from "./helpers/apiClient";
@@ -16,7 +16,7 @@ export default definePlugin(() => {
   registrationArray.push(ConfigCloudPage.register());
 
   return {
-    name: Plugin.name,
+    name: PLUGIN_NAME,
     content: <Content />,
     icon: <FaSave />,
     onDismount() {

@@ -1,6 +1,8 @@
 import { ReactNode, useEffect } from "react";
+import { PanelSection } from "@decky/ui";
 import RoutePage from "../components/routePage";
 import Logger from "../helpers/logger";
+import Container from "../components/container";
 
 interface SyncTargetConfigPageParams {
   syncTargetId: string;
@@ -16,7 +18,11 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
     }, []);
 
     return (
-      <></>
+      <Container title="Sync Target Configuration">
+        <PanelSection>
+          Sync Target Configuration
+        </PanelSection>
+      </Container>
     );
   }
 }
