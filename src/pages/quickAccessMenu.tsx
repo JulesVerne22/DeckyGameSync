@@ -19,7 +19,7 @@ export function Content() {
   const [auto_global_sync] = useState<boolean>(Config.get("auto_global_sync"));
   const [screenshot_upload_enable, set_screenshot_upload_enable] = useState<boolean>(Config.get("screenshot_upload_enable"));
   const [screenshot_delete_after_upload] = useState<boolean>(Config.get("screenshot_delete_after_upload"));
-  const [advanced_options, set_advanced_options] = useState<boolean>(Config.get("advanced_options"));
+  const [advanced_mode, set_advanced_mode] = useState<boolean>(Config.get("advanced_mode"));
   const [strict_game_sync] = useState<boolean>(Config.get("strict_game_sync"));
 
   const [syncInProgress, setSyncInProgress] = useState<boolean>(SyncTaskQeueue.busy);
@@ -121,7 +121,7 @@ export function Content() {
         <PanelSectionRow>
           <ButtonItem
             layout="below"
-            onClick={() => SyncTargetConfigPage.enter({ syncTargetId: String(GLOBAL_SYNC_APP_ID) })}
+            onClick={() => SyncTargetConfigPage.enter({ appId: String(GLOBAL_SYNC_APP_ID) })}
           >
             <DeckyStoreButton icon={<BsFillGearFill />}>
               Global Sync Config
@@ -148,28 +148,28 @@ export function Content() {
         </PanelSectionRow>
       </PanelSection>
 
-      <PanelSection title="Advanced Options">
+      <PanelSection title="Advanced Mode">
         <PanelSectionRow>
           <ToggleField
             label="Enable"
-            checked={advanced_options}
+            checked={advanced_mode}
             onChange={(e) => {
               if (e) {
-                Popups.confirmPopup("Show Advanced Options",
+                Popups.confirmPopup("Enable Advanced Mode",
                   <span>
-                    Advanced options are only for those who understand what they are doing.<br />
-                    <b>Using them without caution may cause unrecoverable data loss!</b><br /><br />
+                    Advanced Mode is only for those who understand what they are doing.<br />
+                    <b>Using options within without caution may cause unrecoverable data loss!</b><br /><br />
                     Click "Confirm" to continue.
                   </span>,
-                  () => Config.set("advanced_options", true));
+                  () => Config.set("advanced_mode", true));
               } else {
-                Config.set("advanced_options", false);
-                set_advanced_options(false); // to trigger re-render
+                Config.set("advanced_mode", false);
+                set_advanced_mode(false); // to trigger re-render
               }
             }}
           />
         </PanelSectionRow>
-        {advanced_options && (<>
+        {advanced_mode && (<>
           <PanelSectionRow>
             <ToggleField
               label="Strict Game Sync"
