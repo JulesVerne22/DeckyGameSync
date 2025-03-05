@@ -71,7 +71,7 @@ class SyncTaskQueue extends EventTarget {
   public async addScreenshotSyncTask(userId: number, screenshotUrl: string, gameId: string, handle: number) {
     this.pushTask(async () => await sync_screenshot(userId, screenshotUrl))
       .then((exitCode) => {
-        if (exitCode == 0 && Config.get("screenshot_delete_after_upload")) {
+        if (exitCode == 0 && Config.get("capture_delete_after_upload")) {
           SteamClient.Screenshots.DeleteLocalScreenshot(gameId, handle)
             .then(() =>
               Logger.info(`Screenshot ${screenshotUrl} uploaded and deleted locally`))

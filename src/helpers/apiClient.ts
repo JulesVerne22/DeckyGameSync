@@ -12,7 +12,7 @@ function getCurrentUserId(): number {
 class ApiClient {
   public setupScreenshotNotification(): Unregisterable {
     return SteamClient.GameSessions.RegisterForScreenshotNotification(async (e: ScreenshotNotification) => {
-      if (Config.get("screenshot_upload_enable") && e.details && e.strOperation == "written") {
+      if (Config.get("capture_upload_enable") && e.details && e.strOperation == "written") {
         await SyncTaskQeueue.addScreenshotSyncTask(getCurrentUserId(), e.details.strUrl, e.details.strGameID, e.details.hHandle);
       }
     });
@@ -20,16 +20,14 @@ class ApiClient {
 
   public setupAppLifetimeNotificationsHandler(): Unregisterable {
     return SteamClient.GameSessions.RegisterForAppLifetimeNotifications(async (e: LifetimeNotification) => {
-      if (e.bRunning) {
-        Logger.info(`Starting game ${e.unAppID}`);
-        await SyncTaskQeueue.addSyncTask(sync_cloud_first, e.unAppID, e.nInstanceID);
-        if (Config.get("auto_global_sync")) {
+      if (Config.get("auto_sync")) {
+        if (e.bRunning) {
+          Logger.info(`Starting game ${e.unAppID}`);
+          await SyncTaskQeueue.addSyncTask(sync_cloud_first, e.unAppID, e.nInstanceID);
           await SyncTaskQeueue.addSyncTask(sync_local_first, GLOBAL_SYNC_APP_ID);
-        }
-      } else {
-        Logger.info(`Stopping game ${e.unAppID}`);
-        await SyncTaskQeueue.addSyncTask(sync_local_first, e.unAppID);
-        if (Config.get("auto_global_sync")) {
+        } else {
+          Logger.info(`Stopping game ${e.unAppID}`);
+          await SyncTaskQeueue.addSyncTask(sync_local_first, e.unAppID);
           await SyncTaskQeueue.addSyncTask(sync_cloud_first, GLOBAL_SYNC_APP_ID);
         }
       }

@@ -1,9 +1,9 @@
 {
     "log_level": "INFO",
-    "auto_global_sync": false,
-    "screenshot_upload_enable": false,
-    "screenshot_upload_destination": "steam-screenshots",
-    "screenshot_delete_after_upload": true,
+    "auto_sync": false,
+    "capture_upload_enable": false,
+    "capture_upload_destination": "steam-screenshots",
+    "capture_delete_after_upload": false,
     "additional_sync_args": [
         "--copy-links",
         "--transfers", "8",

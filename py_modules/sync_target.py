@@ -119,9 +119,7 @@ class _SyncTarget:
         Returns:
         tuple[str, str]: A tuple containing the source sync path and destination sync path.
         """
-        sync_root, sync_dest = Config.get_config_items(
-            "sync_root", "sync_destination"
-        )
+        sync_root, sync_dest = Config.get_config_items("sync_root", "sync_destination")
 
         if (winner == RcloneSyncWinner.CLOUD) and (
             self._sync_mode != RcloneSyncMode.BISYNC
@@ -195,13 +193,9 @@ class _SyncTarget:
 
         logger.info(f'Sync for "{self._id}" finished with exit code: {sync_result}')
         if sync_stdcout:
-            logger.info(
-                f'Sync for "{self._id}" stdout:\n{sync_stdcout.decode()}'
-            )
+            logger.info(f'Sync for "{self._id}" stdout:\n{sync_stdcout.decode()}')
         if sync_stderr:
-            logger.error(
-                f'Sync for "{self._id}" stderr:\n{sync_stderr.decode()}'
-            )
+            logger.error(f'Sync for "{self._id}" stderr:\n{sync_stderr.decode()}')
 
         return sync_result
 
@@ -297,15 +291,15 @@ class GameSyncTarget(_SyncTarget):
             self._sync_mode = RcloneSyncMode.SYNC
 
 
-class ScreenshotSyncTarget(_SyncTarget):
+class CaptureSyncTarget(_SyncTarget):
     _filter_required = False
     _sync_mode = RcloneSyncMode.COPY
 
-    def __init__(self, screenshot_path: str):
-        if not screenshot_path:
-            raise ValueError("screenshot_path is required")
-        super().__init__(screenshot_path)
-        self._screenshot_path = Path(screenshot_path)
+    def __init__(self, capture_path: str):
+        if not capture_path:
+            raise ValueError("capture_path is required")
+        super().__init__(capture_path)
+        self._capture_path = Path(capture_path)
 
     async def sync(self, _=None) -> int:
         """
@@ -323,10 +317,10 @@ class ScreenshotSyncTarget(_SyncTarget):
         Returns:
         tuple[str, str]: A tuple containing the source sync path and destination sync path.
         """
-        destination = Config.get_config_item("screenshot_upload_destination")
+        destination = Config.get_config_item("capture_upload_destination")
 
         return (
-            str(self._screenshot_path),
+            str(self._capture_path),
             f"cloud:{destination}",
         )
 

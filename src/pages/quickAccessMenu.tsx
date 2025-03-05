@@ -16,14 +16,14 @@ import PluginLogsPage from "./pluginLogsPage";
 import SyncTargetConfigPage from "./syncTargetConfigPage";
 
 export function Content() {
-  const [auto_global_sync] = useState<boolean>(Config.get("auto_global_sync"));
-  const [screenshot_upload_enable, set_screenshot_upload_enable] = useState<boolean>(Config.get("screenshot_upload_enable"));
-  const [screenshot_delete_after_upload] = useState<boolean>(Config.get("screenshot_delete_after_upload"));
+  const [auto_sync] = useState<boolean>(Config.get("auto_sync"));
+  const [capture_upload_enable, set_capture_upload_enable] = useState<boolean>(Config.get("capture_upload_enable"));
+  const [capture_delete_after_upload] = useState<boolean>(Config.get("capture_delete_after_upload"));
   const [advanced_mode, set_advanced_mode] = useState<boolean>(Config.get("advanced_mode"));
   const [strict_game_sync] = useState<boolean>(Config.get("strict_game_sync"));
 
   const [syncInProgress, setSyncInProgress] = useState<boolean>(SyncTaskQeueue.busy);
-  const [hasProvider, setHasProvider] = useState<boolean>(false);
+  const [hasProvider, setHasProvider] = useState<boolean>(true);
 
   useEffect(() => {
     get_cloud_type().then((e) => setHasProvider(Boolean(e)));
@@ -36,13 +36,13 @@ export function Content() {
     }
   }, []);
 
-  return (
-    <>
-      <PanelSection title="Global Sync">
+  return (<>
+    {hasProvider && (<>
+      <PanelSection title="Sync">
         <PanelSectionRow>
           <ButtonItem
             layout="below"
-            disabled={syncInProgress || (!hasProvider)}
+            disabled={syncInProgress}
             onClick={() => {
               SyncTaskQeueue.addSyncTask(Backend.sync_cloud_first, GLOBAL_SYNC_APP_ID);
             }}
@@ -62,18 +62,16 @@ export function Content() {
             `}
             </style>
             <DeckyStoreButton icon={<FaSave className={syncInProgress ? "cloudSaveForkRotatingIcon" : ""} />}>
-              Sync Now
+              Start Global Sync
             </DeckyStoreButton>
           </ButtonItem>
-          {hasProvider === false && <small>{'Cloud Storage Provider is not configured. Please configure it in "Cloud Provider"'}.</small>}
         </PanelSectionRow>
         <PanelSectionRow>
           <ToggleField
-            disabled={!hasProvider}
             label="Sync on game start & stop"
-            checked={auto_global_sync}
+            checked={auto_sync}
             onChange={(e) => {
-              Config.set("auto_global_sync", e);
+              Config.set("auto_sync", e);
             }}
           />
         </PanelSectionRow>
@@ -82,22 +80,21 @@ export function Content() {
       <PanelSection title="Screenshots">
         <PanelSectionRow>
           <ToggleField
-            disabled={!hasProvider}
             label="Upload screenshots"
-            checked={screenshot_upload_enable && hasProvider}
+            checked={capture_upload_enable}
             onChange={(e) => {
-              Config.set("screenshot_upload_enable", e);
-              set_screenshot_upload_enable(e); // to trigger re-render
+              Config.set("capture_upload_enable", e);
+              set_capture_upload_enable(e); // to trigger re-render
             }}
           />
         </PanelSectionRow>
-        {screenshot_upload_enable && hasProvider && (<>
+        {capture_upload_enable && (<>
           <PanelSectionRow>
             <ToggleField
               label="Delete local copy"
-              checked={screenshot_delete_after_upload}
+              checked={capture_delete_after_upload}
               onChange={(e) => {
-                Config.set("screenshot_delete_after_upload", e);
+                Config.set("capture_delete_after_upload", e);
               }}
             />
           </PanelSectionRow>
@@ -106,8 +103,8 @@ export function Content() {
               layout="below"
               onClick={() =>
                 Popups.textInputPopup("Screenshot Upload Destination",
-                  Config.get("screenshot_upload_destination"),
-                  (e) => Config.set("screenshot_upload_destination", e))}
+                  Config.get("capture_upload_destination"),
+                  (e) => Config.set("capture_upload_destination", e))}
             >
               <DeckyStoreButton icon={<FaFileUpload />}>
                 Upload Destination
@@ -116,8 +113,9 @@ export function Content() {
           </PanelSectionRow>
         </>)}
       </PanelSection>
-
-      <PanelSection title="Configuration">
+    </>)}
+    <PanelSection title="Configuration">
+      {hasProvider && (<>
         <PanelSectionRow>
           <ButtonItem
             layout="below"
@@ -131,23 +129,25 @@ export function Content() {
         <PanelSectionRow>
           <ButtonItem
             layout="below"
-            onClick={() => ConfigCloudPage.enter()}
-          >
-            <DeckyStoreButton icon={<BiSolidCloudUpload />}>
-              Cloud Provider
-            </DeckyStoreButton>
-          </ButtonItem>
-        </PanelSectionRow>
-        <PanelSectionRow>
-          <ButtonItem
-            layout="below"
             onClick={() => PluginLogsPage.enter()}
           >
             <DeckyStoreButton icon={<IoDocumentText />}>Plugin Logs</DeckyStoreButton>
           </ButtonItem>
         </PanelSectionRow>
-      </PanelSection>
+      </>)}
+      <PanelSectionRow>
+        <ButtonItem
+          layout="below"
+          onClick={() => ConfigCloudPage.enter()}
+        >
+          <DeckyStoreButton icon={<BiSolidCloudUpload />}>
+            Cloud Provider
+          </DeckyStoreButton>
+        </ButtonItem>
+      </PanelSectionRow>
+    </PanelSection>
 
+    {hasProvider && (<>
       <PanelSection title="Advanced Mode">
         <PanelSectionRow>
           <ToggleField
@@ -246,6 +246,6 @@ export function Content() {
           </PanelSectionRow>
         </>)}
       </PanelSection>
-    </>
-  );
+    </>)}
+  </>);
 };

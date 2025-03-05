@@ -66,7 +66,7 @@ class Plugin:
 
     async def sync_screenshot(self, user_id: int, screenshot_url: str) -> int:
         logger.debug(f"Executing sync_screenshot()")
-        return await ScreenshotSyncTarget(
+        return await CaptureSyncTarget(
             utils.getLocalScreenshotPath(user_id, screenshot_url)
         ).sync()
 
