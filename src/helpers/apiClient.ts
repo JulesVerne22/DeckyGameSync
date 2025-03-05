@@ -20,13 +20,15 @@ class ApiClient {
 
   public setupAppLifetimeNotificationsHandler(): Unregisterable {
     return SteamClient.GameSessions.RegisterForAppLifetimeNotifications(async (e: LifetimeNotification) => {
-      if (Config.get("auto_sync")) {
-        if (e.bRunning) {
-          Logger.info(`Starting game ${e.unAppID}`);
+      if (e.bRunning) {
+        if (Config.get("sync_on_game_start")) {
+          Logger.info(`Syncing on game ${e.unAppID} start`);
           await SyncTaskQeueue.addSyncTask(sync_cloud_first, e.unAppID, e.nInstanceID);
           await SyncTaskQeueue.addSyncTask(sync_local_first, GLOBAL_SYNC_APP_ID);
-        } else {
-          Logger.info(`Stopping game ${e.unAppID}`);
+        }
+      } else {
+        if (Config.get("sync_on_game_stop")) {
+          Logger.info(`Syncing on game ${e.unAppID} stop`);
           await SyncTaskQeueue.addSyncTask(sync_local_first, e.unAppID);
           await SyncTaskQeueue.addSyncTask(sync_cloud_first, GLOBAL_SYNC_APP_ID);
         }

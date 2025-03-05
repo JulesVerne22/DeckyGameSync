@@ -1,6 +1,7 @@
 {
     "log_level": "INFO",
-    "auto_sync": false,
+    "sync_on_game_start": false,
+    "sync_on_game_stop": false,
     "capture_upload_enable": false,
     "capture_upload_destination": "steam-screenshots",
     "capture_delete_after_upload": false,

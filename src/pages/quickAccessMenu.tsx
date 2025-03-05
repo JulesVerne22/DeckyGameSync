@@ -16,7 +16,8 @@ import PluginLogsPage from "./pluginLogsPage";
 import SyncTargetConfigPage from "./syncTargetConfigPage";
 
 export function Content() {
-  const [auto_sync] = useState<boolean>(Config.get("auto_sync"));
+  const [sync_on_game_start] = useState<boolean>(Config.get("sync_on_game_start"));
+  const [sync_on_game_stop] = useState<boolean>(Config.get("sync_on_game_stop"));
   const [capture_upload_enable, set_capture_upload_enable] = useState<boolean>(Config.get("capture_upload_enable"));
   const [capture_delete_after_upload] = useState<boolean>(Config.get("capture_delete_after_upload"));
   const [advanced_mode, set_advanced_mode] = useState<boolean>(Config.get("advanced_mode"));
@@ -68,10 +69,19 @@ export function Content() {
         </PanelSectionRow>
         <PanelSectionRow>
           <ToggleField
-            label="Sync on game start & stop"
-            checked={auto_sync}
+            label="Sync on game start"
+            checked={sync_on_game_start}
             onChange={(e) => {
-              Config.set("auto_sync", e);
+              Config.set("sync_on_game_start", e);
+            }}
+          />
+        </PanelSectionRow>
+        <PanelSectionRow>
+          <ToggleField
+            label="Sync on game stop"
+            checked={sync_on_game_stop}
+            onChange={(e) => {
+              Config.set("sync_on_game_stop", e);
             }}
           />
         </PanelSectionRow>
