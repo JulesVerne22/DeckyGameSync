@@ -33,7 +33,7 @@ class RcloneManager:
         )
 
         url = await cls.get_url_from_rclone_process()
-        logger.debug(f"Login URL: {url}")
+        logger.debug("Login URL: %s", url)
         return url
 
     @classmethod
@@ -63,7 +63,7 @@ class RcloneManager:
         """
         for _ in range(2):
             line = (await cls.current_spawn.stderr.readline()).decode()
-            logger.debug(f"Rclone output: {line}")
+            logger.debug("Rclone output: %s", line)
             if url_re_match := re.search(r"http://127.0.0.1:\d+/auth\?state=.*", line):
                 return url_re_match.group(0)
 

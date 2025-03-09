@@ -13,69 +13,69 @@ class Plugin:
     # rclone.conf Setup
 
     async def spawn(self, cloud_type: str) -> str:
-        logger.debug(f"Executing spawn(cloud_type={cloud_type})")
+        logger.debug("Executing spawn(cloud_type=%s)", cloud_type)
         return await RcloneManager.spawn(cloud_type)
 
     async def spawn_probe(self) -> int:
-        logger.debug(f"Executing probe()")
+        logger.debug("Executing probe()")
         return RcloneManager.probe()
 
     async def get_cloud_type(self) -> str:
-        logger.debug(f"Executing get_cloud_type()")
+        logger.debug("Executing get_cloud_type()")
         return RcloneManager.get_cloud_type()
 
     # Sync Paths
 
     async def get_target_filters(self, app_id: int = 0) -> list[str]:
-        logger.debug(f"Executing get_target_filters(app_id={app_id})")
+        logger.debug("Executing get_target_filters(app_id=%d)", app_id)
         return get_sync_target(app_id).get_filters()
 
     async def set_target_filters(self, paths: list[str], app_id: int = 0) -> None:
-        logger.debug(f"Executing set_target_filters(path={paths}, app_id={app_id})")
+        logger.debug("Executing set_target_filters(path=%s, app_id=%d)", paths, app_id)
         return get_sync_target(app_id).set_filters(paths)
 
     async def get_shared_filters(self) -> list[str]:
-        logger.debug(f"Executing get_shared_filters()")
+        logger.debug("Executing get_shared_filters()")
         return GlobalSyncTarget.get_shared_filter()
 
     async def set_shared_filters(self, paths: list[str]) -> None:
-        logger.debug(f"Executing set_shared_filters(path={paths})")
+        logger.debug("Executing set_shared_filters(path=%s)", paths)
         return GlobalSyncTarget.set_shared_filters(paths)
 
     async def get_available_filters(self) -> list[int]:
-        logger.debug(f"Executing get_available_filters()")
+        logger.debug("Executing get_available_filters()")
         return utils.get_available_filters()
 
     async def test_syncpath(self, path: str) -> int:
-        logger.debug(f"Executing test_syncpath({path})")
+        logger.debug("Executing test_syncpath(%s)", path)
         return utils.test_syncpath(path)
 
     # Syncing
 
     async def sync_local_first(self, app_id: int = 0) -> int:
-        logger.debug(f"Executing sync_local_first(app_id={app_id})")
+        logger.debug("Executing sync_local_first(app_id=%d)", app_id)
         return await self._sync(RcloneSyncWinner.LOCAL, app_id)
 
     async def sync_cloud_first(self, app_id: int = 0) -> int:
-        logger.debug(f"Executing sync_cloud_first(app_id={app_id})")
+        logger.debug("Executing sync_cloud_first(app_id=%d)", app_id)
         return await self._sync(RcloneSyncWinner.CLOUD, app_id)
 
     async def resync_local_first(self) -> int:
-        logger.debug(f"Executing resync_local_first()")
+        logger.debug("Executing resync_local_first()")
         return await GlobalSyncTarget().resync(RcloneSyncWinner.LOCAL)
 
     async def resync_cloud_first(self) -> int:
-        logger.debug(f"Executing resync_cloud_first()")
+        logger.debug("Executing resync_cloud_first()")
         return await GlobalSyncTarget().resync(RcloneSyncWinner.CLOUD)
 
     async def sync_screenshot(self, user_id: int, screenshot_url: str) -> int:
-        logger.debug(f"Executing sync_screenshot()")
+        logger.debug("Executing sync_screenshot()")
         return await CaptureSyncTarget(
             utils.getLocalScreenshotPath(user_id, screenshot_url)
         ).sync()
 
     async def delete_lock_files(self):
-        logger.debug(f"Executing delete_lock_files()")
+        logger.debug("Executing delete_lock_files()")
         return utils.delete_lock_files()
 
     async def _sync(self, winner: RcloneSyncWinner, app_id: int = 0) -> int:
@@ -84,21 +84,21 @@ class Plugin:
     # Processes
 
     async def pause_process(self, pid: int) -> None:
-        logger.debug(f"Executing pause_process(pid={pid})")
+        logger.debug("Executing pause_process(pid=%d)", pid)
         utils.send_signal(pid, signal.SIGSTOP)
 
     async def resume_process(self, pid: int) -> None:
-        logger.debug(f"Executing resume_process(pid={pid})")
+        logger.debug("Executing resume_process(pid=%d)", pid)
         utils.send_signal(pid, signal.SIGCONT)
 
     # Configuration
 
     async def get_config(self) -> dict[str, Any]:
-        logger.debug(f"Executing get_config()")
+        logger.debug("Executing get_config()")
         return Config.get_config()
 
     async def set_config(self, key: str, value: Any):
-        logger.debug(f"Executing set_config(key={key}, value={value})")
+        logger.debug("Executing set_config(key=%s, value=%s)", key, value)
         Config.set_config(key, value)
 
     # Logger
@@ -116,12 +116,12 @@ class Plugin:
         logger.error(msg)
 
     async def get_last_sync_log(self) -> str:
-        logger.debug(f"Executing get_last_sync_log()")
+        logger.debug("Executing get_last_sync_log()")
         # return logger_utils.get_last_sync_log()
         return "unimplemented"
 
     async def get_plugin_log(self) -> str:
-        logger.debug(f"Executing get_plugin_log()")
+        logger.debug("Executing get_plugin_log()")
         return utils.get_plugin_log()
 
     # Lifecycle
@@ -130,8 +130,8 @@ class Plugin:
         logger_level = Config.get_config_item("log_level")
         logger.setLevel(logger_level)
 
-        logger.debug(f"rclone exe path: {RCLONE_BIN_PATH}")
-        logger.debug(f"rclone cfg path: {RCLONE_CFG_PATH}")
+        logger.debug("rclone exe path: %s", RCLONE_BIN_PATH)
+        logger.debug("rclone cfg path: %s", RCLONE_CFG_PATH)
 
     async def _unload(self):
         RcloneManager.kill_current_spawn()

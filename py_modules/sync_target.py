@@ -42,7 +42,7 @@ class _SyncTarget:
         try:
             sync_result = await sync_task()
         except Exception as e:
-            logger.error(f"Error during sync: {e}")
+            logger.error("Error during sync: %s", e)
             sync_result = -1
         ONGOING_SYNCS.discard(self._id)
         return sync_result

@@ -58,14 +58,14 @@ def send_signal(pid: int, signal: signal.Signals):
     """
     try:
         os.kill(pid, signal)
-        logger.debug(f"Process {pid} received signal {signal.name}")
+        logger.debug("Process %d received signal %s", pid, signal.name)
 
         child_pids = _get_process_tree(pid)
         for child_pid in child_pids:
             send_signal(child_pid, signal)
 
     except Exception as e:
-        logger.warning(f"Error sending signal {signal.name} to process {pid}: {e}")
+        logger.warning("Error sending signal %s to process %d: %s", signal.name, pid, e)
 
 
 def test_syncpath(syncpath: str):
@@ -92,7 +92,7 @@ def test_syncpath(syncpath: str):
 
     count = 0
     for root, os_dirs, os_files in os.walk(syncpath, followlinks=True):
-        logger.debug(f"{root} {os_dirs} {os_files}")
+        logger.debug(f"%s %s %s", {root}, {os_dirs}, {os_files})
         count += len(os_files)
         if count > 9000:
             return -1
@@ -137,11 +137,12 @@ def getLocalScreenshotPath(user_id: int, screenshot_url: str) -> str:
     """
     subpath = "/".join(screenshot_url.split("/")[-3:])
     if not subpath:
-        logger.error(f"Invalid screenshot URL: {screenshot_url}")
+        logger.error("Invalid screenshot URL: %s", screenshot_url)
 
     return (
         f"{decky.DECKY_USER_HOME}/.steam/steam/userdata/{user_id}/760/remote/{subpath}"
     )
+
 
 def get_available_filters() -> list[int]:
     """
@@ -158,6 +159,7 @@ def get_available_filters() -> list[int]:
             sync_paths.append(int(filter.stem))
 
     return sync_paths
+
 
 def get_filters(file: Path) -> list[str]:
     """
@@ -176,6 +178,7 @@ def get_filters(file: Path) -> list[str]:
             stripped for line in f.read().splitlines() if (stripped := line.strip())
         ]
 
+
 def set_filters(file: Path, filters: list[str]):
     """
     Updates sync filters to the specified file.
@@ -184,8 +187,6 @@ def set_filters(file: Path, filters: list[str]):
     file (Path): Path of the filter file
     filters (list[str]): The filters to set, elements inside should not contain '\\n'.
     """
-    str_to_write = "\n".join(
-        stripped for path in filters if (stripped := path.strip())
-    )
+    str_to_write = "\n".join(stripped for path in filters if (stripped := path.strip()))
     with file.open("w") as f:
         f.write(str_to_write)

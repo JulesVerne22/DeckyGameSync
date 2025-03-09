@@ -14,7 +14,7 @@ class Config():
         with PLUGIN_DEFAULT_CONFIG_PATH.open('r') as f:
             _default_config.update(json.load(f))
     except Exception as e:
-        logger.error(f"Failed to load default config: {e}")
+        logger.error("Failed to load default config: %s", e)
 
     @classmethod
     def get_config(cls) -> dict[str, Any]:
