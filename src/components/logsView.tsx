@@ -52,7 +52,8 @@ export default function LogsView({ title, getLog, children }: PropsWithChildren<
           wordBreak: 'break-word',
           fontSize: "smaller",
           lineHeight: "1.2em",
-          maxHeight: "calc(100vh - 176px)",
+          maxHeight: "calc(100vh - 160px)",
+          margin: "0",
         }}>
         {logContent}
       </pre>

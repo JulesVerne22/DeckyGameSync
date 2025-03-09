@@ -14,7 +14,7 @@ export default function Container({ title, description, titleItem, children }: P
       maxHeight: "calc(100vh - 80px)",
     }}>
       <Field
-        label={<h2>{title}</h2>}
+        label={<h1 style={{ margin: "0" }}>{title}</h1>}
         description={description && (<small>{description}</small>)}
         highlightOnFocus={false}>
         {titleItem}
