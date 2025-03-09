@@ -31,7 +31,7 @@ class SyncFilters {
     if (appId == SHARED_FILTER_APP_ID) {
       await set_shared_filters(filters);
     } else {
-      await set_target_filters(filters, appId);
+      await set_target_filters(appId, filters);
     }
     await this.refresh();
   }

@@ -9,10 +9,11 @@ import Container from "./container";
 
 interface LogViewProps {
   title: string;
+  fullPage?: boolean;
   getLog: () => Promise<string>;
 }
 
-export default function LogsView({ title, getLog, children }: PropsWithChildren<LogViewProps>) {
+export default function LogsView({ title, getLog, fullPage, children }: PropsWithChildren<LogViewProps>) {
   const [logContent, setLogContent] = useState('');
   const logPreRef = useRef<HTMLPreElement>(null);
 
@@ -27,7 +28,7 @@ export default function LogsView({ title, getLog, children }: PropsWithChildren<
     });
   }, [logContent]);
 
-  return (
+  const content = (
     <Container
       title={title}
       titleItem={
@@ -38,7 +39,6 @@ export default function LogsView({ title, getLog, children }: PropsWithChildren<
             Refresh
           </ButtonItem>
         </>
-
       }
     >
       <pre
@@ -52,11 +52,22 @@ export default function LogsView({ title, getLog, children }: PropsWithChildren<
           wordBreak: 'break-word',
           fontSize: "smaller",
           lineHeight: "1.2em",
-          maxHeight: "calc(100vh - 160px)",
+          maxHeight: "calc(100% - 1px)",
           margin: "0",
         }}>
         {logContent}
       </pre>
     </Container>
+  );
+
+  return (fullPage ? (
+    <div style={{
+      padding: "40px 20px 40px 20px",
+      height: "calc(100vh - 80px)",
+    }}>
+      {content}
+    </div>
+  ) :
+    content
   );
 }

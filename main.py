@@ -26,12 +26,12 @@ class Plugin:
 
     # Sync Paths
 
-    async def get_target_filters(self, app_id: int = 0) -> list[str]:
+    async def get_target_filters(self, app_id: int) -> list[str]:
         logger.debug("Executing get_target_filters(app_id=%d)", app_id)
         return get_sync_target(app_id).get_filters()
 
-    async def set_target_filters(self, paths: list[str], app_id: int = 0) -> None:
-        logger.debug("Executing set_target_filters(path=%s, app_id=%d)", paths, app_id)
+    async def set_target_filters(self, app_id: int, paths: list[str]) -> None:
+        logger.debug("Executing set_target_filters(app_id=%d, path=%s)", app_id, paths)
         return get_sync_target(app_id).set_filters(paths)
 
     async def get_shared_filters(self) -> list[str]:
@@ -52,11 +52,11 @@ class Plugin:
 
     # Syncing
 
-    async def sync_local_first(self, app_id: int = 0) -> int:
+    async def sync_local_first(self, app_id: int) -> int:
         logger.debug("Executing sync_local_first(app_id=%d)", app_id)
         return await self._sync(RcloneSyncWinner.LOCAL, app_id)
 
-    async def sync_cloud_first(self, app_id: int = 0) -> int:
+    async def sync_cloud_first(self, app_id: int) -> int:
         logger.debug("Executing sync_cloud_first(app_id=%d)", app_id)
         return await self._sync(RcloneSyncWinner.CLOUD, app_id)
 
@@ -78,7 +78,7 @@ class Plugin:
         logger.debug("Executing delete_lock_files()")
         return utils.delete_lock_files()
 
-    async def _sync(self, winner: RcloneSyncWinner, app_id: int = 0) -> int:
+    async def _sync(self, winner: RcloneSyncWinner, app_id: int) -> int:
         return await get_sync_target(app_id).sync(winner)
 
     # Processes
@@ -115,10 +115,9 @@ class Plugin:
     async def log_error(self, msg: str) -> None:
         logger.error(msg)
 
-    async def get_last_sync_log(self) -> str:
-        logger.debug("Executing get_last_sync_log()")
-        # return logger_utils.get_last_sync_log()
-        return "unimplemented"
+    async def get_last_sync_log(self, app_id: int) -> str:
+        logger.debug("Executing get_last_sync_log(app_id=%d)", app_id)
+        return get_sync_target(app_id).get_last_sync_log()
 
     async def get_plugin_log(self) -> str:
         logger.debug("Executing get_plugin_log()")

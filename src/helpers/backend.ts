@@ -7,7 +7,7 @@ export const get_cloud_type = callable<[], string>("get_cloud_type");
 
 // Sync Paths
 export const get_target_filters = callable<[app_id: number], Array<string>>("get_target_filters");
-export const set_target_filters = callable<[paths: Array<string>, app_id: number], void>("set_target_filters");
+export const set_target_filters = callable<[app_id: number, paths: Array<string>], void>("set_target_filters");
 export const get_shared_filters = callable<[], Array<string>>("get_shared_filters");
 export const set_shared_filters = callable<[paths: Array<string>], void>("set_shared_filters");
 export const get_available_filters = callable<[], Array<number>>("get_available_filters");
@@ -34,5 +34,5 @@ export const log_debug = callable<[msg: string], void>("log_debug");
 export const log_info = callable<[msg: string], void>("log_info");
 export const log_warning = callable<[msg: string], void>("log_warning");
 export const log_error = callable<[msg: string], void>("log_error");
-export const get_last_sync_log = callable<[], string>("get_last_sync_log");
+export const get_last_sync_log = callable<[app_id: number], string>("get_last_sync_log");
 export const get_plugin_log = callable<[], string>("get_plugin_log");

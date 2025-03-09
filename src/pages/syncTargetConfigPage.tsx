@@ -1,8 +1,11 @@
 import { ReactNode } from "react";
-import { Navigation, PanelSection } from "@decky/ui";
+import { Navigation, SidebarNavigation } from "@decky/ui";
 import RoutePage from "../components/routePage";
 import Logger from "../helpers/logger";
-import Container from "../components/container";
+import LogsView from "../components/logsView";
+import { get_last_sync_log } from "../helpers/backend";
+import { FaFileAlt } from "react-icons/fa";
+import { CSS_MAX_VIEWABLE_HIGHT } from "../helpers/commonDefs";
 
 interface SyncTargetConfigPageParams {
   appId: string;
@@ -14,20 +17,37 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
   render(): ReactNode {
     const params = new URLSearchParams(window.location.search);
     Logger.debug('Sync Target config page query parameters:', Object.fromEntries(params));
-    const appId = params.get('appId');
-    if (appId === null) {
-      Logger.error('Sync Target config page: appId is null');
+
+    const appId = Number(params.get('appId'));
+    if (isNaN(appId)) {
+      Logger.error(`Sync Target config page: appId is not a number: ${appId}`);
       Navigation.NavigateBack();
     }
 
-
-    return (
-      <Container title="Sync Target Configuration">
-        <PanelSection>
-          Sync Target Configuration
-        </PanelSection>
-      </Container>
-    );
+    return <SidebarNavigation
+      pages={[
+        {
+          title: "Sync Logs 1",
+          content: <LogsView title="Plugin Logs 1" getLog={async () => await get_last_sync_log(appId)} />
+        },
+        {
+          title: "Sync Logs 2",
+          content: <LogsView title="Plugin Logs 2" getLog={async () => await get_last_sync_log(appId)} />
+        },
+        {
+          title: "Sync Logs",
+          content: <div
+            style={{
+              height: CSS_MAX_VIEWABLE_HIGHT,
+              marginTop: "-24px",
+              position: "fixed",
+            }}
+          ><LogsView title="Sync Logs" getLog={async () => await get_last_sync_log(appId)} /></div>,
+          icon: <FaFileAlt />,
+          hideTitle: true,
+        },
+      ]}
+    />
   }
 }
 
