@@ -47,9 +47,9 @@ class ConfigCloudPage extends RoutePage {
     useEffect(() => {
       getCloudBackend().then((cloud) => {
         if (cloud) {
-          setProvider(cloud);
+          setProvider(`☁️ ${cloud} ☁️`);
         } else {
-          setProvider("N/A");
+          setProvider("❌ N/A ❌");
         }
       })
     }, []);

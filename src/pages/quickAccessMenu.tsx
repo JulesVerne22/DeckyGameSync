@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { FaFileUpload, FaSave } from "react-icons/fa";
-import { IoDocumentText } from "react-icons/io5";
-import { BiSolidCloudUpload } from "react-icons/bi";
+import { FaFileAlt, FaFileUpload, FaSave } from "react-icons/fa";
+import { MdStorage } from "react-icons/md";
 import { BsFillGearFill } from "react-icons/bs";
+import { FaCloudArrowUp, FaCloudArrowDown } from "react-icons/fa6";
 import { ButtonItem, PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
 import { GLOBAL_SYNC_APP_ID } from "../helpers/commonDefs";
 import SyncTaskQeueue from "../helpers/syncTaskQueue";
@@ -127,7 +127,7 @@ export function Content() {
             onClick={() => SyncTargetConfigPage.enter({ appId: String(GLOBAL_SYNC_APP_ID) })}
           >
             <DeckyStoreButton icon={<BsFillGearFill />}>
-              Global Sync Config
+              Global Sync Filters
             </DeckyStoreButton>
           </ButtonItem>
         </PanelSectionRow>
@@ -136,7 +136,9 @@ export function Content() {
             layout="below"
             onClick={() => PluginLogsPage.enter()}
           >
-            <DeckyStoreButton icon={<IoDocumentText />}>Plugin Logs</DeckyStoreButton>
+            <DeckyStoreButton icon={<FaFileAlt />}>
+              Plugin Logs
+            </DeckyStoreButton>
           </ButtonItem>
         </PanelSectionRow>
       </>)}
@@ -145,7 +147,7 @@ export function Content() {
           layout="below"
           onClick={() => ConfigCloudPage.enter()}
         >
-          <DeckyStoreButton icon={<BiSolidCloudUpload />}>
+          <DeckyStoreButton icon={<MdStorage />}>
             Cloud Provider
           </DeckyStoreButton>
         </ButtonItem>
@@ -216,7 +218,7 @@ export function Content() {
                     }
                   })}
             >
-              <DeckyStoreButton icon={<FaFileUpload />}>
+              <DeckyStoreButton icon={<FaCloudArrowUp />}>
                 Sync Root
               </DeckyStoreButton>
             </ButtonItem>
@@ -244,7 +246,7 @@ export function Content() {
                     }
                   })}
             >
-              <DeckyStoreButton icon={<FaFileUpload />}>
+              <DeckyStoreButton icon={<FaCloudArrowDown />}>
                 Sync Destination
               </DeckyStoreButton>
             </ButtonItem>

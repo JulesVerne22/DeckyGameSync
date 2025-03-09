@@ -3,8 +3,6 @@ import decky
 from pathlib import Path
 from enum import Enum
 
-GLOBAL_SYNC_ID = "global"
-
 RCLONE_PORT = 53682
 
 PLUGIN_DEFAULT_CONFIG_PATH = Path(decky.DECKY_PLUGIN_DIR) / "default_config.json"
@@ -13,6 +11,14 @@ PLUGIN_CONFIG_DIR = Path(decky.DECKY_PLUGIN_SETTINGS_DIR)
 RCLONE_BIN_PATH = Path(decky.DECKY_PLUGIN_DIR) / "bin/rcloneLauncher"
 RCLONE_CFG_PATH = PLUGIN_CONFIG_DIR / "rclone.conf"
 RCLONE_BISYNC_CACHE_DIR = Path(decky.HOME) / ".cache/rclone/bisync"
+
+GLOBAL_SYNC_ID = "global"
+SHARED_FILTER_NAME = "shared"
+
+SYNC_FILTER_TYPE_DICT = {
+    SHARED_FILTER_NAME: -1,
+    GLOBAL_SYNC_ID: 0,
+}
 
 logger = decky.logger
 
@@ -34,12 +40,3 @@ class RcloneSyncWinner(Enum):
 
     LOCAL = "path1"
     CLOUD = "path2"
-
-
-class FilterType(Enum):
-    """
-    Enum representing the different types of sync paths.
-    """
-
-    TARGET = True
-    SHARED = False

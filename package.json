@@ -2,7 +2,7 @@
   "name": "cloud-save-fork",
   "version": "1.5.0",
   "description": "Manage cloud saves for games that do not support it in [current year].",
-  "packageManager": "pnpm@10.5.2",
+  "packageManager": "pnpm@10.6.1",
   "type": "module",
   "scripts": {
     "build": "rollup -c",

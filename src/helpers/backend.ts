@@ -6,10 +6,11 @@ export const spawn_probe = callable<[], number>("spawn_probe");
 export const get_cloud_type = callable<[], string>("get_cloud_type");
 
 // Sync Paths
-export const get_filters_target = callable<[app_id: number], Array<string>>("get_filters_target");
-export const get_filters_shared = callable<[app_id: number], Array<string>>("get_filters_shared");
-export const set_filters_target = callable<[paths: Array<string>, app_id: number], void>("set_filters_target");
-export const set_filters_shared = callable<[paths: Array<string>, app_id: number], void>("set_filters_shared");
+export const get_target_filters = callable<[app_id: number], Array<string>>("get_target_filters");
+export const set_target_filters = callable<[paths: Array<string>, app_id: number], void>("set_target_filters");
+export const get_shared_filters = callable<[], Array<string>>("get_shared_filters");
+export const set_shared_filters = callable<[paths: Array<string>], void>("set_shared_filters");
+export const get_available_filters = callable<[], Array<number>>("get_available_filters");
 export const test_syncpath = callable<[path: string], number>("test_syncpath");
 
 // Syncing
@@ -19,7 +20,6 @@ export const resync_local_first = callable<[], number>("resync_local_first");
 export const resync_cloud_first = callable<[], number>("resync_cloud_first");
 export const sync_screenshot = callable<[user_id: number, screenshot_url: string], number>("sync_screenshot");
 export const delete_lock_files = callable<[], void>("delete_lock_files");
-export const get_available_sync_targets = callable<[], Array<number>>("get_available_sync_targets");
 
 // Processes
 export const pause_process = callable<[pid: number], void>("pause_process");

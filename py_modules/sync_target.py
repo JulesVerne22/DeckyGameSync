@@ -17,7 +17,7 @@ PLUGIN_EXCLUDE_ALL_FILTER_PATH = Path(decky.DECKY_PLUGIN_DIR) / "exclude_all.fil
 class _SyncTarget:
     _filter_required = True
     _sync_mode = RcloneSyncMode.COPY
-    _shared_filter_file = PLUGIN_CONFIG_DIR / "shared.filter"
+    _shared_filter_file = PLUGIN_CONFIG_DIR / f"{SHARED_FILTER_NAME}.filter"
 
     def __init__(self, id: str):
         self._id = id
@@ -199,48 +199,43 @@ class _SyncTarget:
 
         return sync_result
 
-    def get_filters(self, filter_type: FilterType) -> list[str]:
+    @classmethod
+    def get_shared_filter(cls) -> list[str]:
         """
-        Retrieves sync filters from the specified file.
-
-        Parameters:
-        filter_type (FilterType): The type of the filters to retrieve.
+        Retrieves sync filters from the shared file.
 
         Returns:
         list[str]: A list of filters, '\\n's will be stripped.
         """
-        match (filter_type):
-            case FilterType.TARGET:
-                file = self._target_filter_file
-            case FilterType.SHARED:
-                file = self._shared_filter_file
+        return get_filters(cls._shared_filter_file)
 
-        if not file.exists():
-            return []
-        with file.open("r") as f:
-            return [
-                stripped for line in f.read().splitlines() if (stripped := line.strip())
-            ]
-
-    def set_filters(self, filters: list[str], filter_type: FilterType):
+    @classmethod
+    def set_shared_filters(cls, filters: list[str]):
         """
-        Updates sync filters to the specified file.
+        Updates sync filters to the shared file.
 
         Parameters:
         filters (list[str]): The filters to set, elements inside should not contain '\\n'.
-        filter_type (FilterType): The type of the filters to set.
         """
-        match (filter_type):
-            case FilterType.TARGET:
-                file = self._target_filter_file
-            case FilterType.SHARED:
-                file = self._shared_filter_file
+        set_filters(cls._shared_filter_file, filters)
 
-        str_to_write = "\n".join(
-            stripped for path in filters if (stripped := path.strip())
-        )
-        with file.open("w") as f:
-            f.write(str_to_write)
+    def get_filters(self) -> list[str]:
+        """
+        Retrieves sync filters from the target file.
+
+        Returns:
+        list[str]: A list of filters, '\\n's will be stripped.
+        """
+        return get_filters(self._target_filter_file)
+
+    def set_filters(self, filters: list[str]):
+        """
+        Updates sync filters to the target file.
+
+        Parameters:
+        filters (list[str]): The filters to set, elements inside should not contain '\\n'.
+        """
+        set_filters(self._target_filter_file, filters)
 
     def _get_verbose_flag(self) -> list[str]:
         """

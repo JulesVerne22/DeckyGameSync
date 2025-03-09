@@ -26,21 +26,25 @@ class Plugin:
 
     # Sync Paths
 
-    async def get_filters_target(self, app_id: int = 0) -> list[str]:
-        logger.debug(f"Executing get_filters_target(app_id={app_id})")
-        return get_sync_target(app_id).get_filters(FilterType.TARGET)
+    async def get_target_filters(self, app_id: int = 0) -> list[str]:
+        logger.debug(f"Executing get_target_filters(app_id={app_id})")
+        return get_sync_target(app_id).get_filters()
 
-    async def get_filters_shared(self, app_id: int = 0) -> list[str]:
-        logger.debug(f"Executing get_filters_shared(app_id={app_id})")
-        return get_sync_target(app_id).get_filters(FilterType.SHARED)
+    async def set_target_filters(self, paths: list[str], app_id: int = 0) -> None:
+        logger.debug(f"Executing set_target_filters(path={paths}, app_id={app_id})")
+        return get_sync_target(app_id).set_filters(paths)
 
-    async def set_filters_target(self, paths: list[str], app_id: int = 0) -> None:
-        logger.debug(f"Executing set_filters_target(path={paths}, app_id={app_id})")
-        return get_sync_target(app_id).set_filters(FilterType.TARGET)
+    async def get_shared_filters(self) -> list[str]:
+        logger.debug(f"Executing get_shared_filters()")
+        return GlobalSyncTarget.get_shared_filter()
 
-    async def set_filters_shared(self, paths: list[str], app_id: int = 0) -> None:
-        logger.debug(f"Executing set_filters_shared(path={paths}, app_id={app_id})")
-        return get_sync_target(app_id).set_filters(FilterType.SHARED)
+    async def set_shared_filters(self, paths: list[str]) -> None:
+        logger.debug(f"Executing set_shared_filters(path={paths})")
+        return GlobalSyncTarget.set_shared_filters(paths)
+
+    async def get_available_filters(self) -> list[int]:
+        logger.debug(f"Executing get_available_filters()")
+        return utils.get_available_filters()
 
     async def test_syncpath(self, path: str) -> int:
         logger.debug(f"Executing test_syncpath({path})")
@@ -73,10 +77,6 @@ class Plugin:
     async def delete_lock_files(self):
         logger.debug(f"Executing delete_lock_files()")
         return utils.delete_lock_files()
-
-    async def get_available_sync_targets(self) -> list[int]:
-        logger.debug(f"Executing get_available_sync_targets()")
-        return utils.get_available_sync_targets()
 
     async def _sync(self, winner: RcloneSyncWinner, app_id: int = 0) -> int:
         return await get_sync_target(app_id).sync(winner)

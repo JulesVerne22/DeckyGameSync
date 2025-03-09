@@ -143,7 +143,7 @@ def getLocalScreenshotPath(user_id: int, screenshot_url: str) -> str:
         f"{decky.DECKY_USER_HOME}/.steam/steam/userdata/{user_id}/760/remote/{subpath}"
     )
 
-def get_available_sync_targets() -> list[int]:
+def get_available_filters() -> list[int]:
     """
     Returns a list of available sync targets.
 
@@ -152,9 +152,40 @@ def get_available_sync_targets() -> list[int]:
     """
     sync_paths = list()
     for filter in PLUGIN_CONFIG_DIR.glob("*.filter"):
-        if filter.stem.isdigit():
+        if filter.stem in SYNC_FILTER_TYPE_DICT:
+            sync_paths.append(SYNC_FILTER_TYPE_DICT[filter.stem])
+        elif filter.stem.isdigit():
             sync_paths.append(int(filter.stem))
-        elif filter.stem == GLOBAL_SYNC_ID:
-            sync_paths.append(0)
 
     return sync_paths
+
+def get_filters(file: Path) -> list[str]:
+    """
+    Retrieves sync filters from the specified file.
+
+    Parameters:
+    file (Path): Path of the filter file
+
+    Returns:
+    list[str]: A list of filters, '\\n's will be stripped.
+    """
+    if not file.exists():
+        return []
+    with file.open("r") as f:
+        return [
+            stripped for line in f.read().splitlines() if (stripped := line.strip())
+        ]
+
+def set_filters(file: Path, filters: list[str]):
+    """
+    Updates sync filters to the specified file.
+
+    Parameters:
+    file (Path): Path of the filter file
+    filters (list[str]): The filters to set, elements inside should not contain '\\n'.
+    """
+    str_to_write = "\n".join(
+        stripped for path in filters if (stripped := path.strip())
+    )
+    with file.open("w") as f:
+        f.write(str_to_write)

@@ -5,7 +5,8 @@ import SyncTargetConfigPage from "../pages/syncTargetConfigPage";
 import Logger from "./logger"
 import Toaster from "./toaster";
 import Config from "./config";
-import { sync_screenshot, get_available_sync_targets, pause_process, resume_process } from "./backend"
+import { sync_screenshot, pause_process, resume_process } from "./backend";
+import SyncFilters from "./syncFilters";
 
 async function worker(fn: () => Promise<number>): Promise<number | undefined> {
   try {
@@ -23,7 +24,6 @@ class SyncTaskQueue extends EventTarget {
   }
 
   private readonly queue: queueAsPromised<any>;
-  private availableSyncTargets: Set<number> = new Set<number>;
 
   public constructor() {
     super();
@@ -32,7 +32,6 @@ class SyncTaskQueue extends EventTarget {
       Logger.debug("All tasks finished")
       this.dispatchEvent(new CustomEvent(this.events.BUSY, { detail: false }));
     };
-    this.updateAvailableSyncTargets();
   }
 
   public get busy() {
@@ -40,7 +39,7 @@ class SyncTaskQueue extends EventTarget {
   }
 
   public async addSyncTask(syncFunction: (appId: number) => Promise<number>, appId: number, pId?: number) {
-    if (this.availableSyncTargets.has(appId)) {
+    if (SyncFilters.has(appId)) {
       if (pId) {
         await pause_process(pId);
       }
@@ -92,13 +91,6 @@ class SyncTaskQueue extends EventTarget {
       this.dispatchEvent(new CustomEvent(this.events.BUSY, { detail: true }));
     }
     return await this.queue.push(fn);
-  }
-
-  public updateAvailableSyncTargets() {
-    get_available_sync_targets().then((targets) => {
-      Logger.debug("Available sync targets:", targets);
-      this.availableSyncTargets = new Set(targets);
-    })
   }
 }
 
