@@ -1,7 +1,7 @@
 import fastq from "fastq";
 import type { queueAsPromised } from "fastq";
-import { Navigation } from "@decky/ui";
 import { GLOBAL_SYNC_APP_ID } from "./commonDefs"
+import SyncTargetConfigPage from "../pages/syncTargetConfigPage";
 import Logger from "./logger"
 import Toaster from "./toaster";
 import Config from "./config";
@@ -57,7 +57,7 @@ class SyncTaskQueue extends EventTarget {
             }
             let msg = `Sync for "${appName}" failed with exit code ${exitCode}`;
             Logger.error(msg);
-            Toaster.toast(`${msg}, click here to see the errors`, 10000, () => { Navigation.Navigate("/dcs-sync-logs"); });
+            Toaster.toast(`${msg}, click here to see the errors`, 10000, () => { SyncTargetConfigPage.enter({ appId: String(appId) }) });
           }
         })
         .finally(() => {

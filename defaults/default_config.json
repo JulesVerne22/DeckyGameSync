@@ -2,7 +2,7 @@
     "log_level": "INFO",
     "sync_on_game_start": false,
     "sync_on_game_stop": false,
-    "capture_upload_enable": false,
+    "capture_upload": false,
     "capture_upload_destination": "steam-captures",
     "capture_delete_after_upload": false,
     "additional_sync_args": [

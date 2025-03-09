@@ -12,7 +12,7 @@ function getCurrentUserId(): number {
 class ApiClient {
   public setupScreenshotNotification(): Unregisterable {
     return SteamClient.GameSessions.RegisterForScreenshotNotification(async (e: ScreenshotNotification) => {
-      if (Config.get("capture_upload_enable") && e.details && e.strOperation == "written") {
+      if (Config.get("capture_upload") && e.details && e.strOperation == "written") {
         await SyncTaskQeueue.addScreenshotSyncTask(getCurrentUserId(), e.details.strUrl, e.details.strGameID, e.details.hHandle);
       }
     });

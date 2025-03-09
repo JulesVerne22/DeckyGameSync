@@ -16,13 +16,8 @@ import PluginLogsPage from "./pluginLogsPage";
 import SyncTargetConfigPage from "./syncTargetConfigPage";
 
 export function Content() {
-  const [sync_on_game_start] = useState<boolean>(Config.get("sync_on_game_start"));
-  const [sync_on_game_stop] = useState<boolean>(Config.get("sync_on_game_stop"));
-  const [capture_upload_enable, set_capture_upload_enable] = useState<boolean>(Config.get("capture_upload_enable"));
-  const [capture_delete_after_upload] = useState<boolean>(Config.get("capture_delete_after_upload"));
-  const [advanced_mode, set_advanced_mode] = useState<boolean>(Config.get("advanced_mode"));
-  const [strict_game_sync] = useState<boolean>(Config.get("strict_game_sync"));
-
+  const [showCaptureOptions, setShowCaptureOptions] = useState<boolean>(Config.get("capture_upload"));
+  const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(Config.get("advanced_mode"));
   const [syncInProgress, setSyncInProgress] = useState<boolean>(SyncTaskQeueue.busy);
   const [hasProvider, setHasProvider] = useState<boolean>(true);
 
@@ -70,7 +65,7 @@ export function Content() {
         <PanelSectionRow>
           <ToggleField
             label="Sync on game start"
-            checked={sync_on_game_start}
+            checked={Config.get("sync_on_game_start")}
             onChange={(e) => {
               Config.set("sync_on_game_start", e);
             }}
@@ -79,7 +74,7 @@ export function Content() {
         <PanelSectionRow>
           <ToggleField
             label="Sync on game stop"
-            checked={sync_on_game_stop}
+            checked={Config.get("sync_on_game_stop")}
             onChange={(e) => {
               Config.set("sync_on_game_stop", e);
             }}
@@ -91,18 +86,18 @@ export function Content() {
         <PanelSectionRow>
           <ToggleField
             label="Upload screenshots"
-            checked={capture_upload_enable}
+            checked={Config.get("capture_upload")}
             onChange={(e) => {
-              Config.set("capture_upload_enable", e);
-              set_capture_upload_enable(e); // to trigger re-render
+              Config.set("capture_upload", e);
+              setShowCaptureOptions(e); // to trigger re-render
             }}
           />
         </PanelSectionRow>
-        {capture_upload_enable && (<>
+        {showCaptureOptions && (<>
           <PanelSectionRow>
             <ToggleField
               label="Delete local copy"
-              checked={capture_delete_after_upload}
+              checked={Config.get("capture_delete_after_upload")}
               onChange={(e) => {
                 Config.set("capture_delete_after_upload", e);
               }}
@@ -162,7 +157,7 @@ export function Content() {
         <PanelSectionRow>
           <ToggleField
             label="Enable"
-            checked={advanced_mode}
+            checked={Config.get("advanced_mode")}
             onChange={(e) => {
               if (e) {
                 Popups.confirmPopup("Enable Advanced Mode",
@@ -174,16 +169,16 @@ export function Content() {
                   () => Config.set("advanced_mode", true));
               } else {
                 Config.set("advanced_mode", false);
-                set_advanced_mode(false); // to trigger re-render
+                setShowAdvancedOptions(false); // to trigger re-render
               }
             }}
           />
         </PanelSectionRow>
-        {advanced_mode && (<>
+        {showAdvancedOptions && (<>
           <PanelSectionRow>
             <ToggleField
               label="Strict Game Sync"
-              checked={strict_game_sync}
+              checked={Config.get("strict_game_sync")}
               onChange={(e) => {
                 if (e) {
                   Popups.confirmPopup("Enable Strict Game Sync",
