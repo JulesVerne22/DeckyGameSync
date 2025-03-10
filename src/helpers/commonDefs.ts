@@ -9,4 +9,4 @@ export const SHARED_FILTER_APP_ID: number = -1;
 
 export const CONTEXT_MENU_GAME_FILTER_KEY: string = `${PLUGIN_NAME_AS_PATH}-filters`;
 
-export const CSS_MAX_VIEWABLE_HIGHT: string = "calc(100vh - 80px)";
+export const CSS_MAX_VIEWABLE_HEIGHT: string = "calc(100vh - 80px)";

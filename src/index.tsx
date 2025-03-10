@@ -5,7 +5,7 @@ import ApiClient from "./helpers/apiClient";
 import { Content } from "./pages/quickAccessMenu";
 import PluginLogsPage from "./pages/pluginLogsPage";
 import ConfigCloudPage from "./pages/configCloudPage";
-import ContextMenuPatch from "./pages/contextMenuPatch";
+import ContextMenuPatch from "./helpers/contextMenuPatch";
 import SyncTargetConfigPage from "./pages/syncTargetConfigPage";
 
 export default definePlugin(() => {

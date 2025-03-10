@@ -1,27 +1,29 @@
 import DefaultConfig from "../json/default_config.json";
+import Observable from "../types/observable";
 import { get_config, set_config } from "./backend";
 import Logger from "./logger";
 
-class Config {
-    private data: Record<string, any> = {};
+class Config extends Observable {
+  private data: Record<string, any> = {};
 
-    public async load(): Promise<void> {
-        this.data = await get_config() as Record<string, any>;
-        Logger.debug("Config loaded", this.data);
+  public async load(): Promise<void> {
+    this.data = await get_config() as Record<string, any>;
+    Logger.debug("Config loaded", this.data);
+  }
+
+  public get(key: string) {
+    if (!(key in this.data)) {
+      this.set(key, DefaultConfig[key]);
     }
 
-    public get(key: string) {
-        if (!(key in this.data)) {
-            this.set(key, DefaultConfig[key]);
-        }
+    return this.data[key];
+  }
 
-        return this.data[key];
-    }
-
-    public set(key: string, value: any) {
-        this.data[key] = value;
-        set_config(key, value);
-    }
+  public set(key: string, value: any) {
+    this.data[key] = value;
+    set_config(key, value);
+    this.dispatchEvent(new CustomEvent(key, { detail: value }));
+  }
 }
 
 const config = new Config();

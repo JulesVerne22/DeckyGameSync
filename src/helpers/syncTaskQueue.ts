@@ -7,6 +7,7 @@ import Toaster from "./toaster";
 import Config from "./config";
 import { sync_screenshot, pause_process, resume_process } from "./backend";
 import SyncFilters from "./syncFilters";
+import Observable from "../types/observable";
 
 async function worker(fn: () => Promise<number>): Promise<number | undefined> {
   try {
@@ -18,7 +19,7 @@ async function worker(fn: () => Promise<number>): Promise<number | undefined> {
   return undefined;
 }
 
-class SyncTaskQueue extends EventTarget {
+class SyncTaskQueue extends Observable {
   public readonly events = {
     BUSY: 'busy'
   }

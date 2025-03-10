@@ -25,6 +25,7 @@ declare global {
     bUploaded: boolean;
     ugcHandle: string;
   }
+  
   interface ScreenshotNotification {
     details?: Screenshot;
     hScreenshot: number;

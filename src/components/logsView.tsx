@@ -6,6 +6,7 @@ import {
 } from "react";
 import { ButtonItem } from "@decky/ui";
 import Container from "./container";
+import { CSS_MAX_VIEWABLE_HEIGHT } from "../helpers/commonDefs";
 
 interface LogViewProps {
   title: string;
@@ -63,7 +64,7 @@ export default function LogsView({ title, getLog, fullPage, children }: PropsWit
   return (fullPage ? (
     <div style={{
       padding: "40px 20px 40px 20px",
-      height: "calc(100vh - 80px)",
+      height: CSS_MAX_VIEWABLE_HEIGHT,
     }}>
       {content}
     </div>

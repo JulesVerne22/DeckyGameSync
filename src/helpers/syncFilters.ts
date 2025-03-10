@@ -5,11 +5,7 @@ import Logger from "./logger";
 class SyncFilters {
   private appIdSet: Set<number> = new Set();
 
-  public constructor() {
-    this.refresh();
-  }
-
-  private async refresh(): Promise<void> {
+  public async refresh(): Promise<void> {
     let availableSyncFilters = await get_available_filters();
     Logger.debug("Available sync filters:", availableSyncFilters);
     this.appIdSet = new Set(availableSyncFilters);
@@ -38,4 +34,5 @@ class SyncFilters {
 }
 
 const syncFilters = new SyncFilters();
+await syncFilters.refresh();
 export default syncFilters;

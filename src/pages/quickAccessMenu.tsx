@@ -23,12 +23,14 @@ export function Content() {
 
   useEffect(() => {
     get_cloud_type().then((e) => setHasProvider(Boolean(e)));
+    const unregisterables: Array<Unregisterable> = [];
 
-    const syncInProgressUpdateHandler = ((event: CustomEvent) => setSyncInProgress(event.detail)) as EventListener;
-    SyncTaskQeueue.addEventListener(SyncTaskQeueue.events.BUSY, syncInProgressUpdateHandler);
+    unregisterables.push(Config.addListener("capture_upload", setShowCaptureOptions));
+    unregisterables.push(Config.addListener("advanced_mode", setShowAdvancedOptions));
+    unregisterables.push(Config.addListener(SyncTaskQeueue.events.BUSY, setSyncInProgress));
 
     return () => {
-      SyncTaskQeueue.removeEventListener(SyncTaskQeueue.events.BUSY, syncInProgressUpdateHandler);
+      unregisterables.forEach(e => e.unregister());
     }
   }, []);
 
@@ -87,10 +89,7 @@ export function Content() {
           <ToggleField
             label="Upload screenshots"
             checked={Config.get("capture_upload")}
-            onChange={(e) => {
-              Config.set("capture_upload", e);
-              setShowCaptureOptions(e); // to trigger re-render
-            }}
+            onChange={e => Config.set("capture_upload", e)}
           />
         </PanelSectionRow>
         {showCaptureOptions && (<>
@@ -171,7 +170,6 @@ export function Content() {
                   () => Config.set("advanced_mode", true));
               } else {
                 Config.set("advanced_mode", false);
-                setShowAdvancedOptions(false); // to trigger re-render
               }
             }}
           />
