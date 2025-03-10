@@ -18,7 +18,7 @@ class ApiClient {
     });
   }
 
-  public setupAppLifetimeNotificationsHandler(): Unregisterable {
+  public setupAppLifetimeNotifications(): Unregisterable {
     return SteamClient.GameSessions.RegisterForAppLifetimeNotifications(async (e: LifetimeNotification) => {
       if (e.bRunning) {
         if (Config.get("sync_on_game_start")) {

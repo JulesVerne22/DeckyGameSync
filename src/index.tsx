@@ -11,7 +11,7 @@ import SyncTargetConfigPage from "./pages/syncTargetConfigPage";
 export default definePlugin(() => {
   const registrations: Array<Unregisterable> = [];
 
-  registrations.push(ApiClient.setupAppLifetimeNotificationsHandler());
+  registrations.push(ApiClient.setupAppLifetimeNotifications());
   registrations.push(ApiClient.setupScreenshotNotification());
 
   registrations.push(PluginLogsPage.register());
