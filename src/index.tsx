@@ -1,12 +1,12 @@
-import { PLUGIN_NAME } from "./helpers/commonDefs";
-import { definePlugin } from "@decky/api";
 import { FaSave } from "react-icons/fa";
-import ApiClient from "./helpers/apiClient";
-import { Content } from "./pages/quickAccessMenu";
+import { definePlugin } from "@decky/api";
+import { PLUGIN_NAME } from "./helpers/commonDefs";
+import * as ApiClient from "./helpers/apiClient";
 import PluginLogsPage from "./pages/pluginLogsPage";
 import ConfigCloudPage from "./pages/configCloudPage";
-import ContextMenuPatch from "./helpers/contextMenuPatch";
 import SyncTargetConfigPage from "./pages/syncTargetConfigPage";
+import ContextMenuPatch from "./helpers/contextMenuPatch";
+import QuickAccessMenu from "./pages/quickAccessMenu";
 
 export default definePlugin(() => {
   const registrations: Array<Unregisterable> = [];
@@ -22,7 +22,7 @@ export default definePlugin(() => {
 
   return {
     name: PLUGIN_NAME,
-    content: <Content />,
+    content: <QuickAccessMenu />,
     icon: <FaSave />,
     onDismount() {
       registrations.forEach(registration => registration.unregister());

@@ -15,7 +15,7 @@ import ConfigCloudPage from "./configCloudPage";
 import PluginLogsPage from "./pluginLogsPage";
 import SyncTargetConfigPage from "./syncTargetConfigPage";
 
-export function Content() {
+export default function QuickAccessMenu() {
   const [showCaptureOptions, setShowCaptureOptions] = useState<boolean>(Config.get("capture_upload"));
   const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(Config.get("advanced_mode"));
   const [syncInProgress, setSyncInProgress] = useState<boolean>(SyncTaskQeueue.busy);

@@ -9,33 +9,28 @@ function getCurrentUserId(): number {
   return Number(BigInt.asUintN(32, BigInt(window.App.m_CurrentUser.strSteamID)));
 };
 
-class ApiClient {
-  public setupScreenshotNotification(): Unregisterable {
-    return SteamClient.GameSessions.RegisterForScreenshotNotification(async (e: ScreenshotNotification) => {
-      if (Config.get("capture_upload") && e.details && e.strOperation == "written") {
-        await SyncTaskQeueue.addScreenshotSyncTask(getCurrentUserId(), e.details.strUrl, e.details.strGameID, e.details.hHandle);
-      }
-    });
-  }
-
-  public setupAppLifetimeNotifications(): Unregisterable {
-    return SteamClient.GameSessions.RegisterForAppLifetimeNotifications(async (e: LifetimeNotification) => {
-      if (e.bRunning) {
-        if (Config.get("sync_on_game_start")) {
-          Logger.info(`Syncing on game ${e.unAppID} start`);
-          await SyncTaskQeueue.addSyncTask(sync_cloud_first, e.unAppID, e.nInstanceID);
-          await SyncTaskQeueue.addSyncTask(sync_local_first, GLOBAL_SYNC_APP_ID);
-        }
-      } else {
-        if (Config.get("sync_on_game_stop")) {
-          Logger.info(`Syncing on game ${e.unAppID} stop`);
-          await SyncTaskQeueue.addSyncTask(sync_local_first, e.unAppID);
-          await SyncTaskQeueue.addSyncTask(sync_cloud_first, GLOBAL_SYNC_APP_ID);
-        }
-      }
-    });
-  }
+export function setupScreenshotNotification(): Unregisterable {
+  return SteamClient.GameSessions.RegisterForScreenshotNotification(async (e: ScreenshotNotification) => {
+    if (Config.get("capture_upload") && e.details && e.strOperation == "written") {
+      await SyncTaskQeueue.addScreenshotSyncTask(getCurrentUserId(), e.details.strUrl, e.details.strGameID, e.details.hHandle);
+    }
+  });
 }
 
-const apiClient = new ApiClient();
-export default apiClient;
+export function setupAppLifetimeNotifications(): Unregisterable {
+  return SteamClient.GameSessions.RegisterForAppLifetimeNotifications(async (e: LifetimeNotification) => {
+    if (e.bRunning) {
+      if (Config.get("sync_on_game_start")) {
+        Logger.info(`Syncing on game ${e.unAppID} start`);
+        await SyncTaskQeueue.addSyncTask(sync_cloud_first, e.unAppID, e.nInstanceID);
+        await SyncTaskQeueue.addSyncTask(sync_local_first, GLOBAL_SYNC_APP_ID);
+      }
+    } else {
+      if (Config.get("sync_on_game_stop")) {
+        Logger.info(`Syncing on game ${e.unAppID} stop`);
+        await SyncTaskQeueue.addSyncTask(sync_local_first, e.unAppID);
+        await SyncTaskQeueue.addSyncTask(sync_cloud_first, GLOBAL_SYNC_APP_ID);
+      }
+    }
+  });
+}
