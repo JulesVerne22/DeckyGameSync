@@ -23,8 +23,6 @@ coverage
 node_modules
 bower_components
 .pnpm-store
-py_modules/dependencies
-py_modules/settings.py
 
 # Editors
 .idea
@@ -49,10 +47,5 @@ yalc.lock
 backend/out
 
 # Ignore decky CLI for building plugins
-out
-out/*
-cli/
-cli/*
-cli/decky
-
-backend/rclone-*
+/out
+/cli
