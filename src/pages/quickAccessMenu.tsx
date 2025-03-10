@@ -23,14 +23,14 @@ export function Content() {
 
   useEffect(() => {
     get_cloud_type().then((e) => setHasProvider(Boolean(e)));
-    const unregisterables: Array<Unregisterable> = [];
+    const registrations: Array<Unregisterable> = [];
 
-    unregisterables.push(Config.addListener("capture_upload", setShowCaptureOptions));
-    unregisterables.push(Config.addListener("advanced_mode", setShowAdvancedOptions));
-    unregisterables.push(Config.addListener(SyncTaskQeueue.events.BUSY, setSyncInProgress));
+    registrations.push(Config.on("capture_upload", setShowCaptureOptions));
+    registrations.push(Config.on("advanced_mode", setShowAdvancedOptions));
+    registrations.push(Config.on(SyncTaskQeueue.events.BUSY, setSyncInProgress));
 
     return () => {
-      unregisterables.forEach(e => e.unregister());
+      registrations.forEach(e => e.unregister());
     }
   }, []);
 

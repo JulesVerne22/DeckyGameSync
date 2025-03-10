@@ -3,9 +3,9 @@ import { routerHook } from "@decky/api";
 import { Navigation } from "@decky/ui";
 import { PLUGIN_NAME_AS_PATH } from "../helpers/commonDefs";
 import Logger from "../helpers/logger";
-import Registerable from "../types/registerable";
+import Registeration from "../types/registeration";
 
-export default abstract class RoutePage<T extends { [K in keyof T]: string } = Record<string, string>> extends Registerable {
+export default abstract class RoutePage<T extends { [K in keyof T]: string } = Record<string, string>> extends Registeration {
   readonly routePrefix: string = PLUGIN_NAME_AS_PATH;
   abstract readonly route: string;
 
@@ -13,7 +13,7 @@ export default abstract class RoutePage<T extends { [K in keyof T]: string } = R
     return `/${this.routePrefix}/${this.route}`;
   }
 
-  protected _register(): () => void {
+  protected _register(): UnregisterFunction {
     const route = this.fullRoute;
     routerHook.addRoute(route, this.render, { exact: true });
     return () => routerHook.removeRoute(route);

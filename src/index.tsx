@@ -9,23 +9,23 @@ import ContextMenuPatch from "./helpers/contextMenuPatch";
 import SyncTargetConfigPage from "./pages/syncTargetConfigPage";
 
 export default definePlugin(() => {
-  const registrationArray: Array<Unregisterable> = [];
+  const registrations: Array<Unregisterable> = [];
 
-  registrationArray.push(ApiClient.setupAppLifetimeNotificationsHandler());
-  registrationArray.push(ApiClient.setupScreenshotNotification());
+  registrations.push(ApiClient.setupAppLifetimeNotificationsHandler());
+  registrations.push(ApiClient.setupScreenshotNotification());
 
-  registrationArray.push(PluginLogsPage.register());
-  registrationArray.push(ConfigCloudPage.register());
-  registrationArray.push(SyncTargetConfigPage.register());
+  registrations.push(PluginLogsPage.register());
+  registrations.push(ConfigCloudPage.register());
+  registrations.push(SyncTargetConfigPage.register());
 
-  registrationArray.push(ContextMenuPatch.register());
+  registrations.push(ContextMenuPatch.register());
 
   return {
     name: PLUGIN_NAME,
     content: <Content />,
     icon: <FaSave />,
     onDismount() {
-      registrationArray.forEach(registration => registration.unregister());
+      registrations.forEach(registration => registration.unregister());
     }
   }
 });

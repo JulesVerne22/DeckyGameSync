@@ -22,7 +22,7 @@ class Config extends Observable {
   public set(key: string, value: any) {
     this.data[key] = value;
     set_config(key, value);
-    this.dispatchEvent(new CustomEvent(key, { detail: value }));
+    this.emit(key, value);
   }
 }
 

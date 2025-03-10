@@ -12,7 +12,7 @@ import {
 } from '@decky/ui';
 import { CONTEXT_MENU_GAME_FILTER_KEY as CONTEXT_MENU_SYNC_FILTER_KEY } from "./commonDefs";
 import SyncTargetConfigPage from "../pages/syncTargetConfigPage";
-import Registerable from '../types/registerable';
+import Registeration from '../types/registeration';
 
 // Always add before "Properties..."
 const spliceMenuItem = (children: any[], appid: number) => {
@@ -91,8 +91,8 @@ const LibraryContextMenu = fakeRenderComponent(
 ).type;
 
 
-class ContextMenuPatch extends Registerable {
-  protected _register(): () => void {
+class ContextMenuPatch extends Registeration {
+  protected _register(): UnregisterFunction {
     return patchContextMenu(LibraryContextMenu);
   }
 }

@@ -25,7 +25,7 @@ declare global {
     bUploaded: boolean;
     ugcHandle: string;
   }
-  
+
   interface ScreenshotNotification {
     details?: Screenshot;
     hScreenshot: number;
@@ -33,7 +33,9 @@ declare global {
     unAppID: number;
   }
 
+  type UnregisterFunction = () => void;
+
   interface Unregisterable {
-    unregister(): void;
+    unregister: UnregisterFunction;
   }
 }

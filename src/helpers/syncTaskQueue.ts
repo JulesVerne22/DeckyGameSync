@@ -31,7 +31,7 @@ class SyncTaskQueue extends Observable {
     this.queue = fastq.promise(worker, 1)
     this.queue.drain = () => {
       Logger.debug("All tasks finished")
-      this.dispatchEvent(new CustomEvent(this.events.BUSY, { detail: false }));
+      this.emit(this.events.BUSY, false);
     };
   }
 
@@ -89,7 +89,7 @@ class SyncTaskQueue extends Observable {
   private async pushTask(fn: () => Promise<number>): Promise<number | undefined> {
     if (this.queue.idle()) {
       Logger.debug("Starting task");
-      this.dispatchEvent(new CustomEvent(this.events.BUSY, { detail: true }));
+      this.emit(this.events.BUSY, true);
     }
     return await this.queue.push(fn);
   }
