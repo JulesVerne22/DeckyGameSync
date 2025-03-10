@@ -5,7 +5,6 @@ import Logger from "../helpers/logger";
 import LogsView from "../components/logsView";
 import { get_last_sync_log } from "../helpers/backend";
 import { FaFileAlt } from "react-icons/fa";
-import { CSS_MAX_VIEWABLE_HEIGHT as CSS_MAX_VIEWABLE_HEIGHT } from "../helpers/commonDefs";
 import Toaster from "../helpers/toaster";
 
 interface SyncTargetConfigPageParams {
@@ -31,24 +30,21 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
       pages={[
         {
           title: "Target Filter",
-          content: <LogsView title="Target Filter" getLog={async () => await get_last_sync_log(appId)} />
+          content: <LogsView fullPage={true} title="Target Filter" getLog={async () => await get_last_sync_log(appId)} />
         },
         {
           title: "Shared Filter",
-          content: <LogsView title="Shared Filter" getLog={async () => await get_last_sync_log(appId)} />
+          content: <LogsView fullPage={false} title="Shared Filter" getLog={async () => await get_last_sync_log(appId)} />
         },
         {
           title: "Sync Logs",
           icon: <FaFileAlt />,
           hideTitle: true,
-          content:
-            <div style={{
-              height: CSS_MAX_VIEWABLE_HEIGHT,
-              marginTop: "-24px",
-              position: "fixed",
-            }}>
-              <LogsView title="Sync Logs" getLog={async () => await get_last_sync_log(appId)} />
-            </div>,
+          content: <LogsView
+            title="Sync Logs"
+            getLog={async () => await get_last_sync_log(appId)}
+            fullPage={false}
+          />
         },
       ]}
     />

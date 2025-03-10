@@ -5,16 +5,15 @@ import {
   PropsWithChildren
 } from "react";
 import { ButtonItem } from "@decky/ui";
-import Container from "./container";
-import { CSS_MAX_VIEWABLE_HEIGHT } from "../helpers/commonDefs";
+import PageView from "./pageView";
 
-interface LogViewProps {
+interface LogsViewProps {
   title: string;
-  fullPage?: boolean;
   getLog: () => Promise<string>;
+  fullPage: boolean;
 }
 
-export default function LogsView({ title, getLog, fullPage, children }: PropsWithChildren<LogViewProps>) {
+export default function LogsView({ title, getLog, fullPage = true, children }: PropsWithChildren<LogsViewProps>) {
   const [logContent, setLogContent] = useState('');
   const logPreRef = useRef<HTMLPreElement>(null);
 
@@ -29,8 +28,8 @@ export default function LogsView({ title, getLog, fullPage, children }: PropsWit
     });
   }, [logContent]);
 
-  const content = (
-    <Container
+  return (
+    <PageView
       title={title}
       titleItem={
         <>
@@ -41,6 +40,7 @@ export default function LogsView({ title, getLog, fullPage, children }: PropsWit
           </ButtonItem>
         </>
       }
+      fullPage={fullPage}
     >
       <pre
         ref={logPreRef}
@@ -58,17 +58,6 @@ export default function LogsView({ title, getLog, fullPage, children }: PropsWit
         }}>
         {logContent}
       </pre>
-    </Container>
-  );
-
-  return (fullPage ? (
-    <div style={{
-      padding: "40px 20px 40px 20px",
-      height: CSS_MAX_VIEWABLE_HEIGHT,
-    }}>
-      {content}
-    </div>
-  ) :
-    content
+    </PageView>
   );
 }

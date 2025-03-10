@@ -2,16 +2,16 @@ import { Field } from "@decky/ui";
 import { PropsWithChildren } from "react";
 
 interface ContainerProps {
-  title: string;
-  description?: string;
+  title: React.ReactNode;
+  description?: React.ReactNode;
   titleItem?: React.ReactNode;
 }
 
-export default function Container({ title, description, titleItem, children }: PropsWithChildren<ContainerProps>) {
+export default function container({ title, description, titleItem, children }: PropsWithChildren<ContainerProps>) {
   return (
     <>
       <Field
-        label={<h1 style={{ margin: "0" }}>{title}</h1>}
+        label={title}
         description={description && (<small>{description}</small>)}
         highlightOnFocus={false}>
         {titleItem}
