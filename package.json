@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/GedasFX/decky-cloud-save.git"
+    "url": "git+https://github.com/AkazaRenn/SDH-CloudSaveFork.git"
   },
   "keywords": [
     "decky",
@@ -26,9 +26,9 @@
   "author": "GedasFX",
   "license": "BSD-3-Clause",
   "bugs": {
-    "url": "https://github.com/GedasFX/decky-cloud-save/issues"
+    "url": "https://github.com/AkazaRenn/SDH-CloudSaveFork/issues"
   },
-  "homepage": "https://github.com/GedasFX/decky-cloud-save#readme",
+  "homepage": "https://github.com/AkazaRenn/SDH-CloudSaveFork#readme",
   "devDependencies": {
     "@decky/rollup": "^1.0.1",
     "@types/react": "19.0.10",

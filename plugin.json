@@ -6,6 +6,6 @@
   "publish": {
     "tags": ["backup", "cloud", "rclone"],
     "description": "Manage cloud saves for games that do not support it in [current year].",
-    "image": "https://opengraph.githubassets.com/0/AkazaRenn/decky-cloud-save"
+    "image": "https://opengraph.githubassets.com/0/AkazaRenn/SDH-CloudSaveFork"
   }
 }

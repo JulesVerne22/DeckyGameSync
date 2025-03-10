@@ -6,9 +6,9 @@ Support: **[SteamDeckHomebrew Discord](https://deckbrew.xyz/discord)**, or open 
 
 ## Troubleshooting
 
-If you are having issues with sync, more often than not, logs will tell you all you need to know to resolve the issue. You can find them in the plugin panel, or `~/homebrew/logs/decky-cloud-save/`. You may be asked to provide them when asking for help.
+If you are having issues with sync, more often than not, logs will tell you all you need to know to resolve the issue. You can find them in the plugin panel, or `~/homebrew/logs/cloud-save-fork/`. You may be asked to provide them when asking for help.
 
-To see more detailed logs, you will have to modify the `log_level` in `~/homebrew/settings/decky-cloud-save/plugin.properties` to use `DEBUG`. Make sure to change it back to `INFO` or higher, when done.
+To see more detailed logs, you will have to modify the `log_level` in `~/homebrew/settings/cloud-save-fork/plugin.properties` to use `DEBUG`. Make sure to change it back to `INFO` or higher, when done.
 
 ## Features
 
@@ -22,18 +22,18 @@ To see more detailed logs, you will have to modify the `log_level` in `~/homebre
 * Easily accessable sync logs.
 * Bidirectional sync (beta, use at own risk!).
 
-**NOTE!** This plugin **does not** delete files from the remote (**when in regular sync mode only**), even if files get deleted locally. This is intentional to protect against accidents. This, however, may cause issues. If you have a concrete example, let me know by opening an [issue](https://github.com/GedasFX/decky-cloud-save/issues).
+**NOTE!** This plugin **does not** delete files from the remote (**when in regular sync mode only**), even if files get deleted locally. This is intentional to protect against accidents. This, however, may cause issues. If you have a concrete example, let me know by opening an [issue](https://github.com/AkazaRenn/SDH-CloudSaveFork/issues).
 
 ## Installation
 
-Find it on the [decky plugin store](https://plugins.deckbrew.xyz/) or download it from [releases page](https://github.com/GedasFX/decky-cloud-save/releases/) (use the built-in installer).
+Find it on the [decky plugin store](https://plugins.deckbrew.xyz/) or download it from [releases page](https://github.com/AkazaRenn/SDH-CloudSaveFork/releases/) (use the built-in installer).
 
 
 ## Usage
 
 ### Authentication
 
-To sync files, you must first authenticate with a cloud provider. 
+To sync files, you must first authenticate with a cloud provider.
 
 Navigate to `Configuration - Cloud Provider` and select one of the three providers. A website will open requesting you to authenticate. After putting in the credentials, the page will close by itself and `Currently using: X` should be updated to the new provider.
 
@@ -67,9 +67,9 @@ Manual configuration would require the use of a console, but following the inter
 
 ### Configuration Steps
 
-1. Navigate to the plugin installation directory (default - `~/homebrew/plugins/decky-cloud-save`).
+1. Navigate to the plugin installation directory (default - `~/homebrew/plugins/cloud-save-fork`).
 2. Run `./bin/rcloneLauncher config` in a console:
-   
+
    1. In the first menu select `New remote` (enter `n`).
    2. When asked for `name`, enter `backend` - **IMPORTANT**!
 
@@ -79,19 +79,19 @@ Manual configuration would require the use of a console, but following the inter
 
    4. Follow the steps for each provider. If stumped, use the [rclone docs](https://rclone.org/docs/) for reference.
 
-      > If you supsect a provider is not supported or are still stuck setting up, open an [issue](https://github.com/GedasFX/decky-cloud-save/issues) or visit the [SteamDeckHomebrew Discord](https://deckbrew.xyz/discord).
+      > If you supsect a provider is not supported or are still stuck setting up, open an [issue](https://github.com/AkazaRenn/SDH-CloudSaveFork/issues) or visit the [SteamDeckHomebrew Discord](https://deckbrew.xyz/discord).
 
 3. Verify the sync works by going to gaming mode and clicking `Sync now`. If files start appearing in the cloud, everything works as expected.
 
 ### Filtering (Advanced)
 
-By default, the filters defined in the UI can be set to include some paths and to exclude others (excludes takes priority over includes). If a more complex solution is needed, you can edit the filter file (by default: `~/homebrew/settings/decky-cloud-save/sync_paths_filter.txt`) to meet your needs.
+By default, the filters defined in the UI can be set to include some paths and to exclude others (excludes takes priority over includes). If a more complex solution is needed, you can edit the filter file (by default: `~/homebrew/settings/cloud-save-fork/sync_paths_filter.txt`) to meet your needs.
 
 Important note: UI edits overwrite this file, so make sure you do not use the built-in editor afterward and make constant backups of the configuration (heh). Additionally, we cannot check for the validity of the configuration after it was done manually. If needed, a dry-run can be performed to check which files would have been synced after the edit. I would highly recommend you do it before you sync your entire file system.
 
-Command (in `~/homebrew/plugins/decky-cloud-save/`):
+Command (in `~/homebrew/plugins/cloud-save-fork/`):
 ```bash
-./rcloneLauncher copy --filter-from ../../settings/decky-cloud-save/sync_paths_filter.txt / backend:decky-cloud-save --copy-links --dry-run
+./rcloneLauncher copy --filter-from ../../settings/cloud-save-fork/sync_paths_filter.txt / backend:cloud-save-fork --copy-links --dry-run
 ```
 
 ## Bi-directional Sync
@@ -131,7 +131,7 @@ If the bisync is used for the first time, and or data corruption occurs, you may
 
 ### Change destination folder name
 
-If you wish to change the folder on how it appears on the remote, edit `~/homebrew/settings/decky-cloud-save/plugin.properties` file and replace `decky-cloud-save` with whichever name you wish. Be wary of path limitations unique to each provider.
+If you wish to change the folder on how it appears on the remote, edit `~/homebrew/settings/cloud-save-fork/plugin.properties` file and replace `cloud-save-fork` with whichever name you wish. Be wary of path limitations unique to each provider.
 
 ### Additional rclone arguments
 
@@ -153,7 +153,7 @@ Example, where 2 symlinks are created:
 ```bash
 cd /home/deck/syncs
 ln -s /run/media/mmcblk0p1/Emulation/saves/ "$(pwd)/emulation-saves"
-ln -s "/home/deck/homebrew/settings/decky-cloud-save/" "$(pwd)/dcs-config"
+ln -s "/home/deck/homebrew/settings/cloud-save-fork/" "$(pwd)/dcs-config"
 ```
 
 In `plugin.properties`, when root is set to `/home/deck`, we can sync the folder `syncs`, and it would show up as `emulation-saves`, and `dcs-config` on the configured cloud provider.
