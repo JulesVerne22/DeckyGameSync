@@ -1,6 +1,7 @@
-import { PropsWithChildren, useEffect, useState } from "react";
+import { PropsWithChildren, useEffect, useRef, useState } from "react";
 import { DialogButton, ReorderableList } from "@decky/ui";
 import { textInputPopup } from "./popups";
+import { CSS_STEAM_HIGHLIGHT_COLOR } from "../helpers/commonDefs";
 import PageView from "./pageView";
 import FilterPickerButton from "./filePickerButton";
 import Config from "../helpers/config";
@@ -16,16 +17,16 @@ interface FiltersViewProps {
 }
 
 export default function filtersView({ title, description, fullPage = false, getFiltersFunction, setFiltersFunction, children }: PropsWithChildren<FiltersViewProps>) {
+  const saveButtonRef = useRef<HTMLDivElement>(null);
+
   const [filters, setFilters] = useState<Array<string>>([]);
   const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(Config.get("advanced_mode"));
 
   useEffect(() => {
-    getFiltersFunction().then(setFilters);
+    getFiltersFunction().then(e => filters.concat(e));
 
     const registrations: Array<Unregisterable> = [];
-
     registrations.push(Config.on("advanced_mode", setShowAdvancedOptions));
-
     return () => {
       registrations.forEach(e => e.unregister());
     }
@@ -80,7 +81,7 @@ export default function filtersView({ title, description, fullPage = false, getF
                 }
               )}
             >
-              Add Arbitrary String
+              Add Arbitrary Line
             </DialogButton>
             <DialogButton
               onClick={() =>
@@ -104,6 +105,10 @@ export default function filtersView({ title, description, fullPage = false, getF
         <Row>
           <DialogButton
             onClick={() => setFiltersFunction(filters)}
+            ref={saveButtonRef}
+            style={{ backgroundColor: CSS_STEAM_HIGHLIGHT_COLOR }}
+            onGamepadFocus={() => saveButtonRef.current && (saveButtonRef.current.style.backgroundColor = "white")}
+            onGamepadBlur={() => saveButtonRef.current && (saveButtonRef.current.style.backgroundColor = CSS_STEAM_HIGHLIGHT_COLOR)}
           >
             Save
           </DialogButton>
