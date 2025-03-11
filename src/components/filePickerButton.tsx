@@ -1,4 +1,4 @@
-import { ButtonItem, showContextMenu, Menu, MenuItem } from "@decky/ui";
+import { DialogButton, showContextMenu, Menu, MenuItem } from "@decky/ui";
 import { openFilePicker, FileSelectionType } from "@decky/api";
 import { confirmPopup } from "./popups";
 import { test_syncpath } from "../helpers/backend";
@@ -40,7 +40,7 @@ export default function filterPickerButton({ text, onConfirm }: FilterPickerButt
   };
 
   return (
-    <ButtonItem
+    <DialogButton
       onClick={() => showContextMenu(
         <Menu label="Filter Type">
           <MenuItem
@@ -71,6 +71,6 @@ export default function filterPickerButton({ text, onConfirm }: FilterPickerButt
       )}
     >
       {text}
-    </ButtonItem>
+    </DialogButton>
   );
 }

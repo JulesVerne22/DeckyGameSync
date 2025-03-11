@@ -1,10 +1,11 @@
 import { PropsWithChildren, useEffect, useState } from "react";
-import { ButtonItem, Field, ReorderableList } from "@decky/ui";
+import { DialogButton, ReorderableList } from "@decky/ui";
 import { textInputPopup } from "./popups";
 import PageView from "./pageView";
 import FilterPickerButton from "./filePickerButton";
 import Config from "../helpers/config";
 import Toaster from "../helpers/toaster";
+import Row from "./row";
 
 interface FiltersViewProps {
   title: string;
@@ -38,69 +39,76 @@ export default function filtersView({ title, description, fullPage = false, getF
       fullPage={fullPage}
       titleItem={children}
     >
-      <ReorderableList
-        entries={filters.map((value, index) => ({
-          label: value,
-          position: index,
-        }))}
-        onSave={entries => {
-          setFilters(entries
-            .sort((a, b) => a.position - b.position)
-            .map(entry => String(entry.label)));
-        }}
-      />
-      <Field childrenContainerWidth="max">
-        <FilterPickerButton
-          text="Add Include Filter"
-          onConfirm={(path: string) => {
-            setFilters([...filters, `+ ${path}`]);
+      <div style={{
+        overflowY: "scroll",
+        overflowX: "hidden",
+        marginLeft: "-20px",
+      }}>
+        <ReorderableList
+          entries={filters.map((value, index) => ({
+            label: value,
+            position: index,
+          }))}
+          onSave={entries => {
+            setFilters(entries
+              .sort((a, b) => a.position - b.position)
+              .map(entry => String(entry.label)));
           }}
         />
-
-        <FilterPickerButton
-          text="Add Exclude Filter"
-          onConfirm={(path: string) => {
-            setFilters([...filters, `- ${path}`]);
-          }}
-        />
-      </Field>
-      {showAdvancedOptions && (
-        <Field childrenContainerWidth="max">
-          <ButtonItem
-            onClick={() => textInputPopup(
-              "Add Arbitrary String",
-              "",
-              (value: string) => {
-                setFilters([...filters, value]);
+        <Row>
+          <FilterPickerButton
+            text="Add Include Filter"
+            onConfirm={(path: string) => {
+              setFilters([...filters, `+ ${path}`]);
+            }}
+          />
+          <FilterPickerButton
+            text="Add Exclude Filter"
+            onConfirm={(path: string) => {
+              setFilters([...filters, `- ${path}`]);
+            }}
+          />
+        </Row>
+        {showAdvancedOptions && (
+          <Row>
+            <DialogButton
+              onClick={() => textInputPopup(
+                "Add Arbitrary String",
+                "",
+                (value: string) => {
+                  setFilters([...filters, value]);
+                }
+              )}
+            >
+              Add Arbitrary String
+            </DialogButton>
+            <DialogButton
+              onClick={() =>
+                navigator.clipboard.writeText(filters.join('\n'))
+                  .finally(() => Toaster.toast("Filters copied to clipboard"))
               }
-            )}
+            >
+              Copy Whole Filter
+            </DialogButton>
+            <DialogButton
+              onClick={() =>
+                navigator.clipboard.readText()
+                  .then((text) => setFilters(text.trim().split('\n')))
+                  .finally(() => Toaster.toast("Filters pasted from clipboard"))
+              }
+            >
+              Paste Whole Filter
+            </DialogButton>
+          </Row>
+        )}
+        <Row>
+          <DialogButton
+            onClick={() => setFiltersFunction(filters)}
           >
-            Add Arbitrary String
-          </ButtonItem>
-          <ButtonItem
-            onClick={() =>
-              navigator.clipboard.writeText(filters.join('\n'))
-                .finally(() => Toaster.toast("Filters copied to clipboard"))
-            }
-          >
-            Copy Whole Filter
-          </ButtonItem>
-          <ButtonItem
-            onClick={() =>
-              navigator.clipboard.readText()
-                .then((text) => setFilters(text.trim().split('\n')))
-                .finally(() => Toaster.toast("Filters pasted from clipboard"))
-            }
-          >
-            Paste Whole Filter
-          </ButtonItem>
-        </Field>
-      )}
-      <ButtonItem
-        onClick={() => setFiltersFunction(filters)}
-      >
-        Save
-      </ButtonItem>
+            Save
+          </DialogButton>
+        </Row>
+      </div>
     </PageView>
   )
 }

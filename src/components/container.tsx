@@ -1,4 +1,4 @@
-import { Field } from "@decky/ui";
+import { Field, Focusable } from "@decky/ui";
 import { PropsWithChildren } from "react";
 
 interface ContainerProps {
@@ -14,10 +14,18 @@ export default function container({ title, description, titleItem, children }: P
         label={title}
         description={description && (<small>{description}</small>)}
         highlightOnFocus={false}>
-        {titleItem}
+        <Focusable
+          style={{ display: "flex" }}
+          children={
+            <div style={{
+              display: "flex",
+              gap: "8px",
+            }}>
+              {titleItem}
+            </div>} />
       </Field>
       <div style={{
-        height: "calc(100% - 80px)",
+        overflowY: "auto",
       }}>
         {children}
       </div>

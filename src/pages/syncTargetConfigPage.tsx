@@ -54,20 +54,25 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
       pages={[
         {
           title: "Target Filter",
+          hideTitle: true,
           content:
             <FiltersView
               title="Target Filter"
               description={`Filters specific for ${getAppName(appId)} sync. It will be used together with the shared filter, but has a lower priority.`}
-              fullPage={true}
+              fullPage={false}
               getFiltersFunction={() => get_target_filters(appId)}
               setFiltersFunction={(filters) => set_target_filters(appId, filters)}
             >
               <ButtonItem
+                highlightOnFocus={false}
+                bottomSeparator="none"
                 disabled={syncInProgress}
                 onClick={() => SyncTaskQueue.addSyncTask(sync_local_first, appId)}>
                 Sync Now (Upload to Cloud)
               </ButtonItem>
               <ButtonItem
+                highlightOnFocus={false}
+                bottomSeparator="none"
                 disabled={syncInProgress}
                 onClick={() => SyncTaskQueue.addSyncTask(sync_cloud_first, appId)}>
                 Sync Now (Download from Cloud)
@@ -76,18 +81,19 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
         },
         {
           title: "Shared Filter",
+          hideTitle: true,
           content:
             <FiltersView
               title="Shared Filter"
               description="Filters that's shared among all syncs. It will be used together with the target filter, but has a higher priority."
-              fullPage={true}
+              fullPage={false}
               getFiltersFunction={() => get_shared_filters()}
               setFiltersFunction={(filters) => set_shared_filters(filters)}
             />
         },
         {
           title: "Sync Logs",
-          icon: <FaFileAlt />,
+          // icon: <FaFileAlt />,
           hideTitle: true,
           content: <LogsView
             title="Sync Logs"
@@ -95,11 +101,15 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
             fullPage={false}
           >
             <ButtonItem
+              highlightOnFocus={false}
+              bottomSeparator="none"
               disabled={syncInProgress}
               onClick={() => SyncTaskQueue.addSyncTask(_ => resync_local_first(), appId)}>
               Resync (Local First)
             </ButtonItem>
             <ButtonItem
+              highlightOnFocus={false}
+              bottomSeparator="none"
               disabled={syncInProgress}
               onClick={() => SyncTaskQueue.addSyncTask(_ => resync_cloud_first(), appId)}>
               Resync (Cloud First)

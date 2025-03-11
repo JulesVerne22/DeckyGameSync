@@ -12,6 +12,9 @@ interface pageViewProps {
 export default function pageView({ title, description, titleItem, fullPage = true, children }: PropsWithChildren<pageViewProps>) {
   const baseStyles = {
     height: CSS_MAX_VIEWABLE_HEIGHT,
+    boxSizing: "border-box",
+    display: "flex",
+    flexDirection: "column",
   };
 
   const styles = fullPage
@@ -21,6 +24,7 @@ export default function pageView({ title, description, titleItem, fullPage = tru
     }
     : {
       ...baseStyles,
+      width: "calc(100% - 36px)",
       marginTop: "-24px",
       position: "fixed",
       paddingRight: "36px",
