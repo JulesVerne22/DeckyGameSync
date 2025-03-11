@@ -1,11 +1,14 @@
-import { ReactNode } from "react";
-import { Navigation, SidebarNavigation } from "@decky/ui";
-import RoutePage from "../components/routePage";
-import Logger from "../helpers/logger";
-import LogsView from "../components/logsView";
-import { get_last_sync_log } from "../helpers/backend";
+import { ReactNode, useEffect, useState } from "react";
 import { FaFileAlt } from "react-icons/fa";
+import { ButtonItem, Navigation, SidebarNavigation } from "@decky/ui";
+import { getAppName } from "../helpers/utils";
+import { get_last_sync_log, get_target_filters, set_target_filters, get_shared_filters, set_shared_filters, sync_local_first, sync_cloud_first, resync_local_first, resync_cloud_first } from "../helpers/backend";
+import RoutePage from "../components/routePage";
+import LogsView from "../components/logsView";
+import FiltersView from "../components/filtersView";
+import Logger from "../helpers/logger";
 import Toaster from "../helpers/toaster";
+import SyncTaskQueue from "../helpers/syncTaskQueue";
 
 interface SyncTargetConfigPageParams {
   appId: string;
@@ -13,6 +16,7 @@ interface SyncTargetConfigPageParams {
 
 class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
   readonly route = "sync-target"
+
 
   render(): ReactNode {
     const params = new URLSearchParams(window.location.search);
@@ -26,15 +30,52 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
       Navigation.NavigateBack();
     }
 
+    const [syncInProgress, setSyncInProgress] = useState<boolean>(SyncTaskQueue.busy);
+
+    useEffect(() => {
+      const registrations: Array<Unregisterable> = [];
+
+      registrations.push(SyncTaskQueue.on(SyncTaskQueue.events.BUSY, setSyncInProgress));
+
+      return () => {
+        registrations.forEach(e => e.unregister());
+      };
+    }, []);
+
     return <SidebarNavigation
       pages={[
         {
           title: "Target Filter",
-          content: <LogsView fullPage={true} title="Target Filter" getLog={async () => await get_last_sync_log(appId)} />
+          content:
+            <FiltersView
+              title="Target Filter"
+              description={`Filters specific for ${getAppName(appId)} sync. It will be used together with the shared filter, but has a lower priority.`}
+              fullPage={true}
+              getFiltersFunction={() => get_target_filters(appId)}
+              setFiltersFunction={(filters) => set_target_filters(appId, filters)}
+            >
+              <ButtonItem
+                disabled={syncInProgress}
+                onClick={() => SyncTaskQueue.addSyncTask(sync_local_first, appId)}>
+                Sync Now (Upload to Cloud)
+              </ButtonItem>
+              <ButtonItem
+                disabled={syncInProgress}
+                onClick={() => SyncTaskQueue.addSyncTask(sync_cloud_first, appId)}>
+                Sync Now (Download from Cloud)
+              </ButtonItem>
+            </FiltersView>
         },
         {
           title: "Shared Filter",
-          content: <LogsView fullPage={false} title="Shared Filter" getLog={async () => await get_last_sync_log(appId)} />
+          content:
+            <FiltersView
+              title="Shared Filter"
+              description="Filters that's shared among all syncs. It will be used together with the target filter, but has a higher priority."
+              fullPage={true}
+              getFiltersFunction={() => get_shared_filters()}
+              setFiltersFunction={(filters) => set_shared_filters(filters)}
+            />
         },
         {
           title: "Sync Logs",
@@ -44,7 +85,18 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
             title="Sync Logs"
             getLog={async () => await get_last_sync_log(appId)}
             fullPage={false}
-          />
+          >
+            <ButtonItem
+              disabled={syncInProgress}
+              onClick={() => SyncTaskQueue.addSyncTask(_ => resync_local_first(), appId)}>
+              Resync (Local First)
+            </ButtonItem>
+            <ButtonItem
+              disabled={syncInProgress}
+              onClick={() => SyncTaskQueue.addSyncTask(_ => resync_cloud_first(), appId)}>
+              Resync (Cloud First)
+            </ButtonItem>
+          </LogsView>
         },
       ]}
     />

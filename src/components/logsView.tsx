@@ -9,16 +9,16 @@ import PageView from "./pageView";
 
 interface LogsViewProps {
   title: string;
-  getLog: () => Promise<string>;
   fullPage: boolean;
+  getLog: () => Promise<string>;
 }
 
-export default function LogsView({ title, getLog, fullPage = true, children }: PropsWithChildren<LogsViewProps>) {
+export default function LogsView({ title, fullPage = true, getLog, children }: PropsWithChildren<LogsViewProps>) {
   const [logContent, setLogContent] = useState('');
   const logPreRef = useRef<HTMLPreElement>(null);
 
   useEffect(() => {
-    getLog().then(log => setLogContent(log));
+    getLog().then(setLogContent);
   }, []);
 
   useEffect(() => {
@@ -31,15 +31,13 @@ export default function LogsView({ title, getLog, fullPage = true, children }: P
   return (
     <PageView
       title={title}
-      titleItem={
-        <>
-          {children}
-          <ButtonItem
-            onClick={() => getLog().then(e => setLogContent(e))}>
-            Refresh
-          </ButtonItem>
-        </>
-      }
+      titleItem={<>
+        {children}
+        <ButtonItem
+          onClick={() => getLog().then(e => setLogContent(e))}>
+          Refresh
+        </ButtonItem>
+      </>}
       fullPage={fullPage}
     >
       <pre

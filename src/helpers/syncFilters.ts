@@ -1,14 +1,20 @@
 import { SHARED_FILTER_APP_ID } from "./commonDefs";
 import { get_available_filters, get_target_filters, set_target_filters, get_shared_filters, set_shared_filters } from "./backend";
 import Logger from "./logger";
+import Observable from "../types/observable";
 
-class SyncFilters {
+class SyncFilters extends Observable {
+  public readonly events = {
+    UPDATE: "update",
+  }
+
   private appIdSet: Set<number> = new Set();
 
   public async refresh(): Promise<void> {
     let availableSyncFilters = await get_available_filters();
     Logger.debug("Available sync filters:", availableSyncFilters);
     this.appIdSet = new Set(availableSyncFilters);
+    this.emit(this.events.UPDATE);
   }
 
   public has(appId: number): boolean {

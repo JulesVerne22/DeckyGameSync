@@ -1,13 +1,10 @@
 import { LifetimeNotification } from "@decky/ui";
 import { sync_cloud_first, sync_local_first } from "./backend";
 import { GLOBAL_SYNC_APP_ID } from "./commonDefs";
+import { getCurrentUserId } from "./utils";
 import Logger from "./logger";
 import Config from "./config";
 import SyncTaskQeueue from "./syncTaskQueue";
-
-function getCurrentUserId(): number {
-  return Number(BigInt.asUintN(32, BigInt(window.App.m_CurrentUser.strSteamID)));
-};
 
 export function setupScreenshotNotification(): Unregisterable {
   return SteamClient.GameSessions.RegisterForScreenshotNotification(async (e: ScreenshotNotification) => {

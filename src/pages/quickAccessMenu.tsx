@@ -3,22 +3,23 @@ import { FaFileAlt, FaFileUpload, FaSave } from "react-icons/fa";
 import { MdStorage } from "react-icons/md";
 import { BsFillGearFill } from "react-icons/bs";
 import { FaCloudArrowUp, FaCloudArrowDown } from "react-icons/fa6";
-import { ButtonItem, PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
+import { PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
 import { GLOBAL_SYNC_APP_ID } from "../helpers/commonDefs";
-import SyncTaskQeueue from "../helpers/syncTaskQueue";
-import { get_cloud_type } from "../helpers/backend";
-import DeckyStoreButton from "../components/deckyStoreButton";
-import Config from "../helpers/config";
+import { get_cloud_type, sync_cloud_first } from "../helpers/backend";
 import * as Popups from "../components/popups";
-import * as Backend from "../helpers/backend";
-import ConfigCloudPage from "./configCloudPage";
-import PluginLogsPage from "./pluginLogsPage";
 import SyncTargetConfigPage from "./syncTargetConfigPage";
+import PluginLogsPage from "./pluginLogsPage";
+import ButtonWithIcon from "../components/buttonWithIcon";
+import ConfigCloudPage from "./configCloudPage";
+import SyncTaskQueue from "../helpers/syncTaskQueue";
+import Config from "../helpers/config";
+import SyncFilters from "../helpers/syncFilters";
 
 export default function QuickAccessMenu() {
   const [showCaptureOptions, setShowCaptureOptions] = useState<boolean>(Config.get("capture_upload"));
   const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(Config.get("advanced_mode"));
-  const [syncInProgress, setSyncInProgress] = useState<boolean>(SyncTaskQeueue.busy);
+  const [globalFilterAvailable, setGlobalFilterAvailable] = useState<boolean>(SyncFilters.has(GLOBAL_SYNC_APP_ID));
+  const [syncInProgress, setSyncInProgress] = useState<boolean>(SyncTaskQueue.busy);
   const [hasProvider, setHasProvider] = useState<boolean>(true);
 
   useEffect(() => {
@@ -27,7 +28,8 @@ export default function QuickAccessMenu() {
 
     registrations.push(Config.on("capture_upload", setShowCaptureOptions));
     registrations.push(Config.on("advanced_mode", setShowAdvancedOptions));
-    registrations.push(Config.on(SyncTaskQeueue.events.BUSY, setSyncInProgress));
+    registrations.push(SyncFilters.on(SyncFilters.events.UPDATE, () => setGlobalFilterAvailable(SyncFilters.has(GLOBAL_SYNC_APP_ID))));
+    registrations.push(SyncTaskQueue.on(SyncTaskQueue.events.BUSY, setSyncInProgress));
 
     return () => {
       registrations.forEach(e => e.unregister());
@@ -36,33 +38,32 @@ export default function QuickAccessMenu() {
 
   return (<>
     {hasProvider && (<>
+      <style>{`
+        .cloudSaveForkRotatingIcon {
+          animation: cloudSaveForkRotatingIconAnimation 1s infinite cubic-bezier(0.46, 0.03, 0.52, 0.96);
+        }
+        @keyframes cloudSaveForkRotatingIconAnimation {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}
+      </style>
       <PanelSection title="Sync">
         <PanelSectionRow>
-          <ButtonItem
-            layout="below"
-            disabled={syncInProgress}
+          <ButtonWithIcon
+            icon={<FaSave className={syncInProgress ? "cloudSaveForkRotatingIcon" : ""} />}
+            disabled={syncInProgress || (!globalFilterAvailable)}
             onClick={() => {
-              SyncTaskQeueue.addSyncTask(Backend.sync_cloud_first, GLOBAL_SYNC_APP_ID);
+              SyncTaskQueue.addSyncTask(sync_cloud_first, GLOBAL_SYNC_APP_ID);
             }}
           >
-            <style>{`
-              .cloudSaveForkRotatingIcon {
-                animation: cloudSaveForkRotatingIconAnimation 1s infinite cubic-bezier(0.46, 0.03, 0.52, 0.96);
-              }
-              @keyframes cloudSaveForkRotatingIconAnimation {
-                from {
-                  transform: rotate(0deg);
-                }
-                to {
-                  transform: rotate(360deg);
-                }
-              }
-            `}
-            </style>
-            <DeckyStoreButton icon={<FaSave className={syncInProgress ? "cloudSaveForkRotatingIcon" : ""} />}>
-              Start Global Sync
-            </DeckyStoreButton>
-          </ButtonItem>
+            Start Global Sync
+          </ButtonWithIcon>
+          {(!globalFilterAvailable) && <small>Please setup the global sync filter via "Global Sync Filters" button first.</small>}
         </PanelSectionRow>
         <PanelSectionRow>
           <ToggleField
@@ -103,17 +104,15 @@ export default function QuickAccessMenu() {
             />
           </PanelSectionRow>
           <PanelSectionRow>
-            <ButtonItem
-              layout="below"
+            <ButtonWithIcon
+              icon={<FaFileUpload />}
               onClick={() =>
                 Popups.textInputPopup("Screenshot Upload Destination",
                   Config.get("capture_upload_destination"),
                   (e) => Config.set("capture_upload_destination", e))}
             >
-              <DeckyStoreButton icon={<FaFileUpload />}>
-                Upload Destination
-              </DeckyStoreButton>
-            </ButtonItem>
+              Upload Destination
+            </ButtonWithIcon>
           </PanelSectionRow>
         </>)}
       </PanelSection>
@@ -121,35 +120,29 @@ export default function QuickAccessMenu() {
     <PanelSection title="Configuration">
       {hasProvider && (<>
         <PanelSectionRow>
-          <ButtonItem
-            layout="below"
+          <ButtonWithIcon
+            icon={<BsFillGearFill />}
             onClick={() => SyncTargetConfigPage.enter({ appId: String(GLOBAL_SYNC_APP_ID) })}
           >
-            <DeckyStoreButton icon={<BsFillGearFill />}>
-              Global Sync Filters
-            </DeckyStoreButton>
-          </ButtonItem>
+            Global Sync Filters
+          </ButtonWithIcon>
         </PanelSectionRow>
         <PanelSectionRow>
-          <ButtonItem
-            layout="below"
+          <ButtonWithIcon
+            icon={<FaFileAlt />}
             onClick={() => PluginLogsPage.enter()}
           >
-            <DeckyStoreButton icon={<FaFileAlt />}>
-              Plugin Logs
-            </DeckyStoreButton>
-          </ButtonItem>
+            Plugin Logs
+          </ButtonWithIcon>
         </PanelSectionRow>
       </>)}
       <PanelSectionRow>
-        <ButtonItem
-          layout="below"
+        <ButtonWithIcon
+          icon={<MdStorage />}
           onClick={() => ConfigCloudPage.enter()}
         >
-          <DeckyStoreButton icon={<MdStorage />}>
-            Cloud Provider
-          </DeckyStoreButton>
-        </ButtonItem>
+          Cloud Provider
+        </ButtonWithIcon>
       </PanelSectionRow>
     </PanelSection>
 
@@ -194,8 +187,8 @@ export default function QuickAccessMenu() {
             />
           </PanelSectionRow>
           <PanelSectionRow>
-            <ButtonItem
-              layout="below"
+            <ButtonWithIcon
+              icon={<FaCloudArrowUp />}
               onClick={() =>
                 Popups.textInputPopup("Global & Game Sync Root",
                   Config.get("sync_root"),
@@ -216,14 +209,12 @@ export default function QuickAccessMenu() {
                     }
                   })}
             >
-              <DeckyStoreButton icon={<FaCloudArrowUp />}>
-                Sync Root
-              </DeckyStoreButton>
-            </ButtonItem>
+              Sync Root
+            </ButtonWithIcon>
           </PanelSectionRow>
           <PanelSectionRow>
-            <ButtonItem
-              layout="below"
+            <ButtonWithIcon
+              icon={<FaCloudArrowDown />}
               onClick={() =>
                 Popups.textInputPopup("Global & Game Sync Destination",
                   Config.get("sync_destination"),
@@ -244,10 +235,8 @@ export default function QuickAccessMenu() {
                     }
                   })}
             >
-              <DeckyStoreButton icon={<FaCloudArrowDown />}>
-                Sync Destination
-              </DeckyStoreButton>
-            </ButtonItem>
+              Sync Destination
+            </ButtonWithIcon>
           </PanelSectionRow>
         </>)}
       </PanelSection>

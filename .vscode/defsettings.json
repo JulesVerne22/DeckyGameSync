@@ -8,5 +8,17 @@
     "pluginname": "Cloud Save Fork",
     "python.analysis.extraPaths": [
         "./py_modules"
-    ]
+    ],
+    "search.exclude": {
+        "deps": true
+    },
+    "[python]": {
+        "editor.indentSize": 4
+    },
+    "[typescript]": {
+        "editor.indentSize": 2
+    },
+    "[typescriptreact]": {
+        "editor.indentSize": 2
+    }
 }
