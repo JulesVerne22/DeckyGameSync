@@ -65,7 +65,7 @@ export default function filterPickerButton({ text, onConfirm }: FilterPickerButt
                 .then((e) => onFilePicked(e.realpath, PathPostfix.FOLDER_NORECURSE))
             }
           >
-            Folder (Without Subfolders)
+            Folder (without Subfolders)
           </MenuItem>
         </Menu>
       )}

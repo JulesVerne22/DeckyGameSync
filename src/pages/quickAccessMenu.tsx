@@ -15,7 +15,7 @@ import SyncTaskQueue from "../helpers/syncTaskQueue";
 import Config from "../helpers/config";
 import SyncFilters from "../helpers/syncFilters";
 
-export default function QuickAccessMenu() {
+export default function quickAccessMenu() {
   const [showCaptureOptions, setShowCaptureOptions] = useState<boolean>(Config.get("capture_upload"));
   const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(Config.get("advanced_mode"));
   const [globalFilterAvailable, setGlobalFilterAvailable] = useState<boolean>(SyncFilters.has(GLOBAL_SYNC_APP_ID));

@@ -1,11 +1,7 @@
-import {
-  useEffect,
-  useState,
-  useRef,
-  PropsWithChildren
-} from "react";
-import { ButtonItem } from "@decky/ui";
+import { useEffect, useState, useRef, PropsWithChildren } from "react";
+import { IoMdRefresh } from "react-icons/io";
 import PageView from "./pageView";
+import IconButton from "./iconButton";
 
 interface LogsViewProps {
   title: string;
@@ -33,10 +29,11 @@ export default function LogsView({ title, fullPage = true, getLog, children }: P
       title={title}
       titleItem={<>
         {children}
-        <ButtonItem
-          onClick={() => getLog().then(e => setLogContent(e))}>
-          Refresh
-        </ButtonItem>
+        <IconButton
+          icon={IoMdRefresh}
+          onOKActionDescription="Refresh logs"
+          onClick={() => getLog().then(e => setLogContent(e))}
+        />
       </>}
       fullPage={fullPage}
     >

@@ -1,5 +1,5 @@
+import { PropsWithChildren } from "react";
 import { ButtonItem } from "@decky/ui";
-import React, { PropsWithChildren } from "react";
 
 interface ButtonWithIconProps {
   icon: React.ReactElement;

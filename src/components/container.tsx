@@ -20,6 +20,7 @@ export default function container({ title, description, titleItem, children }: P
             <div style={{
               display: "flex",
               gap: "8px",
+              alignItems: "center",
             }}>
               {titleItem}
             </div>} />

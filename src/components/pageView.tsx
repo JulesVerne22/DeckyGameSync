@@ -1,6 +1,6 @@
 import { PropsWithChildren } from "react";
-import Container from "./container";
 import { CSS_MAX_VIEWABLE_HEIGHT } from "../helpers/commonDefs";
+import Container from "./container";
 
 interface pageViewProps {
   title: string;
@@ -11,7 +11,8 @@ interface pageViewProps {
 
 export default function pageView({ title, description, titleItem, fullPage = true, children }: PropsWithChildren<pageViewProps>) {
   const baseStyles = {
-    height: CSS_MAX_VIEWABLE_HEIGHT,
+    height: "100%",
+    maxHeight: CSS_MAX_VIEWABLE_HEIGHT,
     boxSizing: "border-box",
     display: "flex",
     flexDirection: "column",
@@ -20,7 +21,7 @@ export default function pageView({ title, description, titleItem, fullPage = tru
   const styles = fullPage
     ? {
       ...baseStyles,
-      padding: "40px 20px 40px 20px",
+      margin: "40px 20px",
     }
     : {
       ...baseStyles,
@@ -35,7 +36,14 @@ export default function pageView({ title, description, titleItem, fullPage = tru
   return (
     <div style={styles}>
       <Container
-        title={<HeadingTag style={{ margin: "0" }}>{title}</HeadingTag>}
+        title={<HeadingTag
+          style={{
+            margin: "0",
+            minHeight: "28px",
+            alignContent: "center",
+          }}>
+          {title}
+        </HeadingTag>}
         description={description}
         titleItem={titleItem}
       >

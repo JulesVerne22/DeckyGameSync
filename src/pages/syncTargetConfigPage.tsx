@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useState } from "react";
-import { FaFileAlt } from "react-icons/fa";
-import { ButtonItem, Navigation, SidebarNavigation } from "@decky/ui";
+import { IoArrowUpCircle, IoArrowDownCircle } from "react-icons/io5";
+import { FaCloudArrowUp, FaCloudArrowDown } from "react-icons/fa6";
+import { Navigation, SidebarNavigation } from "@decky/ui";
 import { getAppName } from "../helpers/utils";
 import { get_last_sync_log, get_target_filters, set_target_filters, get_shared_filters, set_shared_filters, sync_local_first, sync_cloud_first, resync_local_first, resync_cloud_first } from "../helpers/backend";
 import RoutePage from "../components/routePage";
@@ -9,6 +10,8 @@ import FiltersView from "../components/filtersView";
 import Logger from "../helpers/logger";
 import Toaster from "../helpers/toaster";
 import SyncTaskQueue from "../helpers/syncTaskQueue";
+import IconButton from "../components/iconButton";
+import { GLOBAL_SYNC_APP_ID } from "../helpers/commonDefs";
 
 interface SyncTargetConfigPageParams {
   appId: string;
@@ -63,20 +66,18 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
               getFiltersFunction={() => get_target_filters(appId)}
               setFiltersFunction={(filters) => set_target_filters(appId, filters)}
             >
-              <ButtonItem
-                highlightOnFocus={false}
-                bottomSeparator="none"
+              <IconButton
+                icon={FaCloudArrowUp}
+                onOKActionDescription="Sync Now (Upload to Cloud)"
                 disabled={syncInProgress}
                 onClick={() => SyncTaskQueue.addSyncTask(sync_local_first, appId)}>
-                Sync Now (Upload to Cloud)
-              </ButtonItem>
-              <ButtonItem
-                highlightOnFocus={false}
-                bottomSeparator="none"
+              </IconButton>
+              <IconButton
+                icon={FaCloudArrowDown}
+                onOKActionDescription="Sync Now (Download from Cloud)"
                 disabled={syncInProgress}
                 onClick={() => SyncTaskQueue.addSyncTask(sync_cloud_first, appId)}>
-                Sync Now (Download from Cloud)
-              </ButtonItem>
+              </IconButton>
             </FiltersView>
         },
         {
@@ -95,26 +96,28 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
           title: "Sync Logs",
           // icon: <FaFileAlt />,
           hideTitle: true,
-          content: <LogsView
-            title="Sync Logs"
-            getLog={async () => await get_last_sync_log(appId)}
-            fullPage={false}
-          >
-            <ButtonItem
-              highlightOnFocus={false}
-              bottomSeparator="none"
-              disabled={syncInProgress}
-              onClick={() => SyncTaskQueue.addSyncTask(_ => resync_local_first(), appId)}>
-              Resync (Local First)
-            </ButtonItem>
-            <ButtonItem
-              highlightOnFocus={false}
-              bottomSeparator="none"
-              disabled={syncInProgress}
-              onClick={() => SyncTaskQueue.addSyncTask(_ => resync_cloud_first(), appId)}>
-              Resync (Cloud First)
-            </ButtonItem>
-          </LogsView>
+          content:
+            <LogsView
+              title="Sync Logs"
+              getLog={async () => await get_last_sync_log(appId)}
+              fullPage={false}
+            >
+              {(appId == GLOBAL_SYNC_APP_ID) && (
+                <>
+                  <IconButton
+                    icon={IoArrowUpCircle}
+                    onOKActionDescription="Resync (Local First)"
+                    disabled={syncInProgress}
+                    onClick={() => SyncTaskQueue.addSyncTask(_ => resync_local_first(), appId)}>
+                  </IconButton>
+                  <IconButton
+                    icon={IoArrowDownCircle}
+                    onOKActionDescription="Resync (Cloud First)"
+                    disabled={syncInProgress}
+                    onClick={() => SyncTaskQueue.addSyncTask(_ => resync_cloud_first(), appId)}>
+                  </IconButton>
+                </>)}
+            </LogsView>
         },
       ]}
     />
