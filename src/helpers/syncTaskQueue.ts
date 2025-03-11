@@ -3,7 +3,6 @@ import type { queueAsPromised } from "fastq";
 import { sync_screenshot, pause_process, resume_process } from "./backend";
 import { getAppName } from "./utils";
 import Observable from "../types/observable";
-import SyncTargetConfigPage from "../pages/syncTargetConfigPage";
 import Logger from "./logger"
 import Toaster from "./toaster";
 import Config from "./config";
@@ -21,7 +20,8 @@ async function worker(fn: () => Promise<number>): Promise<number | undefined> {
 
 class SyncTaskQueue extends Observable {
   public readonly events = {
-    BUSY: 'busy'
+    BUSY: 'busy',
+    FAIL_TOAST_CLICK: 'failToastClick',
   }
 
   private readonly queue: queueAsPromised<any>;
@@ -52,7 +52,7 @@ class SyncTaskQueue extends Observable {
             let appName = getAppName(appId);
             let msg = `Sync for "${appName}" failed with exit code ${exitCode}`;
             Logger.error(msg);
-            Toaster.toast(`${msg}, click here to see the errors`, 10000, () => { SyncTargetConfigPage.enter({ appId: String(appId) }) });
+            Toaster.toast(`${msg}, click to see the errors`, 10000, () => { this.emit(this.events.FAIL_TOAST_CLICK, appId) });
           }
         })
         .finally(() => {

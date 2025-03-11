@@ -17,6 +17,14 @@ interface SyncTargetConfigPageParams {
 class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
   readonly route = "sync-target"
 
+  protected _register(): UnregisterFunction {
+    const registrations: Array<Unregisterable> = [];
+
+    registrations.push({ unregister: super._register() });
+    registrations.push(SyncTaskQueue.on(SyncTaskQueue.events.FAIL_TOAST_CLICK, (appId) => this.enter({ appId: appId })));
+
+    return (() => registrations.forEach(e => e.unregister()))
+  }
 
   render(): ReactNode {
     const params = new URLSearchParams(window.location.search);
