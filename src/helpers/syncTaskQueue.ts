@@ -1,12 +1,12 @@
 import fastq from "fastq";
 import type { queueAsPromised } from "fastq";
 import { sync_screenshot, pause_process, resume_process } from "./backend";
-import { getAppName } from "./utils";
 import Observable from "../types/observable";
 import Logger from "./logger"
 import Toaster from "./toaster";
 import Config from "./config";
 import SyncFilters from "./syncFilters";
+import SyncStateTracker from "./syncStateTracker";
 
 async function worker(fn: () => Promise<number>): Promise<number | undefined> {
   try {
@@ -39,27 +39,40 @@ class SyncTaskQueue extends Observable {
     return (!this.queue.idle());
   }
 
-  public async addSyncTask(syncFunction: (appId: number) => Promise<number>, appId: number, pId?: number) {
-    if (SyncFilters.has(appId)) {
-      if (pId) {
-        await pause_process(pId);
-      }
-      this.pushTask(async () => await syncFunction(appId))
+  public async addSyncTask(syncFunction: (appId: number) => Promise<number>, appId: number, gameRunning?: boolean, pId?: number) {
+    if (!SyncFilters.has(appId)) { return; }
+
+    if (pId) {
+      await pause_process(pId);
+    }
+
+    if ((!gameRunning) || SyncStateTracker.getInSync(appId)) {
+      this.pushTask(async () => syncFunction(appId))
         .then((exitCode) => {
           if (exitCode == 0 || exitCode == 6) {
             Logger.info(`Sync for "${appId}" finished`);
           } else {
-            let appName = getAppName(appId);
-            let msg = `Sync for "${appName}" failed with exit code ${exitCode}`;
-            Logger.error(msg);
-            Toaster.toast(`${msg}, click to see the errors`, 10000, () => { this.emit(this.events.FAIL_TOAST_CLICK, appId) });
+            Logger.error(`Sync for for ${appId} failed with exit code ${exitCode}`);
+            Toaster.toast(`Sync failed, click to see the errors`, 10000, () => {
+              this.emit(this.events.FAIL_TOAST_CLICK, appId)
+            });
           }
         })
         .finally(() => {
           if (pId) {
             resume_process(pId);
           }
+          if (gameRunning != undefined) {
+            // in sync only when game is not running
+            SyncStateTracker.setInSync(appId, !gameRunning);
+          }
         });
+    } else {
+      if (pId) {
+        resume_process(pId);
+      }
+      Logger.warning(`Skipping download sync for ${appId} due to missing upload sync`);
+      Toaster.toast("Skipping download sync");
     }
   }
 
@@ -72,11 +85,11 @@ class SyncTaskQueue extends Observable {
               Logger.info(`Screenshot ${screenshotUrl} uploaded and deleted locally`))
             .catch(() => {
               Logger.warning(`Failed to delete screenshot ${screenshotUrl} locally`);
-              Toaster.toast("Failed to delete the screenshot locally");
+              Toaster.toast("Failed to delete screenshot");
             })
         } else {
           Logger.error(`Failed to upload screenshot ${screenshotUrl}, exit code: ${exitCode}`);
-          Toaster.toast(`Failed to upload the screenshot, exit code: ${exitCode}`);
+          Toaster.toast(`Failed to upload screenshot`);
         }
       });
   }

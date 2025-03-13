@@ -36,19 +36,17 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
 
     const appId = Number(params.get('appId'));
     if (isNaN(appId)) {
-      const msg = `Sync Target config page: appId is not a number: ${appId}`;
-      Logger.error(msg);
-      Toaster.toast(msg);
+      Logger.error(`Invalid appId for sync target config page, params: ${params}`);
+      Toaster.toast("Invalid appId for sync target config page");
       Navigation.NavigateBack();
     }
 
-    const [syncInProgress, setSyncInProgress] = useState<boolean>(SyncTaskQueue.busy);
+    const appName = getAppName(appId);
 
+    const [syncInProgress, setSyncInProgress] = useState<boolean>(SyncTaskQueue.busy);
     useEffect(() => {
       const registrations: Array<Unregisterable> = [];
-
       registrations.push(SyncTaskQueue.on(SyncTaskQueue.events.BUSY, setSyncInProgress));
-
       return () => {
         registrations.forEach(e => e.unregister());
       };
@@ -62,7 +60,7 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
           content:
             <FiltersView
               title="Target Filter"
-              description={`Filters specific for ${getAppName(appId)} sync. It will be used together with the shared filter, but has a lower priority.`}
+              description={`Filters specific for ${appName} sync. It will be used together with the shared filter, but has a lower priority.`}
               fullPage={false}
               getFiltersFunction={() => get_target_filters(appId)}
               setFiltersFunction={(filters) => set_target_filters(appId, filters)}
@@ -89,7 +87,7 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
               title="Shared Filter"
               description="Filters that's shared among all syncs. It will be used together with the target filter, but has a higher priority."
               fullPage={false}
-              getFiltersFunction={() => get_shared_filters()}
+              getFiltersFunction={get_shared_filters}
               setFiltersFunction={(filters) => set_shared_filters(filters)}
             />
         },

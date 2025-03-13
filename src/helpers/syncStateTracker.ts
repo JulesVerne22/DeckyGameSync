@@ -10,19 +10,18 @@ class SyncStateTracker {
     return `${PLUGIN_NAME_AS_PATH}-in-sync-${appId}`;
   }
 
-  public onDownload(appId: number) {
+  public setInSync(appId: number, inSync: boolean) {
     if (this.autoSync) {
-      localStorage.setItem(this.getKey(appId), "");
+      if (inSync) {
+        localStorage.removeItem(this.getKey(appId));
+      } else {
+        localStorage.setItem(this.getKey(appId), "");
+      }
     }
   }
 
-  public onUpload(appId: number) {
-    if (this.autoSync) {
-      localStorage.removeItem(this.getKey(appId));
-    }
-  }
-
-  public isInSync(appId: number): boolean {
+  // Key existence means out of sync
+  public getInSync(appId: number): boolean {
     return !(this.autoSync && this.getKey(appId) in localStorage);
   }
 }
