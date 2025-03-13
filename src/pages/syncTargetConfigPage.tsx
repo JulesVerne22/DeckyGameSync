@@ -12,6 +12,7 @@ import Toaster from "../helpers/toaster";
 import SyncTaskQueue from "../helpers/syncTaskQueue";
 import IconButton from "../components/iconButton";
 import { GLOBAL_SYNC_APP_ID } from "../helpers/commonDefs";
+import { confirmPopup } from "../components/popups";
 
 interface SyncTargetConfigPageParams {
   appId: string;
@@ -108,13 +109,27 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
                     icon={IoArrowUpCircle}
                     onOKActionDescription="Resync (Local First)"
                     disabled={syncInProgress}
-                    onClick={() => SyncTaskQueue.addSyncTask(_ => resync_local_first(), appId)}>
+                    onClick={() => confirmPopup(
+                      "Resync (Local First)",
+                      <span>
+                        Starting resync, this may take some time.<br /><br />
+                        Click "Confirm" to continue.
+                      </span>,
+                      () => SyncTaskQueue.addSyncTask(async _ => await resync_local_first(), GLOBAL_SYNC_APP_ID)
+                    )}>
                   </IconButton>
                   <IconButton
                     icon={IoArrowDownCircle}
                     onOKActionDescription="Resync (Cloud First)"
                     disabled={syncInProgress}
-                    onClick={() => SyncTaskQueue.addSyncTask(_ => resync_cloud_first(), appId)}>
+                    onClick={() => confirmPopup(
+                      "Resync (Cloud First)",
+                      <span>
+                        Starting resync, this may take some time.<br /><br />
+                        Click "Confirm" to continue.
+                      </span>,
+                      () => SyncTaskQueue.addSyncTask(async _ => await resync_cloud_first(), GLOBAL_SYNC_APP_ID)
+                    )}>
                   </IconButton>
                 </>)}
             </LogsView>
