@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { DialogButton, showContextMenu, Menu, MenuItem } from "@decky/ui";
 import { openFilePicker, FileSelectionType } from "@decky/api";
 import { confirmPopup } from "./popups";
@@ -19,19 +18,10 @@ interface FilterPickerButtonProps {
 }
 
 export default function filterPickerButton({ text, onConfirm }: FilterPickerButtonProps) {
-  const [syncRoot, setSyncRoot] = useState(Config.get("sync_root"));
-  useEffect(() => {
-    const registrations: Array<Unregisterable> = [];
-    registrations.push(Config.on("sync_root", setSyncRoot));
-    return () => {
-      registrations.forEach(e => e.unregister());
-    }
-  }, []);
-
   const onFilePicked = (path: string, postfix: PathPostfix) => {
     const fullPath = path + postfix;
 
-    if (!path.startsWith(syncRoot)) {
+    if (!path.startsWith(Config.get("sync_root"))) {
       Toaster.toast("Invalid, path not in sync root");
     } else if (path === "/") {
       confirmPopup(
@@ -49,7 +39,7 @@ export default function filterPickerButton({ text, onConfirm }: FilterPickerButt
           Path <i>{fullPath}</i> matches <b>{e >= 0 ? e : "tooooooo many"}</b> file(s).<br /><br />
           Click "Confirm" to continue.
         </span>,
-        () => onConfirm("/" + reduceSlashes(fullPath.slice(syncRoot.length)))
+        () => onConfirm("/" + reduceSlashes(fullPath.slice(Config.get("sync_root").length)))
       ))
     }
   };
@@ -60,7 +50,7 @@ export default function filterPickerButton({ text, onConfirm }: FilterPickerButt
         <Menu label="Filter Type">
           <MenuItem
             onSelected={() =>
-              openFilePicker(FileSelectionType.FILE, syncRoot, true)
+              openFilePicker(FileSelectionType.FILE, Config.get("sync_root"), true)
                 .then(e => onFilePicked(e.path, PathPostfix.FILE))
             }
           >
@@ -68,7 +58,7 @@ export default function filterPickerButton({ text, onConfirm }: FilterPickerButt
           </MenuItem>
           <MenuItem
             onSelected={() =>
-              openFilePicker(FileSelectionType.FOLDER, syncRoot, false)
+              openFilePicker(FileSelectionType.FOLDER, Config.get("sync_root"), false)
                 .then((e) => onFilePicked(e.path, PathPostfix.FOLDER))
             }
           >
@@ -76,7 +66,7 @@ export default function filterPickerButton({ text, onConfirm }: FilterPickerButt
           </MenuItem>
           <MenuItem
             onSelected={() =>
-              openFilePicker(FileSelectionType.FOLDER, syncRoot, false)
+              openFilePicker(FileSelectionType.FOLDER, Config.get("sync_root"), false)
                 .then((e) => onFilePicked(e.path, PathPostfix.FOLDER_NORECURSE))
             }
           >

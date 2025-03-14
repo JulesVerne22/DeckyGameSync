@@ -36,6 +36,23 @@ export default function filtersView({ title, description, fullPage = false, getF
     })));
   }
 
+  const filterEntriesAppend = (element: string): void => {
+    setFilterEntries(filterEntries.concat({
+      label: element,
+      position: filterEntries.length,
+    }));
+  }
+
+  const filterEntriesRemove = (position: number): void => {
+    setFilterEntries(filterEntries
+      .filter((entry) => entry.position != position)
+      .map((entry) => ({
+        ...entry,
+        position: entry.position > position ? entry.position - 1 : entry.position
+      }))
+    );
+  }
+
   useEffect(() => {
     const registrations: Array<Unregisterable> = [];
     registrations.push(Config.on("advanced_mode", setShowAdvancedOptions));
@@ -67,72 +84,57 @@ export default function filtersView({ title, description, fullPage = false, getF
           onSave={setFilterEntries}
           entries={filterEntries}
         />
-          <Row>
-            <FilterPickerButton
-              text="Add Include Filter"
-              onConfirm={(path: string) => {
-                setFilterEntries([...filterEntries, {
-                  label: `+ ${path}`,
-                  position: filterEntries.length,
-                }]);
-              }}
-            />
-            <FilterPickerButton
-              text="Add Exclude Filter"
-              onConfirm={(path: string) => {
-                setFilterEntries([...filterEntries, {
-                  label: `- ${path}`,
-                  position: filterEntries.length,
-                }]);
-              }}
-            />
-          </Row>
-          {showAdvancedOptions && (
-            <Row>
-              <DialogButton
-                onClick={() => textInputPopup(
-                  "Add Arbitrary String",
-                  "",
-                  (value: string) => {
-                    setFilterEntries([...filterEntries, {
-                      label: `${value}`,
-                      position: filterEntries.length,
-                    }]);
-                  }
-                )}
-              >
-                Add Arbitrary Line
-              </DialogButton>
-              <DialogButton
-                onClick={() => {
-                  Clipboard.copy(filterEntriesToArray().join('\n'));
-                  Toaster.toast("Filters copied to clipboard")
-                }}
-              >
-                Copy Whole Filter
-              </DialogButton>
-              <DialogButton
-                onClick={() => {
-                  filterEntriesFromArray(Clipboard.paste().trim().split('\n'));
-                  Toaster.toast("Filters pasted from clipboard");
-                }}
-              >
-                Paste Whole Filter
-              </DialogButton>
-            </Row>
-          )}
+        <Row>
+          <FilterPickerButton
+            text="Add Include Filter"
+            onConfirm={(path: string) => filterEntriesAppend(`+ ${path}`)}
+          />
+          <FilterPickerButton
+            text="Add Exclude Filter"
+            onConfirm={(path: string) => filterEntriesAppend(`- ${path}`)}
+          />
+        </Row>
+        {showAdvancedOptions && (
           <Row>
             <DialogButton
-              onClick={() => setFiltersFunction(filterEntriesToArray())}
-              ref={saveButtonRef}
-              style={{ backgroundColor: CSS_STEAM_HIGHLIGHT_COLOR }}
-              onGamepadFocus={() => saveButtonRef.current && (saveButtonRef.current.style.backgroundColor = "white")}
-              onGamepadBlur={() => saveButtonRef.current && (saveButtonRef.current.style.backgroundColor = CSS_STEAM_HIGHLIGHT_COLOR)}
+              onClick={() => textInputPopup(
+                "Add Arbitrary String",
+                "",
+                (value: string) => filterEntriesAppend(`${value}`)
+              )}
             >
-              Save
+              Add Arbitrary Line
+            </DialogButton>
+            <DialogButton
+              onClick={() => {
+                Clipboard.copy(filterEntriesToArray().join('\n'));
+                Toaster.toast("Filters copied to clipboard")
+              }}
+            >
+              Copy Whole Filter
+            </DialogButton>
+            <DialogButton
+              onClick={() => {
+                filterEntriesFromArray(Clipboard.paste().trim().split('\n'));
+                Toaster.toast("Filters pasted from clipboard");
+              }}
+            >
+              Paste Whole Filter
             </DialogButton>
           </Row>
-        </div>
+        )}
+        <Row>
+          <DialogButton
+            onClick={() => setFiltersFunction(filterEntriesToArray())}
+            ref={saveButtonRef}
+            style={{ backgroundColor: CSS_STEAM_HIGHLIGHT_COLOR }}
+            onGamepadFocus={() => saveButtonRef.current && (saveButtonRef.current.style.backgroundColor = "white")}
+            onGamepadBlur={() => saveButtonRef.current && (saveButtonRef.current.style.backgroundColor = CSS_STEAM_HIGHLIGHT_COLOR)}
+          >
+            Save
+          </DialogButton>
+        </Row>
+      </div>
     </PageView>
   )
 }
