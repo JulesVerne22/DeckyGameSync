@@ -68,7 +68,7 @@ def send_signal(pid: int, signal: signal.Signals):
         logger.warning("Error sending signal %s to process %d: %s", signal.name, pid, e)
 
 
-def test_syncpath(syncpath: str):
+def test_syncpath(syncpath: str) -> int:
     """
     Tests a sync path to determine if it's a file or a directory.
 
@@ -91,14 +91,14 @@ def test_syncpath(syncpath: str):
         return int(Path(syncpath).is_file())
 
     count = 0
-    for root, os_dirs, os_files in os.walk(syncpath, followlinks=True):
-        logger.debug(f"%s %s %s", {root}, {os_dirs}, {os_files})
+    for _, _, os_files in os.walk(syncpath, followlinks=True):
         count += len(os_files)
         if count > 9000:
             return -1
         if scan_single_dir:
             break
 
+    logger.debug("Counted %d files", count)
     return count
 
 

@@ -130,7 +130,7 @@ export default function quickAccessMenu() {
         <PanelSectionRow>
           <ButtonWithIcon
             icon={<FaFileAlt />}
-            onClick={() => PluginLogsPage.enter()}
+            onClick={() => PluginLogsPage.enter({})}
           >
             Plugin Logs
           </ButtonWithIcon>
@@ -139,7 +139,7 @@ export default function quickAccessMenu() {
       <PanelSectionRow>
         <ButtonWithIcon
           icon={<MdStorage />}
-          onClick={() => ConfigCloudPage.enter()}
+          onClick={() => ConfigCloudPage.enter({})}
         >
           Cloud Provider
         </ButtonWithIcon>

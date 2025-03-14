@@ -7,6 +7,7 @@ export default function row({ children }: PropsWithChildren) {
       childrenContainerWidth="max"
       highlightOnFocus={false}
       bottomSeparator="none"
+      padding="none"
     >
       <Focusable
         style={{

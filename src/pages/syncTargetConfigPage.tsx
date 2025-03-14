@@ -1,7 +1,7 @@
 import { ReactNode, useEffect, useState } from "react";
 import { IoArrowUpCircle, IoArrowDownCircle } from "react-icons/io5";
 import { FaCloudArrowUp, FaCloudArrowDown } from "react-icons/fa6";
-import { Navigation, SidebarNavigation } from "@decky/ui";
+import { Navigation, SidebarNavigation, useParams } from "@decky/ui";
 import { getAppName } from "../helpers/utils";
 import { get_last_sync_log, get_target_filters, set_target_filters, get_shared_filters, set_shared_filters, sync_local_first, sync_cloud_first, resync_local_first, resync_cloud_first } from "../helpers/backend";
 import RoutePage from "../components/routePage";
@@ -19,7 +19,8 @@ interface SyncTargetConfigPageParams {
 }
 
 class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
-  readonly route = "sync-target"
+  readonly route = "sync-target";
+  readonly params = ["appId"];
 
   protected _register(): UnregisterFunction {
     const registrations: Array<Unregisterable> = [];
@@ -27,18 +28,16 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
     registrations.push({ unregister: super._register() });
     registrations.push(SyncTaskQueue.on(SyncTaskQueue.events.FAIL_TOAST_CLICK, (appId) => this.enter({ appId: appId })));
 
-    return (() => registrations.forEach(e => e.unregister()))
+    return () => registrations.forEach(e => e.unregister());
   }
 
   render(): ReactNode {
-    const params = new URLSearchParams(window.location.search);
-    Logger.debug('Sync Target config page query parameters:', Object.fromEntries(params));
-
-    const appId = Number(params.get('appId'));
+    const appId = Number(useParams<SyncTargetConfigPageParams>().appId);
     if (isNaN(appId)) {
-      Logger.error(`Invalid appId for sync target config page, params: ${params}`);
+      Logger.error(`Invalid appId for sync target config page: ${useParams<SyncTargetConfigPageParams>().appId}`);
       Toaster.toast("Invalid appId for sync target config page");
       Navigation.NavigateBack();
+      return;
     }
 
     const appName = getAppName(appId);
@@ -47,9 +46,7 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
     useEffect(() => {
       const registrations: Array<Unregisterable> = [];
       registrations.push(SyncTaskQueue.on(SyncTaskQueue.events.BUSY, setSyncInProgress));
-      return () => {
-        registrations.forEach(e => e.unregister());
-      };
+      return () => registrations.forEach(e => e.unregister());
     }, []);
 
     return <SidebarNavigation
@@ -60,7 +57,7 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
           content:
             <FiltersView
               title="Target Filter"
-              description={`Filters specific for ${appName} sync. It will be used together with the shared filter, but has a lower priority.`}
+              description={<>Filters specific for <i>{appName}</i> sync. It will be used together with the shared filter, but has a lower priority.</>}
               fullPage={false}
               getFiltersFunction={() => get_target_filters(appId)}
               setFiltersFunction={(filters) => set_target_filters(appId, filters)}
