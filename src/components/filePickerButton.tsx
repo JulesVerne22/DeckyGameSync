@@ -3,9 +3,9 @@ import { DialogButton, showContextMenu, Menu, MenuItem } from "@decky/ui";
 import { openFilePicker, FileSelectionType } from "@decky/api";
 import { confirmPopup } from "./popups";
 import { test_syncpath } from "../helpers/backend";
-import Config from "../helpers/config";
-import Toaster from "../helpers/toaster";
 import { reduceSlashes } from "../helpers/utils";
+import * as Toaster from "../helpers/toaster";
+import Config from "../helpers/config";
 
 const enum PathPostfix {
   FILE = "",
@@ -46,7 +46,7 @@ export default function filterPickerButton({ text, onConfirm }: FilterPickerButt
       test_syncpath(fullPath).then(e => confirmPopup(
         text,
         <span>
-          Path <i>{fullPath}</i> matches <b>{e}</b> file(s).<br /><br />
+          Path <i>{fullPath}</i> matches <b>{e >= 0 ? e : "tooooooo many"}</b> file(s).<br /><br />
           Click "Confirm" to continue.
         </span>,
         () => onConfirm("/" + reduceSlashes(fullPath.slice(syncRoot.length)))

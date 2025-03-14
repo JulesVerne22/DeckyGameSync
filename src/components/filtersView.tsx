@@ -2,12 +2,12 @@ import { PropsWithChildren, useEffect, useRef, useState } from "react";
 import { DialogButton, ReorderableEntry, ReorderableList } from "@decky/ui";
 import { textInputPopup } from "./popups";
 import { CSS_STEAM_HIGHLIGHT_COLOR } from "../helpers/commonDefs";
+import * as Toaster from "../helpers/toaster";
+import * as Clipboard from "../helpers/clipboard";
 import PageView from "./pageView";
 import FilterPickerButton from "./filePickerButton";
 import Config from "../helpers/config";
-import Toaster from "../helpers/toaster";
 import Row from "./row";
-import { copy, paste } from "../helpers/utils";
 
 interface FiltersViewProps {
   title: string;
@@ -105,7 +105,7 @@ export default function filtersView({ title, description, fullPage = false, getF
               </DialogButton>
               <DialogButton
                 onClick={() => {
-                  copy(filterEntriesToArray().join('\n'));
+                  Clipboard.copy(filterEntriesToArray().join('\n'));
                   Toaster.toast("Filters copied to clipboard")
                 }}
               >
@@ -113,7 +113,7 @@ export default function filtersView({ title, description, fullPage = false, getF
               </DialogButton>
               <DialogButton
                 onClick={() => {
-                  filterEntriesFromArray(paste().trim().split('\n'));
+                  filterEntriesFromArray(Clipboard.paste().trim().split('\n'));
                   Toaster.toast("Filters pasted from clipboard");
                 }}
               >

@@ -2,17 +2,17 @@ import { ReactNode, useEffect, useState } from "react";
 import { IoArrowUpCircle, IoArrowDownCircle } from "react-icons/io5";
 import { FaCloudArrowUp, FaCloudArrowDown } from "react-icons/fa6";
 import { Navigation, SidebarNavigation, useParams } from "@decky/ui";
+import { GLOBAL_SYNC_APP_ID } from "../helpers/commonDefs";
 import { getAppName } from "../helpers/utils";
 import { get_last_sync_log, get_target_filters, set_target_filters, get_shared_filters, set_shared_filters, sync_local_first, sync_cloud_first, resync_local_first, resync_cloud_first } from "../helpers/backend";
+import { confirmPopup } from "../components/popups";
+import * as Toaster from "../helpers/toaster";
 import RoutePage from "../components/routePage";
 import LogsView from "../components/logsView";
 import FiltersView from "../components/filtersView";
 import Logger from "../helpers/logger";
-import Toaster from "../helpers/toaster";
 import SyncTaskQueue from "../helpers/syncTaskQueue";
 import IconButton from "../components/iconButton";
-import { GLOBAL_SYNC_APP_ID } from "../helpers/commonDefs";
-import { confirmPopup } from "../components/popups";
 
 interface SyncTargetConfigPageParams {
   appId: string;

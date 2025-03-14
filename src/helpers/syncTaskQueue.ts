@@ -1,12 +1,12 @@
 import fastq from "fastq";
 import type { queueAsPromised } from "fastq";
 import { sync_screenshot, pause_process, resume_process } from "./backend";
+import * as Toaster from "./toaster";
+import * as SyncStateTracker from "./syncStateTracker";
 import Observable from "../types/observable";
 import Logger from "./logger"
-import Toaster from "./toaster";
 import Config from "./config";
 import SyncFilters from "./syncFilters";
-import SyncStateTracker from "./syncStateTracker";
 
 async function worker(fn: () => Promise<number>): Promise<number | undefined> {
   try {

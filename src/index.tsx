@@ -2,6 +2,7 @@ import { FaSave } from "react-icons/fa";
 import { definePlugin } from "@decky/api";
 import { PLUGIN_NAME } from "./helpers/commonDefs";
 import * as ApiClient from "./helpers/apiClient";
+import * as Clipboard from "./helpers/clipboard";
 import PluginLogsPage from "./pages/pluginLogsPage";
 import ConfigCloudPage from "./pages/configCloudPage";
 import SyncTargetConfigPage from "./pages/syncTargetConfigPage";
@@ -26,6 +27,7 @@ export default definePlugin(() => {
     icon: <FaSave />,
     onDismount() {
       registrations.forEach(registration => registration.unregister());
+      Clipboard.clear();
     }
   }
 });

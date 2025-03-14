@@ -14,29 +14,12 @@ export function getCurrentUserId(): number {
   return Number(BigInt.asUintN(32, BigInt(window.App.m_CurrentUser.strSteamID)));
 };
 
-const CLIPBOARD_KEY = `${PLUGIN_NAME_AS_PATH}-clipboard`;
-let timeout: NodeJS.Timeout | undefined = undefined;
-
-export function copy(text: string) {
-  localStorage.setItem(CLIPBOARD_KEY, text);
-  if (timeout) {
-    clearTimeout(timeout);
-  }
-  timeout = setTimeout(() => {
-    localStorage.removeItem(CLIPBOARD_KEY);
-    timeout = undefined;
-  }, 5 * 60 * 1000);
-}
-
-export function paste(): string {
-  if (timeout) {
-    clearTimeout(timeout);
-    timeout = undefined;
-  }
-  const text = localStorage.getItem(CLIPBOARD_KEY);
-  return text ?? "";
-}
-
 export function reduceSlashes(input: string): string {
     return input.replace(/\/+/g, '/');
+}
+
+export function clearLocalStorage() {
+  Object.keys(localStorage)
+    .filter(key => key.startsWith(PLUGIN_NAME_AS_PATH))
+    .forEach(key => localStorage.removeItem(key));
 }

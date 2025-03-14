@@ -1,30 +1,25 @@
 import { PLUGIN_NAME_AS_PATH } from "./commonDefs";
 import Config from "./config";
 
-class SyncStateTracker {
-  private get autoSync(): boolean {
-    return Config.get("sync_on_game_start") && Config.get("sync_on_game_stop");
-  }
+function autoSync(): boolean {
+  return Config.get("sync_on_game_start") && Config.get("sync_on_game_stop");
+}
 
-  private getKey(appId: number): string {
-    return `${PLUGIN_NAME_AS_PATH}-in-sync-${appId}`;
-  }
+function getKey(appId: number): string {
+  return `${PLUGIN_NAME_AS_PATH}-in-sync-${appId}`;
+}
 
-  public setInSync(appId: number, inSync: boolean) {
-    if (this.autoSync) {
-      if (inSync) {
-        localStorage.removeItem(this.getKey(appId));
-      } else {
-        localStorage.setItem(this.getKey(appId), "");
-      }
+export function setInSync(appId: number, inSync: boolean) {
+  if (autoSync()) {
+    if (inSync) {
+      localStorage.removeItem(getKey(appId));
+    } else {
+      localStorage.setItem(getKey(appId), "");
     }
-  }
-
-  // Key existence means out of sync
-  public getInSync(appId: number): boolean {
-    return !(this.autoSync && this.getKey(appId) in localStorage);
   }
 }
 
-const syncStateTracker = new SyncStateTracker();
-export default syncStateTracker;
+// Key existence means out of sync
+export function getInSync(appId: number): boolean {
+  return !(autoSync() && getKey(appId) in localStorage);
+}
