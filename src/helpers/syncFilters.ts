@@ -6,6 +6,7 @@ import Observable from "../types/observable";
 class SyncFilters extends Observable {
   public readonly events = {
     UPDATE: "update",
+    SET: "set",
   }
 
   private appIdSet: Set<number> = new Set();
@@ -35,6 +36,7 @@ class SyncFilters extends Observable {
     } else {
       await set_target_filters(appId, filters);
     }
+    this.emit(this.events.SET, appId);
     await this.refresh();
   }
 }

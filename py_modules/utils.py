@@ -187,6 +187,10 @@ def set_filters(file: Path, filters: list[str]):
     file (Path): Path of the filter file
     filters (list[str]): The filters to set, elements inside should not contain '\\n'.
     """
+    if not filters:
+        file.unlink(missing_ok=True)
+        return
+
     str_to_write = "\n".join(stripped for path in filters if (stripped := path.strip()))
     with file.open("w") as f:
         f.write(str_to_write)

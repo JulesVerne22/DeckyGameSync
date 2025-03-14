@@ -17,10 +17,13 @@ export function textInputPopup(title: ReactNode, value: string, onOK: (value: st
   );
 }
 
-export function confirmPopup(title: ReactNode, text: ReactNode, onOK?: () => void) {
+export function confirmPopup(title: ReactNode, text: ReactNode, onOK?: () => void, okText?: string, cancelText?: string) {
   showModal(
     <ConfirmModal
       strTitle={title}
       strDescription={text}
-      onOK={onOK} />)
+      onOK={onOK}
+      strOKButtonText={okText}
+      strCancelButtonText={cancelText}
+    />)
 }

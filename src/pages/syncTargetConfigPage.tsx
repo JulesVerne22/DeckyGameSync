@@ -2,9 +2,9 @@ import { ReactNode, useEffect, useState } from "react";
 import { IoArrowUpCircle, IoArrowDownCircle } from "react-icons/io5";
 import { FaCloudArrowUp, FaCloudArrowDown } from "react-icons/fa6";
 import { Navigation, SidebarNavigation, useParams } from "@decky/ui";
-import { GLOBAL_SYNC_APP_ID } from "../helpers/commonDefs";
+import { GLOBAL_SYNC_APP_ID, SHARED_FILTER_APP_ID } from "../helpers/commonDefs";
 import { getAppName } from "../helpers/utils";
-import { get_last_sync_log, get_target_filters, set_target_filters, get_shared_filters, set_shared_filters, sync_local_first, sync_cloud_first, resync_local_first, resync_cloud_first } from "../helpers/backend";
+import { get_last_sync_log, sync_local_first, sync_cloud_first, resync_local_first, resync_cloud_first } from "../helpers/backend";
 import { confirmPopup } from "../components/popups";
 import * as Toaster from "../helpers/toaster";
 import RoutePage from "../components/routePage";
@@ -13,6 +13,8 @@ import FiltersView from "../components/filtersView";
 import Logger from "../helpers/logger";
 import SyncTaskQueue from "../helpers/syncTaskQueue";
 import IconButton from "../components/iconButton";
+import SyncFilters from "../helpers/syncFilters";
+import Config from "../helpers/config";
 
 interface SyncTargetConfigPageParams {
   appId: string;
@@ -45,7 +47,25 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
     const [syncInProgress, setSyncInProgress] = useState<boolean>(SyncTaskQueue.busy);
     useEffect(() => {
       const registrations: Array<Unregisterable> = [];
+
       registrations.push(SyncTaskQueue.on(SyncTaskQueue.events.BUSY, setSyncInProgress));
+      registrations.push(SyncFilters.on(SyncFilters.events.SET, (appId: number) => {
+        if ((appId > GLOBAL_SYNC_APP_ID) && Config.get("strict_game_sync")) {
+          confirmPopup(
+            "Filter Saved",
+            <span>
+              Since you have enabled Strict Game Sync, modifying the filter may cause the next download sync (on game start) to delete some data. To avoid that, it is highly recommended to trigger an upload sync (on game stop) right now to get data into sync.<br /><br />
+              Do you want to trigger an upload sync right now?
+            </span>,
+            () => SyncTaskQueue.addSyncTask(sync_local_first, appId),
+            "Sync Now",
+            "Skip"
+          )
+        } else {
+          Toaster.toast("Filter Saved");
+        }
+      }))
+
       return () => registrations.forEach(e => e.unregister());
     }, []);
 
@@ -59,34 +79,22 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
               title="Target Filter"
               description={<>Filters specific for <i>{appName}</i> sync. It will be used together with the shared filter, but has a lower priority.</>}
               fullPage={false}
-              getFiltersFunction={() => get_target_filters(appId)}
-              setFiltersFunction={(filters) => set_target_filters(appId, filters)}
+              getFiltersFunction={() => SyncFilters.get(appId)}
+              setFiltersFunction={(filters) => SyncFilters.set(appId, filters)}
             >
               <IconButton
                 icon={FaCloudArrowUp}
-                onOKActionDescription="Sync Now (Upload to Cloud)"
+                onOKActionDescription={`Sync Now (${(appId == GLOBAL_SYNC_APP_ID) ? "Local First" : "Upload to Cloud"})`}
                 disabled={syncInProgress}
                 onClick={() => SyncTaskQueue.addSyncTask(sync_local_first, appId)}>
               </IconButton>
               <IconButton
                 icon={FaCloudArrowDown}
-                onOKActionDescription="Sync Now (Download from Cloud)"
+                onOKActionDescription={`Sync Now (${(appId == GLOBAL_SYNC_APP_ID) ? "Cloud First" : "Download to Local"})`}
                 disabled={syncInProgress}
                 onClick={() => SyncTaskQueue.addSyncTask(sync_cloud_first, appId)}>
               </IconButton>
             </FiltersView>
-        },
-        {
-          title: "Shared Filter",
-          hideTitle: true,
-          content:
-            <FiltersView
-              title="Shared Filter"
-              description="Filters that's shared among all syncs. It will be used together with the target filter, but has a higher priority."
-              fullPage={false}
-              getFiltersFunction={get_shared_filters}
-              setFiltersFunction={(filters) => set_shared_filters(filters)}
-            />
         },
         {
           title: "Sync Logs",
@@ -128,6 +136,18 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
                   </IconButton>
                 </>)}
             </LogsView>
+        },
+        {
+          title: "Shared Filter",
+          hideTitle: true,
+          content:
+            <FiltersView
+              title="Shared Filter"
+              description="Filters that's shared among all syncs. It will be used together with the target filter, but has a higher priority."
+              fullPage={false}
+              getFiltersFunction={() => SyncFilters.get(SHARED_FILTER_APP_ID)}
+              setFiltersFunction={(filters) => SyncFilters.set(SHARED_FILTER_APP_ID, filters)}
+            />
         },
       ]}
     />
