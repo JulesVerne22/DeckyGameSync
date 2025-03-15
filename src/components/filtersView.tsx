@@ -148,56 +148,60 @@ export default function filtersView({ title, description, fullPage = false, getF
             />
           </Row>
           {showAdvancedOptions && (
-            <Row>
-              <DialogButton
-                onClick={() => textInputPopup(
-                  "Add Arbitrary String",
-                  "",
-                  (value: string) => filterEntriesAppend(`${value}`)
-                )}
-              >
-                Add Arbitrary Line
-              </DialogButton>
-              <DialogButton
-                onClick={() => {
-                  Clipboard.copy(filterEntriesToArray().join('\n'));
-                  Toaster.toast("Filters copied to clipboard")
-                }}
-              >
-                Copy Whole Filter
-              </DialogButton>
-              <DialogButton
-                onClick={() => {
-                  const text = Clipboard.paste().trim();
-                  if (text) {
-                    filterEntriesAppend(text);
-                    Toaster.toast("Filters pasted from clipboard");
-                  } else {
-                    Toaster.toast("Clipboard is empty");
-                  }
-                }}
-              >
-                Paste Filter (Append)
-              </DialogButton>
-              <DialogButton
-                onClick={() => {
-                  const text = Clipboard.paste().trim();
-                  if (text) {
-                    filterEntriesfromString(text);
-                    Toaster.toast("Filters pasted from clipboard");
-                  } else {
-                    Toaster.toast("Clipboard is empty");
-                  }
-                }}
-              >
-                Paste Filter (Replace)
-              </DialogButton>
-              <DialogButton
-                onClick={() => setFilterEntries([])}
-              >
-                Delete All
-              </DialogButton>
-            </Row>
+            <>
+              <Row>
+                <DialogButton
+                  onClick={() => {
+                    Clipboard.copy(filterEntriesToArray().join('\n'));
+                    Toaster.toast("Filters copied to clipboard")
+                  }}
+                >
+                  Copy Whole Filter
+                </DialogButton>
+                <DialogButton
+                  onClick={() => {
+                    const text = Clipboard.paste().trim();
+                    if (text) {
+                      filterEntriesAppend(text);
+                      Toaster.toast("Filters pasted from clipboard");
+                    } else {
+                      Toaster.toast("Clipboard is empty");
+                    }
+                  }}
+                >
+                  Paste Filter (Append)
+                </DialogButton>
+                <DialogButton
+                  onClick={() => {
+                    const text = Clipboard.paste().trim();
+                    if (text) {
+                      filterEntriesfromString(text);
+                      Toaster.toast("Filters pasted from clipboard");
+                    } else {
+                      Toaster.toast("Clipboard is empty");
+                    }
+                  }}
+                >
+                  Paste Filter (Replace)
+                </DialogButton>
+              </Row>
+              <Row>
+                <DialogButton
+                  onClick={() => textInputPopup(
+                    "Add Arbitrary String",
+                    "",
+                    (value: string) => filterEntriesAppend(`${value}`)
+                  )}
+                >
+                  Add Arbitrary Line
+                </DialogButton>
+                <DialogButton
+                  onClick={() => setFilterEntries([])}
+                >
+                  Delete All
+                </DialogButton>
+              </Row>
+            </>
           )}
           <Row>
             <DialogButton
