@@ -1,120 +1,98 @@
-# Decky Cloud Save
+# Cloud Save Fork
 
-A plugin based on [rclone](https://rclone.org/), which allows users to back-up game saves to the cloud. Supports [OneDrive](https://onedrive.live.com/), [Google Drive](https://drive.google.com/), [Dropbox](https://www.dropbox.com/), and [many more](#other-providers)!
+It is a fork of [Decky Cloud Save](https://github.com/GedasFX/decky-cloud-save) that majorly aims for the implementation of "per-game sync".
 
-Support: **[SteamDeckHomebrew Discord](https://deckbrew.xyz/discord)**, or open an issue on here (preferred).
+It is still based on [rclone](https://rclone.org/), which allows users to back-up game saves to any cloud drive it supports. The GUI supports OneDrive, Google Cloud and DropBox right now, other prividers need to be configured through command line.
 
 ## Troubleshooting
 
-If you are having issues with sync, more often than not, logs will tell you all you need to know to resolve the issue. You can find them in the plugin panel, or `~/homebrew/logs/cloud-save-fork/`. You may be asked to provide them when asking for help.
+If you are having issues with sync, you can check the logs to try to find out the issue. The logs for a specifc game sync can be accessed from the context menu of the game, while the logs for global sync can be accessed from a button in the Quick Access Menu. You can also find all the logs in the Decky Loader logs folder `~/homebrew/logs/cloud-save-fork/`. You may be asked to provide them when asking for help.
 
-To see more detailed logs, you will have to modify the `log_level` in `~/homebrew/settings/cloud-save-fork/plugin.properties` to use `DEBUG`. Make sure to change it back to `INFO` or higher, when done.
+It is recommended to modify the `log_level` entry in `~/homebrew/settings/cloud-save-fork/config.json` to `DEBUG` to get more verbose logs, which can help get the issue identified.
 
 ## Features
+### Extension over Decky Cloud Save
+- Ability to pull down the files (saves, mods, anything) from cloud provider on game launch
+- Ability to upload the files to cloud on game stop for backing up and cross-device syncing
+- Ability to sync only the files specific for the game being launched
+- Ability to sync Steam screenshots the moment they are taken, and clear them locally after sync
+- Separated plugin logs and sync logs for each sync
+- Enhanced filters and filters edit page
+- A shared filter for common exclusions and a specific filter for each sync target (game or global)
+- Ability to trigger a sync/resync manually using controller
+- Ability to modify the local sync root (use at your own risk!)
 
-* Ability to sync game saves or arbitrary files to the cloud.
-* A high variety of supported cloud providers, courtesy of [rclone](https://rclone.org/).
-* Ability to back up files automatically after a game is closed.
-* File counter, which estimates the number of files a sync path would pick up. Prevents accidental backing up of the entire steam deck.
-* Advanced filtering, allowing users to set up custom filtering rules with includes and excludes.
-* Ability to customize destination folder name.
-* Automatically sync files on game startup (if feature enabled, and game does not support native steam cloud).
-* Easily accessable sync logs.
-* Bidirectional sync (beta, use at own risk!).
+### Inherited from Decky Cloud Save
+* Ability to sync game saves or arbitrary files to the cloud
+* A high variety of supported cloud providers, courtesy of [rclone](https://rclone.org/)
+* Ability to back up files automatically after a game is closed
+* File counter, which estimates the number of files a sync path would pick up. Prevents accidental backing up of the entire steam deck
+* Ability to customize destination folder name
+* Easily accessable sync logs
 
-**NOTE!** This plugin **does not** delete files from the remote (**when in regular sync mode only**), even if files get deleted locally. This is intentional to protect against accidents. This, however, may cause issues. If you have a concrete example, let me know by opening an [issue](https://github.com/AkazaRenn/SDH-CloudSaveFork/issues).
+### NOTE!
+This plugin by default **does not** delete files, even if files get deleted on the other side. This is intentional to protect against accidents. You can change this behavior by enableing `Quick Access Menu - Advanced Mode - Strict Game Sync`, however, **use it at your own risk** since I have warned **twice** before it can be enabled.
 
 ## Installation
 
 Find it on the [decky plugin store](https://plugins.deckbrew.xyz/) or download it from [releases page](https://github.com/AkazaRenn/SDH-CloudSaveFork/releases/) (use the built-in installer).
 
-
 ## Usage
 
 ### Authentication
 
-To sync files, you must first authenticate with a cloud provider.
+To sync files, you must first authenticate with a cloud provider. Everything else will be disabled before a cloud provider is configured.
 
-Navigate to `Configuration - Cloud Provider` and select one of the three providers. A website will open requesting you to authenticate. After putting in the credentials, the page will close by itself and `Currently using: X` should be updated to the new provider.
+Navigate to `Quick Access Menu - Cloud Provider` and select one of the three providers. A website will open requesting you to authenticate. After putting in the credentials, the page will close by itself and `Currently using: X` should be updated to the new provider.
 
 Dropbox and OneDrive seem to work okay with this, other providers would need to be installed using the steps outlined [here](#other-providers).
 
-### Paths
+### Filters
 
 The second step of setup is specifying the sync paths.
 
-Navigate to `Configuration - Sync Paths` and click a button to `Add new Path to Sync`. You can sync individual files or folders. After selecting a path, an estimation of the number of files to be synced will be presented. If the count is greater than 9000, be extra cautious, as you may have selected an incorrect path (for a game, the number of save files usually is not be more than 10).
+For global sync, navigate to `Quick Access Menu - Global Sync Configs`, for per-game sync, enter `Sync Filters` from the game's context menu. Inside the page, click buttons to `Add Include Filter` or `Add Exclude Filter`. You can sync individual files or folders. After selecting a path, an estimation of the number of files to be synced will be presented. If the count is greater than 9000, be extra cautious, as you may have selected an incorrect path (for a game, the number of save files usually is not be more than 10). Afterwards, click `Save` button to get it into effect.
 
 **IMPORTANT!** The plugin respects symlinks in the sync paths. If a shortcut gets created, the destination would get backed up as well. This will be visible in the estimated files count.
 
 ### Other providers
 
-For one or another reason, a provider may not be able to be configured from the Big Picture mode. For these cases, we have provided install scripts for other common providers in [/quickstart](/defaults/quickstart/) directory. Just navigate there with explorer and run one of the install scripts.
+For one or another reason, a provider may not be able to be configured from the Big Picture mode. For these cases, please kindly refer to [rclone's documentation](https://rclone.org/commands/rclone_config_create/) to generate a rclone config with your desired cloud provider using the name `cloud`, name the generated config `rclone.conf`, and put it inside the config folder of the plugin.
 
-When running an installer, a web browser will appear and allow you to finish the configuration. Once you see the **Success!** message, feel free to go back to the Big Picture mode - the configuration is over.
+## Config
 
-**NOTE**: If when running installer a store page opens to download a browser, download it, and restart the device to try again. Sorry for the inconvenience.
+### Shared Filter
 
-**NOTE**: You may need to run the script with `bash ./provider_script.sh`, or manually `chmod +x` the file, due to changes in build pipeline.
+While syncing, three filters will be used: `--filter-from shared.filter --filter-from <target>.filter -filter-from exclude_all.filter`, which the first two is modifiable. `shared.filter` will be shared among all syncs, global and all games, and has the highest priority. It is designed to exclude files that's generally should not be synced (logs, caches, etc.).
 
-## Usage (Advanced)
+### Per-Game Sync
 
-If you wish to use another provider other than OneDrive, Google Drive, or Dropbox, you will have to go to desktop mode and configure the provider manually.
+When a game is launched, if enabled, per-game sync will be triggered. The plugin will first send `SIGSTOP` to the game process to prevent it from reading the existing files, then pull the remote data down, and send `SIGCONT` to the process to allow game to start reading the updated files. The sync when a game is stopped does not block anything, as the game has been terminated already.
 
-Manual configuration would require the use of a console, but following the interactive steps should be enough to create any of the [many supported providers](https://rclone.org/docs/).
+Per-game sync by default uses [`rclone copy`](https://rclone.org/commands/rclone_copy/). It will modify any mismatched file, but will not delete anything to avoid data loss, which is ideal in most cases. In case that it's causing any problem, an option is provided in `Quick Access Menu - Advanced Options - Strict Game Sync` that changes it to use [`rclone sync`](https://rclone.org/commands/rclone_sync/), which does allow file removal on mismatch, but also exposing a much higher risk of data loss. **Use it at your own risk!**
 
-<u>**SECURITY WARNING: some rclone-providers will save passwords unencrypted on the SteamDeck filesystem**</u>. This is Rclone related and the plugin cannot handle encrypted credentials.
-
-### Configuration Steps
-
-1. Navigate to the plugin installation directory (default - `~/homebrew/plugins/cloud-save-fork`).
-2. Run `./bin/rcloneLauncher config` in a console:
-
-   1. In the first menu select `New remote` (enter `n`).
-   2. When asked for `name`, enter `backend` - **IMPORTANT**!
-
-      > If remote already exists, delete previous one before creating the new one.
-
-   3. When asked for `Storage`, select a provider by typing one of the listed numbers or values in parentheses.
-
-   4. Follow the steps for each provider. If stumped, use the [rclone docs](https://rclone.org/docs/) for reference.
-
-      > If you supsect a provider is not supported or are still stuck setting up, open an [issue](https://github.com/AkazaRenn/SDH-CloudSaveFork/issues) or visit the [SteamDeckHomebrew Discord](https://deckbrew.xyz/discord).
-
-3. Verify the sync works by going to gaming mode and clicking `Sync now`. If files start appearing in the cloud, everything works as expected.
-
-### Filtering (Advanced)
-
-By default, the filters defined in the UI can be set to include some paths and to exclude others (excludes takes priority over includes). If a more complex solution is needed, you can edit the filter file (by default: `~/homebrew/settings/cloud-save-fork/sync_paths_filter.txt`) to meet your needs.
-
-Important note: UI edits overwrite this file, so make sure you do not use the built-in editor afterward and make constant backups of the configuration (heh). Additionally, we cannot check for the validity of the configuration after it was done manually. If needed, a dry-run can be performed to check which files would have been synced after the edit. I would highly recommend you do it before you sync your entire file system.
-
-Command (in `~/homebrew/plugins/cloud-save-fork/`):
-```bash
-./rcloneLauncher copy --filter-from ../../settings/cloud-save-fork/sync_paths_filter.txt / backend:cloud-save-fork --copy-links --dry-run
-```
-
-## Bi-directional Sync
-
-This much requested feature allows for two-way file transfers, rather than the default one-way.
-
-**IMPORTANT!** Bisync is, while stable, still experimental. USE AT YOUR OWN RISK!
-
-### Flow
-
-Sync can be initiated in one of two ways: manually by clicking the `Sync Now` button, or automatically, whenever a game which does not support native Steam Cloud is opened or closed (and the auto-sync feature is enabled in the plugin panel).
-
-When clicking `Sync Now` button or when the game closes, the game automatically pushes files from the Steam Deck to remote. In case of conflict, the files on the Steam Deck will be treated as canon.
-
-When a game is opened, which does not support native Steam Cloud, and automatic sync is enabled, a small syncing process is started. First the game startup is temporarily suspended to pull files from remote. These files will be treated as canon. Then once the sync is complete, game startup is resumed.
-
-#### Caveats:
-
+#### Caveats
 1. Whenever the game is starting with auto-sync enabled, the start will be delayed until sync completes. This is obviously undesirable when there is no internet conectivity, so as a workaround, just disable the auto-sync until you get back to civilization.
 
-2. Although the halting process is quick, its not instantanious. This means that for some games, there is a possibility where files already get read. In testing we have not encountered such games, however the possibility is real. Please open an issue if you uncover such case.
+1. Although the halting process is quick, its not instantanious. This means that for some games, there is a possibility where files already get read. In testing we have not encountered such games, however the possibility is real. Please open an issue if you uncover such case.
 
-### Conflict Resolution
+#### Filter
+Each game has its own filter that can be configured via the config page entered from the context menu of the game, you can also find it in the plugin's settings folder of Decky Loader with the name `<appId>.filter`. `<appId>.filter` should contain all the files that need to be synced. If it doesn't exist, the sync will be skipped as it's presumed that this game does not need the plugin to sync anything.
+
+#### Accidental Shutdown Prevention
+If the plugin is shutdown accidentally during a game session (effectively Steam or gamescope crash), a game stop upload cannot be triggered. This may cause a mismatch between the data on cloud and locally, which the local data is newer. In that case, the next game launch will overwrite newer local data with older cloud data causing data loss. To avoid that, a flag will be set to `localStorage` of CEF when an start game sync is finished, making the local data and cloud data as "out of sync", and an stop game sync will remove the flag, making the sync state as "in sync". If the start game sync finds out that the data is out of sync, it will skip that sync to avoid data loss and send a toast to the user, until another stop game sync finishes successfully.
+
+### Global Sync
+Global sync uses [`rclone bisync`](https://rclone.org/commands/rclone_bisync/). It will also be triggered on game start and stop if enabled, but will not block the game launching process, given that it should not cover files related to the game itself, effectively improve the game launching time.
+
+#### Filter
+Global sync has its own filter too, named `global.filter` in the plugin's settings folder of Decky Loader.
+
+#### Flow
+
+Sync can be initiated in one of two ways: manually by clicking the `Quick Access Menu - Global Sync Now` button, or automatically. However, for the first time of setup, or there's a major change on the filter, it may be required to do a `resync`. The logs will tell you when it's necessary, and you can do it through the buttons on the top-right corner of the global sync logs page.
+
+#### Conflict Resolution
 
 It is entirely possible that at some point file conflicts occur. You will be warned with a toast notification whenever such case occurs. Thankfully, rclone offers great conflict resolution methods.
 
@@ -122,46 +100,28 @@ Whenever a sync occurs which leads to a conflict, one of the 2 file states will 
 
 The loser file, will not be deleted, however it will be renamed to `a.txt.conflict1`. If futher conflicts occur, the number at the end just gets incremented. It's up to the user to delete the file that is not up to date.
 
-#### Note on resync
+If you are sure that you don't care about it, kindly update `additional_bisync_args` entry in `config.json` to use another `--conflict-loser` option. Still, zero support will be provided to it.
 
-If the bisync is used for the first time, and or data corruption occurs, you may be asked to run resync. This is just like sync, except it would completely reset either local files, or destination files. You will be prompted to select which ones should be treated as canon.
+### Screenshot Upload
+Screenshot upload is relatively simple. Whenever a screenshot is taken, the plugin would get the path of the taken screenshot image and trigger a sync to upload it to the cloud. The screenshot upload destination is configurable from `Quick Access Menu - Screenshot Upload Destination`. You can also configure to delete the local copy of the screenshot after the sync is completed.
 
+Note that even if the screenshot is deleted via Steam API, an empty entry of the screenshot will still remain in Steam's Media page. However, after a Steam restart, they will be gone.
 
 ## Other (Advanced)
+Some more options are available by enabling `Quick Access Menu - Advanced Options`. You will be warned when enabling it though.
 
-### Change destination folder name
+### Change Root Folder
+Changing sync root is possible from `Quick Access Menu - Advanced Options - Sync Root`. You should update **all filters** accordingly since the paths inside are relative to the sync root, or your files may be deleted by the syncs.
 
-If you wish to change the folder on how it appears on the remote, edit `~/homebrew/settings/cloud-save-fork/plugin.properties` file and replace `cloud-save-fork` with whichever name you wish. Be wary of path limitations unique to each provider.
+### Change Destination Folder
+Changing sync destination on the cloud is possible from `Quick Access Menu - Advanced Options - Sync Destination`. Be wary of path limitations unique to each provider, and you will definitely want to move the files on the cloud as well or your files may be deleted by the syncs.
 
-### Additional rclone arguments
-
-If you want to have additional arguments passed to rsync for your provider, you can specify them in `plugin.properties` with:
-
-```
-additional_sync_args=<Args>
-
-example:
-additional_sync_args=--onedrive-av-override
-```
-
-### Custom sync root
-
-By default the sync root is `/` for simplicity. If having it causes issues, you can change it to another place and create symlinks. Set `plugin.properties` value `sync_root` to be whatever you wish (e.g. `/home/deck/`). **IMPORTANT: This path must be absolute, and must end with a trailing `/`**
-
-Example, where 2 symlinks are created:
-
-```bash
-cd /home/deck/syncs
-ln -s /run/media/mmcblk0p1/Emulation/saves/ "$(pwd)/emulation-saves"
-ln -s "/home/deck/homebrew/settings/cloud-save-fork/" "$(pwd)/dcs-config"
-```
-
-In `plugin.properties`, when root is set to `/home/deck`, we can sync the folder `syncs`, and it would show up as `emulation-saves`, and `dcs-config` on the configured cloud provider.
+### Additional Sync Arguments
+You can add addition sync arguments to the entries `additional_sync_args` and `additional_bisync_args` in `config.json`. Entries in `additional_sync_args` will be applied to both per-game syncs and global syncs, while `additional_bisync_args` will only be applied to global syncs, since per-game syncs do not use bisync.
 
 ## Acknowledgments
-
 Thank you to:
+* [GedasFX](https://github.com/GedasFX) for the amazing work of the original [Decky Cloud Save](https://github.com/GedasFX/decky-cloud-save)!
 * [Emiliopg91](https://github.com/Emiliopg91), [NL-TCH](https://github.com/NL-TCH) for bi-sync support!
-* [AkazaRenn](https://github.com/AkazaRenn), for various support!
 * [Decky Homebrew Community](https://github.com/SteamDeckHomebrew) for assistance with development!
 * [rclone](https://rclone.org/) for making this plugin possible!
