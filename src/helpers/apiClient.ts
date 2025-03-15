@@ -20,13 +20,13 @@ export function setupAppLifetimeNotifications(): Unregisterable {
       if (Config.get("sync_on_game_start")) {
         Logger.info(`Syncing on game ${e.unAppID} start`);
         await SyncTaskQeueue.addSyncTask(sync_cloud_first, e.unAppID, e.bRunning, e.nInstanceID);
-        await SyncTaskQeueue.addSyncTask(sync_local_first, GLOBAL_SYNC_APP_ID);
+        await SyncTaskQeueue.addSyncTask(sync_local_first, GLOBAL_SYNC_APP_ID, e.bRunning);
       }
     } else {
       if (Config.get("sync_on_game_stop")) {
         Logger.info(`Syncing on game ${e.unAppID} stop`);
         await SyncTaskQeueue.addSyncTask(sync_local_first, e.unAppID, e.bRunning);
-        await SyncTaskQeueue.addSyncTask(sync_cloud_first, GLOBAL_SYNC_APP_ID);
+        await SyncTaskQeueue.addSyncTask(sync_cloud_first, GLOBAL_SYNC_APP_ID, e.bRunning);
       }
     }
   });
