@@ -6,6 +6,7 @@
     "capture_upload_destination": "steam-captures",
     "capture_delete_after_upload": false,
     "additional_sync_args": [
+        "--ignore-checksum",
         "--copy-links",
         "--transfers", "8",
         "--checkers", "16"
