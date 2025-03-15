@@ -1,4 +1,4 @@
-import { PLUGIN_NAME_AS_PATH } from "./commonDefs";
+import { PLUGIN_NAME_AS_PATH, GLOBAL_SYNC_APP_ID } from "./commonDefs";
 import Config from "./config";
 
 function autoSync(): boolean {
@@ -10,7 +10,7 @@ function getKey(appId: number): string {
 }
 
 export function setInSync(appId: number, inSync: boolean) {
-  if (autoSync()) {
+  if (autoSync() && (appId > GLOBAL_SYNC_APP_ID)) {
     if (inSync) {
       localStorage.removeItem(getKey(appId));
     } else {
@@ -21,5 +21,5 @@ export function setInSync(appId: number, inSync: boolean) {
 
 // Key existence means out of sync
 export function getInSync(appId: number): boolean {
-  return !(autoSync() && getKey(appId) in localStorage);
+  return !((getKey(appId) in localStorage) && autoSync() && (appId > GLOBAL_SYNC_APP_ID));
 }
