@@ -5,7 +5,7 @@
   "flags": [],
   "publish": {
     "tags": ["backup", "cloud", "rclone"],
-    "description": "Manage cloud saves for games that do not support it in [current year].",
+    "description": "A fork of Decky Cloud Save that manages cloud saves and mods for games",
     "image": "https://opengraph.githubassets.com/0/AkazaRenn/SDH-CloudSaveFork"
   }
 }
