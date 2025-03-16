@@ -1,11 +1,11 @@
 {
-  "name": "Cloud Save Fork",
+  "name": "Game Sync",
   "author": "Renn",
   "api_version": 1,
   "flags": [],
   "publish": {
     "tags": ["backup", "cloud", "rclone"],
     "description": "A fork of Decky Cloud Save that manages cloud saves and mods for games",
-    "image": "https://opengraph.githubassets.com/0/AkazaRenn/SDH-CloudSaveFork"
+    "image": "https://opengraph.githubassets.com/0/AkazaRenn/SDH-GameSync"
   }
 }

@@ -24,6 +24,10 @@ class Plugin:
         logger.debug("Executing get_cloud_type()")
         return RcloneManager.get_cloud_type()
 
+    async def update_rclone(self):
+        logger.debug("Executing update_rclone()")
+        return RcloneManager.update_rclone()
+
     # Sync Paths
 
     async def get_target_filters(self, app_id: int) -> list[str]:
@@ -129,7 +133,7 @@ class Plugin:
         logger_level = Config.get_config_item("log_level")
         logger.setLevel(logger_level)
 
-        logger.debug("rclone exe path: %s", RCLONE_BIN_PATH)
+        logger.debug("rclone bin path: %s", RCLONE_BIN_PATH)
         logger.debug("rclone cfg path: %s", RCLONE_CFG_PATH)
 
     async def _unload(self):

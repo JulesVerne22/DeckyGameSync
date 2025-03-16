@@ -8,7 +8,7 @@ RCLONE_PORT = 53682
 PLUGIN_DEFAULT_CONFIG_PATH = Path(decky.DECKY_PLUGIN_DIR) / "default_config.json"
 PLUGIN_CONFIG_DIR = Path(decky.DECKY_PLUGIN_SETTINGS_DIR)
 
-RCLONE_BIN_PATH = Path(decky.DECKY_PLUGIN_DIR) / "bin/rcloneLauncher"
+RCLONE_BIN_PATH = Path(decky.DECKY_PLUGIN_RUNTIME_DIR) / "rclone"
 RCLONE_CFG_PATH = PLUGIN_CONFIG_DIR / "rclone.conf"
 RCLONE_BISYNC_CACHE_DIR = Path(decky.HOME) / ".cache/rclone/bisync"
 

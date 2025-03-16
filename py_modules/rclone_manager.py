@@ -1,8 +1,9 @@
 from asyncio import create_subprocess_exec
 from asyncio.subprocess import Process, PIPE
 from time import sleep
-import re
+import re, requests
 
+from common_defs import *
 from utils import *
 
 
@@ -28,7 +29,7 @@ class RcloneManager:
 
         cls.current_spawn = await create_subprocess_exec(
             str(RCLONE_BIN_PATH),
-            *(["config", "create", "cloud", cloud_type]),
+            *(["--config", str(RCLONE_CFG_PATH), "config", "create", "cloud", cloud_type]),
             stderr=PIPE,
         )
 
@@ -98,3 +99,82 @@ class RcloneManager:
                 return l[1].strip().split(" ")[-1]
         except:
             return ""
+
+    @classmethod
+    def update_rclone(cls):
+        """
+        Checks for updates to rclone and updates if necessary.
+        """
+        latest_version = cls._get_latest_rclone_version()
+        logger.info("Latest version: %s", latest_version)
+        current_version = cls._get_current_rclone_version()
+        logger.info("Current version: %s", current_version)
+
+        if (not latest_version) or (current_version and (latest_version <= current_version)):
+            logger.debug("No update required")
+            return "No update required"
+
+        logger.info("Updating rclone from %s to %s", current_version, latest_version)
+        cls._get_rclone()
+
+    @classmethod
+    def _get_latest_rclone_version(cls) -> str | None:
+        """
+        Retrieves the latest version of rclone from GitHub.
+
+        Returns:
+        str: The latest version of rclone.
+        """
+        url = "https://downloads.rclone.org/version.txt"
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.text.strip()
+
+        logger.warning("Failed to fetch the latest version of rclone")
+        return None
+
+    @classmethod
+    def _get_current_rclone_version(cls) -> str | None:
+        """
+        Retrieves the current version of rclone from the rclone configuration.
+
+        Returns:
+        str: The current version of rclone.
+        """
+        if not RCLONE_BIN_PATH.exists():
+            logger.info("Rclone binary does not exist in path %s", RCLONE_BIN_PATH)
+            return None
+
+        import subprocess
+        with subprocess.Popen([RCLONE_BIN_PATH, "--version"], stdout=subprocess.PIPE) as p:
+            lines = p.stdout.readlines()
+
+        pattern = re.compile(rb"rclone v[\d\.]+")
+        for line in lines:
+            if re.search(pattern, line):
+                return line.decode().strip()
+
+        logger.warning("Failed to extract the current version of rclone")
+        return None
+
+    @classmethod
+    def _get_rclone(cls) -> None:
+        """
+        Downloads the latest version of rclone and replaces the current version.
+        """
+        download_url = "https://downloads.rclone.org/rclone-current-linux-amd64.zip"
+        response = requests.get(download_url, stream=True)
+        if response.status_code == 200:
+            import io, zipfile
+            zip_data = io.BytesIO(response.content)
+            with zipfile.ZipFile(zip_data) as zip_ref:
+                for entry in zip_ref.namelist():
+                    if entry.endswith("/rclone"):
+                        with open(RCLONE_BIN_PATH, "wb") as f:
+                            f.write(zip_ref.read(entry))
+                        RCLONE_BIN_PATH.chmod(RCLONE_BIN_PATH.stat().st_mode | 0o111)
+                        logger.info("Rclone downloaded to %s", RCLONE_BIN_PATH)
+                        return
+                logger.error("Failed to extract the latest version of rclone, zip content: %s", zip_ref.namelist())
+        else:
+            logger.error("Failed to download the latest version.")

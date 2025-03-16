@@ -1,4 +1,4 @@
-# Cloud Save Fork
+# SDH-GameSync
 
 It is a fork of [Decky Cloud Save](https://github.com/GedasFX/decky-cloud-save) that majorly aims for the implementation of "per-game sync".
 
@@ -35,7 +35,7 @@ This plugin by default **does not** delete files, even if files get deleted on t
 
 ## Installation
 
-Find it on the [decky plugin store](https://plugins.deckbrew.xyz/) or download it from [releases page](https://github.com/AkazaRenn/SDH-CloudSaveFork/releases/) (use the built-in installer).
+Find it on the [decky plugin store](https://plugins.deckbrew.xyz/) or download it from [releases page](https://github.com/AkazaRenn/SDH-GameSync/releases/) (use the built-in installer).
 
 ## Usage
 

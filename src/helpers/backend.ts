@@ -4,6 +4,7 @@ import { callable } from "@decky/api"
 export const spawn = callable<[backend_type: string], string>("spawn");
 export const spawn_probe = callable<[], number>("spawn_probe");
 export const get_cloud_type = callable<[], string>("get_cloud_type");
+export const update_rclone = callable<[], void>("update_rclone");
 
 // Sync Paths
 export const get_target_filters = callable<[app_id: number], Array<string>>("get_target_filters");

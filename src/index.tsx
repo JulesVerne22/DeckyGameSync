@@ -1,6 +1,7 @@
-import { FaSave } from "react-icons/fa";
+import { LuArrowDownUp } from "react-icons/lu";
 import { definePlugin } from "@decky/api";
 import { PLUGIN_NAME } from "./helpers/commonDefs";
+import { updateRclone } from "./helpers/utils";
 import * as ApiClient from "./helpers/apiClient";
 import * as Clipboard from "./helpers/clipboard";
 import PluginLogsPage from "./pages/pluginLogsPage";
@@ -21,10 +22,12 @@ export default definePlugin(() => {
 
   registrations.push(ContextMenuPatch.register());
 
+  updateRclone();
+
   return {
     name: PLUGIN_NAME,
     content: <QuickAccessMenu />,
-    icon: <FaSave />,
+    icon: <LuArrowDownUp />,
     onDismount() {
       registrations.forEach(registration => registration.unregister());
       Clipboard.clear();

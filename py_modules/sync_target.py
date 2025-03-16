@@ -148,7 +148,7 @@ class _SyncTarget:
         if not self._shared_filter_file.exists():
             self._shared_filter_file.touch(exist_ok=True)
 
-        arguments = [self._sync_mode.value]
+        arguments = ["--config", str(RCLONE_CFG_PATH), self._sync_mode.value]
         arguments.extend(self._get_sync_paths(winner))
 
         if self._filter_required:

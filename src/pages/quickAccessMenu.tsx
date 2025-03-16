@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { FaFileAlt, FaFileUpload, FaSave } from "react-icons/fa";
+import { FaArrowCircleUp, FaFileAlt, FaFileUpload, FaSave } from "react-icons/fa";
 import { MdStorage } from "react-icons/md";
 import { BsFillGearFill } from "react-icons/bs";
 import { FaCloudArrowUp, FaCloudArrowDown } from "react-icons/fa6";
 import { PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
 import { GLOBAL_SYNC_APP_ID } from "../helpers/commonDefs";
+import { updateRclone } from "../helpers/utils";
 import { get_cloud_type, sync_cloud_first } from "../helpers/backend";
 import * as Popups from "../components/popups";
 import SyncTargetConfigPage from "./syncTargetConfigPage";
@@ -236,6 +237,14 @@ export default function quickAccessMenu() {
                   })}
             >
               Sync Destination
+            </ButtonWithIcon>
+          </PanelSectionRow>
+          <PanelSectionRow>
+            <ButtonWithIcon
+              icon={<FaArrowCircleUp />}
+              onClick={() => updateRclone(true)}
+            >
+              Update Rclone
             </ButtonWithIcon>
           </PanelSectionRow>
         </>)}
