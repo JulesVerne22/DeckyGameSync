@@ -17,5 +17,5 @@
     "advanced_mode": false,
     "strict_game_sync": false,
     "sync_root": "/",
-    "sync_destination": "cloud-save-fork"
+    "sync_destination": "sdh-game-sync"
 }

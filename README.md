@@ -2,13 +2,13 @@
 
 It is a fork of [Decky Cloud Save](https://github.com/GedasFX/decky-cloud-save) that majorly aims for the implementation of "per-game sync".
 
-It is still based on [rclone](https://rclone.org/), which allows users to back-up game saves to any cloud drive it supports. The GUI supports OneDrive, Google Cloud and DropBox right now, other prividers need to be configured through command line.
+It is still based on [rclone](https://rclone.org/), which allows users to back-up game saves to any cloud drive it supports. The GUI supports OneDrive, Google Cloud and Dropbox right now, other providers need to be configured through command line.
 
 ## Troubleshooting
 
-If you are having issues with sync, you can check the logs to try to find out the issue. The logs for a specifc game sync can be accessed from the context menu of the game, while the logs for global sync can be accessed from a button in the Quick Access Menu. You can also find all the logs in the Decky Loader logs folder `~/homebrew/logs/cloud-save-fork/`. You may be asked to provide them when asking for help.
+If you are having issues with sync, you can check the logs to try to find out the issue. The logs for a specifc game sync can be accessed from the context menu of the game, while the logs for global sync can be accessed from a button in the Quick Access Menu. You can also find all the logs in the Decky Loader logs folder `~/homebrew/logs/sdh-gamesync/`. You may be asked to provide them when asking for help.
 
-It is recommended to modify the `log_level` entry in `~/homebrew/settings/cloud-save-fork/config.json` to `DEBUG` to get more verbose logs, which can help get the issue identified.
+It is recommended to modify the `log_level` entry in `~/homebrew/settings/sdh-gamesync/config.json` to `DEBUG` to get more verbose logs, which can help get the issue identified.
 
 ## Features
 ### Extension over Decky Cloud Save
