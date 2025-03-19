@@ -1,7 +1,7 @@
 from asyncio import create_subprocess_exec
 from asyncio.subprocess import Process, PIPE
 from time import sleep
-import re, requests
+import re, urllib
 
 from common_defs import *
 from utils import *
@@ -29,7 +29,16 @@ class RcloneManager:
 
         cls.current_spawn = await create_subprocess_exec(
             str(RCLONE_BIN_PATH),
-            *(["--config", str(RCLONE_CFG_PATH), "config", "create", "cloud", cloud_type]),
+            *(
+                [
+                    "--config",
+                    str(RCLONE_CFG_PATH),
+                    "config",
+                    "create",
+                    "cloud",
+                    cloud_type,
+                ]
+            ),
             stderr=PIPE,
         )
 
@@ -110,7 +119,9 @@ class RcloneManager:
         current_version = cls._get_current_rclone_version()
         logger.info("Current version: %s", current_version)
 
-        if (not latest_version) or (current_version and (latest_version <= current_version)):
+        if (not latest_version) or (
+            current_version and (latest_version <= current_version)
+        ):
             logger.debug("No update required")
             return "No update required"
 
@@ -126,11 +137,13 @@ class RcloneManager:
         str: The latest version of rclone.
         """
         url = "https://downloads.rclone.org/version.txt"
-        response = requests.get(url)
-        if response.status_code == 200:
-            return response.text.strip()
+        try:
+            with urllib.request.urlopen(url, context=ssl_context) as response:
+                if response.status == 200:
+                    return response.read().decode("utf-8").strip()
+        except Exception as e:
+            logger.warning(f"Failed to fetch the latest version of rclone: {e}")
 
-        logger.warning("Failed to fetch the latest version of rclone")
         return None
 
     @classmethod
@@ -146,7 +159,10 @@ class RcloneManager:
             return None
 
         import subprocess
-        with subprocess.Popen([RCLONE_BIN_PATH, "--version"], stdout=subprocess.PIPE) as p:
+
+        with subprocess.Popen(
+            [RCLONE_BIN_PATH, "--version"], stdout=subprocess.PIPE
+        ) as p:
             lines = p.stdout.readlines()
 
         pattern = re.compile(rb"rclone v[\d\.]+")
@@ -163,18 +179,28 @@ class RcloneManager:
         Downloads the latest version of rclone and replaces the current version.
         """
         download_url = "https://downloads.rclone.org/rclone-current-linux-amd64.zip"
-        response = requests.get(download_url, stream=True)
-        if response.status_code == 200:
-            import io, zipfile
-            zip_data = io.BytesIO(response.content)
-            with zipfile.ZipFile(zip_data) as zip_ref:
-                for entry in zip_ref.namelist():
-                    if entry.endswith("/rclone"):
-                        with open(RCLONE_BIN_PATH, "wb") as f:
-                            f.write(zip_ref.read(entry))
-                        RCLONE_BIN_PATH.chmod(RCLONE_BIN_PATH.stat().st_mode | 0o111)
-                        logger.info("Rclone downloaded to %s", RCLONE_BIN_PATH)
-                        return
-                logger.error("Failed to extract the latest version of rclone, zip content: %s", zip_ref.namelist())
-        else:
-            logger.error("Failed to download the latest version.")
+        with urllib.request.urlopen(download_url, context=ssl_context) as response:
+            if response.status == 200:
+                import io, zipfile
+
+                zip_data = io.BytesIO(response.read())
+                with zipfile.ZipFile(zip_data) as zip_ref:
+                    for entry in zip_ref.namelist():
+                        if entry.endswith("/rclone"):
+                            with open(RCLONE_BIN_PATH, "wb") as f:
+                                f.write(zip_ref.read(entry))
+                            # Make the binary executable
+                            RCLONE_BIN_PATH.chmod(
+                                RCLONE_BIN_PATH.stat().st_mode | 0o111
+                            )
+                            logger.info("Rclone downloaded to %s", RCLONE_BIN_PATH)
+                            return
+                    logger.error(
+                        "Failed to extract the latest version of rclone, zip content: %s",
+                        zip_ref.namelist(),
+                    )
+            else:
+                logger.error(
+                    "Failed to download the latest version. HTTP status: %d",
+                    response.status,
+                )

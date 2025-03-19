@@ -2,6 +2,7 @@ import decky
 
 from pathlib import Path
 from enum import Enum
+import ssl, certifi
 
 RCLONE_PORT = 53682
 
@@ -21,6 +22,7 @@ SYNC_FILTER_TYPE_DICT = {
 }
 
 logger = decky.logger
+ssl_context = ssl.create_default_context(cafile=certifi.where())
 
 
 class RcloneSyncMode(Enum):

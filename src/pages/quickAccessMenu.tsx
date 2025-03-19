@@ -242,7 +242,7 @@ export default function quickAccessMenu() {
           <PanelSectionRow>
             <ButtonWithIcon
               icon={<FaArrowCircleUp />}
-              onClick={() => updateRclone(true)}
+              onClick={updateRclone}
             >
               Update Rclone
             </ButtonWithIcon>
