@@ -26,8 +26,8 @@ export function clearLocalStorage() {
     .forEach(key => localStorage.removeItem(key));
 }
 
-export function updateRclone() {
+export function updateRclone(toast: boolean = false) {
   update_rclone()
-    .then(() => Toaster.toast("Rclone is now the latest"))
+    .then(() => toast && Toaster.toast("Rclone is now the latest"))
     .catch(() => Toaster.toast("Error updating rclone"));
 }
