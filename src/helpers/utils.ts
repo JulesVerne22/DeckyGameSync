@@ -20,12 +20,6 @@ export function reduceSlashes(input: string): string {
   return input.replace(/\/+/g, '/');
 }
 
-export function clearLocalStorage() {
-  Object.keys(localStorage)
-    .filter(key => key.startsWith(PLUGIN_NAME_AS_PATH))
-    .forEach(key => localStorage.removeItem(key));
-}
-
 export function updateRclone(toast: boolean = false) {
   update_rclone()
     .then(() => toast && Toaster.toast("Rclone is now the latest"))
