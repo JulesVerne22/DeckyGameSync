@@ -210,7 +210,7 @@ export default function quickAccessMenu() {
                     }
                   })}
             >
-              Sync Root
+              Set Sync Root
             </ButtonWithIcon>
           </PanelSectionRow>
           <PanelSectionRow>
@@ -236,7 +236,7 @@ export default function quickAccessMenu() {
                     }
                   })}
             >
-              Sync Destination
+              Set Sync Destination
             </ButtonWithIcon>
           </PanelSectionRow>
           <PanelSectionRow>

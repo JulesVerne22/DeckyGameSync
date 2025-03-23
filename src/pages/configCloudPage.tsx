@@ -27,6 +27,8 @@ async function openConfig(cloud: "onedrive" | "drive" | "dropbox") {
 async function getCloudBackend(): Promise<string> {
   const cloud_type = await get_cloud_type();
   switch (cloud_type) {
+    case "":
+      return ""
     case "onedrive":
       return "OneDrive";
     case "drive":
@@ -42,7 +44,7 @@ class ConfigCloudPage extends RoutePage {
   readonly route = "config-cloud";
 
   render(): ReactNode {
-    const [provider, setProvider] = useState<string>("N/A");
+    const [provider, setProvider] = useState<string>();
 
     useEffect(() => {
       getCloudBackend().then((cloud) => {

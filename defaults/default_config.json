@@ -6,6 +6,7 @@
     "capture_upload_destination": "steam-captures",
     "capture_delete_after_upload": false,
     "additional_sync_args": [
+        "--no-update-dir-modtime",
         "--ignore-checksum",
         "--copy-links",
         "--transfers", "8",

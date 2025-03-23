@@ -71,7 +71,7 @@ class RcloneManager:
         Returns:
         str: The URL extracted from the process output.
         """
-        for _ in range(2):
+        for _ in range(5):
             line = (await cls.current_spawn.stderr.readline()).decode()
             logger.debug("Rclone output: %s", line)
             if url_re_match := re.search(r"http://127.0.0.1:\d+/auth\?state=.*", line):
@@ -106,8 +106,10 @@ class RcloneManager:
             with RCLONE_CFG_PATH.open("r") as f:
                 l = f.readlines()
                 return l[1].strip().split(" ")[-1]
-        except:
-            return ""
+        except Exception as e:
+            logger.warning("Failed to get cloud type from rclone config: %s", e)
+
+        return ""
 
     @classmethod
     def update_rclone(cls):

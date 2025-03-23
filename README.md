@@ -6,9 +6,9 @@ It is still based on [rclone](https://rclone.org/), which allows users to back-u
 
 ## Troubleshooting
 
-If you are having issues with sync, you can check the logs to try to find out the issue. The logs for a specifc game sync can be accessed from the context menu of the game, while the logs for global sync can be accessed from a button in the Quick Access Menu. You can also find all the logs in the Decky Loader logs folder `~/homebrew/logs/sdh-gamesync/`. You may be asked to provide them when asking for help.
+If you are having issues with sync, you can check the logs to try to find out the issue. The logs for a specifc game sync can be accessed from the context menu of the game, while the logs for global sync can be accessed from a button in the Quick Access Menu. You can also find all the logs in the Decky Loader logs folder `~/homebrew/logs/SDH-GameSync/`. You may be asked to provide them when asking for help.
 
-It is recommended to modify the `log_level` entry in `~/homebrew/settings/sdh-gamesync/config.json` to `DEBUG` to get more verbose logs, which can help get the issue identified.
+It is recommended to modify the `log_level` entry in `~/homebrew/settings/SDH-GameSync/config.json` to `DEBUG` to get more verbose logs, which can help get the issue identified.
 
 ## Features
 ### Extension over Decky Cloud Save
@@ -57,7 +57,7 @@ For global sync, navigate to `Quick Access Menu - Global Sync Configs`, for per-
 
 ### Other providers
 
-For one or another reason, a provider may not be able to be configured from the Big Picture mode. For these cases, please kindly refer to [rclone's documentation](https://rclone.org/commands/rclone_config_create/) to generate a rclone config with your desired cloud provider using the name `cloud`, name the generated config `rclone.conf`, and put it inside the config folder of the plugin.
+For one or another reason, a provider may not be able to be configured from the Big Picture mode. For these cases, in terminal run `~/homebrew/data/SDH-GameSync/rclone help backends` to find the string representation of your desired cloud type in rclone. After getting the string representation, put in the following command and execute `~/homebrew/data/SDH-GameSync/rclone --config ~/homebrew/settings/SDH-GameSync/rlone.conf config create cloud <your desired cloud type>`, then follow the steps provided by the prompt. Once that's done you can go back to Steam and continue the configuration.
 
 ## Config
 

@@ -82,14 +82,16 @@ class SyncTaskQueue extends Observable {
   public async addScreenshotSyncTask(userId: number, screenshotUrl: string, gameId: string, handle: number) {
     this.pushTask(async () => await sync_screenshot(userId, screenshotUrl))
       .then((exitCode) => {
-        if (exitCode == 0 && Config.get("capture_delete_after_upload")) {
-          SteamClient.Screenshots.DeleteLocalScreenshot(gameId, handle)
-            .then(() =>
-              Logger.info(`Screenshot ${screenshotUrl} uploaded and deleted locally`))
-            .catch(() => {
-              Logger.warning(`Failed to delete screenshot ${screenshotUrl} locally`);
-              Toaster.toast("Failed to delete screenshot");
-            })
+        if (exitCode == 0) {
+          if (Config.get("capture_delete_after_upload")) {
+            SteamClient.Screenshots.DeleteLocalScreenshot(gameId, handle)
+              .then(() =>
+                Logger.info(`Screenshot ${screenshotUrl} uploaded and deleted locally`))
+              .catch(() => {
+                Logger.warning(`Failed to delete screenshot ${screenshotUrl} locally`);
+                Toaster.toast("Failed to delete screenshot");
+              })
+          }
         } else {
           Logger.error(`Failed to upload screenshot ${screenshotUrl}, exit code: ${exitCode}`);
           Toaster.toast(`Failed to upload screenshot`);
