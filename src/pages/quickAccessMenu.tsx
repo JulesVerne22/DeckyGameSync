@@ -3,10 +3,10 @@ import { FaArrowCircleUp, FaFileAlt, FaFileUpload, FaSave } from "react-icons/fa
 import { MdStorage } from "react-icons/md";
 import { BsFillGearFill } from "react-icons/bs";
 import { FaCloudArrowUp, FaCloudArrowDown } from "react-icons/fa6";
-import { PanelSection, PanelSectionRow, ToggleField } from "@decky/ui";
+import { PanelSection, PanelSectionRow, sleep, ToggleField } from "@decky/ui";
 import { GLOBAL_SYNC_APP_ID } from "../helpers/commonDefs";
 import { updateRclone } from "../helpers/utils";
-import { get_cloud_type, sync_cloud_first } from "../helpers/backend";
+import { get_cloud_type, sync_cloud_first, create_cloud_destination } from "../helpers/backend";
 import * as Popups from "../components/popups";
 import SyncTargetConfigPage from "./syncTargetConfigPage";
 import PluginLogsPage from "./pluginLogsPage";
@@ -228,7 +228,10 @@ export default function quickAccessMenu() {
                             Please make sure all the data are aligned in local and cloud, otherwise data may be lost or even <b>fully deleted</b>!<br /><br />
                             Click "Confirm" to continue.
                           </span>,
-                          () => Config.set("sync_destination", e)
+                          async () => {
+                            Config.set("sync_destination", e);
+                            sleep(500).then(create_cloud_destination);
+                          }
                         )
                       } else {
                         Config.set("sync_destination", e);

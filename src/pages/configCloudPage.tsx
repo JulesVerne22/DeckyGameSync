@@ -2,31 +2,43 @@ import { ReactNode, useEffect, useState } from "react";
 import { ImOnedrive, ImDropbox, ImHome, ImGoogleDrive } from "react-icons/im";
 import { BsGearFill, BsPatchQuestionFill } from "react-icons/bs";
 import { ButtonItem, Navigation, PanelSection, PanelSectionRow, sleep } from "@decky/ui";
-import Container from "../components/container";
 import { spawn, spawn_probe } from "../helpers/backend";
-import RoutePage from "../components/routePage";
 import { confirmPopup } from "../components/popups";
-import { get_cloud_type } from "../helpers/backend";
+import { get_cloud_type, create_cloud_destination } from "../helpers/backend";
+import Container from "../components/container";
+import RoutePage from "../components/routePage";
+import Config from "../helpers/config";
 
 async function openConfig(cloud: "onedrive" | "drive" | "dropbox") {
   const url = await spawn(cloud);
-  async () => {
+  (async () => {
     let count = 0; // For timeout in case user forgor 💀
-    while (count < 10_000 /* approx 1h */) {
-      if (await spawn_probe() === 0) {
+    while ((count++) < 7_200 /* approx 1h */) {
+      await sleep(500);
+      const a = await spawn_probe();
+      console.log("AAAAAAAAAAAAAA:", a)
+      if (a !== null) {
+        confirmPopup(
+          "Create cloud folder for sync?",
+          <p>
+            If you have successfully configured the cloud provider, now it's time to create the destination folder <i>{Config.get("sync_destination")}</i> in the cloud for sync.<br /><br />
+            To trigger that, click "Confirm".<br />
+            If you have other plans, feel free to dismiss it by clicking "Cancel".
+          </p>,
+          create_cloud_destination
+        );
         Navigation.NavigateBack();
         break;
       }
-      await sleep(360);
     }
-  };
+  })();
   Navigation.CloseSideMenus();
   Navigation.NavigateToExternalWeb(url);
 }
 
 async function getCloudBackend(): Promise<string> {
-  const cloud_type = await get_cloud_type();
-  switch (cloud_type) {
+  const cloudType = await get_cloud_type();
+  switch (cloudType) {
     case "":
       return ""
     case "onedrive":
@@ -36,7 +48,7 @@ async function getCloudBackend(): Promise<string> {
     case "dropbox":
       return "Dropbox";
     default:
-      return "Other: " + cloud_type;
+      return "Other: " + cloudType;
   }
 }
 

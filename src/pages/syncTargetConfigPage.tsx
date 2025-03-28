@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { IoArrowUpCircle, IoArrowDownCircle } from "react-icons/io5";
 import { FaCloudArrowUp, FaCloudArrowDown } from "react-icons/fa6";
 import { Navigation, SidebarNavigation, useParams } from "@decky/ui";
-import { GLOBAL_SYNC_APP_ID, SHARED_FILTER_APP_ID } from "../helpers/commonDefs";
+import { GLOBAL_SYNC_APP_ID } from "../helpers/commonDefs";
 import { getAppName } from "../helpers/utils";
 import { get_last_sync_log, sync_local_first, sync_cloud_first, resync_local_first, resync_cloud_first } from "../helpers/backend";
 import { confirmPopup } from "../components/popups";
@@ -10,6 +10,7 @@ import * as Toaster from "../helpers/toaster";
 import RoutePage from "../components/routePage";
 import LogsView from "../components/logsView";
 import FiltersView from "../components/filtersView";
+import SharedFiltersView from "../components/sharedFiltersView";
 import Logger from "../helpers/logger";
 import SyncTaskQueue from "../helpers/syncTaskQueue";
 import IconButton from "../components/iconButton";
@@ -97,6 +98,17 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
             </FiltersView>
         },
         {
+          title: "Shared Filter",
+          hideTitle: true,
+          content:
+            <SharedFiltersView
+              title="Shared Filter"
+              description="Filters that's shared among all syncs. It will be used together with the target filter, but has a higher priority."
+              fullPage={false}
+            />
+        },
+        "separator",
+        {
           title: "Sync Logs",
           // icon: <FaFileAlt />,
           hideTitle: true,
@@ -136,18 +148,6 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
                   </IconButton>
                 </>)}
             </LogsView>
-        },
-        {
-          title: "Shared Filter",
-          hideTitle: true,
-          content:
-            <FiltersView
-              title="Shared Filter"
-              description="Filters that's shared among all syncs. It will be used together with the target filter, but has a higher priority."
-              fullPage={false}
-              getFiltersFunction={() => SyncFilters.get(SHARED_FILTER_APP_ID)}
-              setFiltersFunction={(filters) => SyncFilters.set(SHARED_FILTER_APP_ID, filters)}
-            />
         },
       ]}
     />

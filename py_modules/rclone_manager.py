@@ -1,7 +1,7 @@
 from asyncio import create_subprocess_exec
 from asyncio.subprocess import Process, PIPE
 from time import sleep
-import re, urllib
+import re, urllib, subprocess
 
 from common_defs import *
 from utils import *
@@ -28,11 +28,11 @@ class RcloneManager:
             raise Exception("RCLONE_PORT_IN_USE")
 
         cls.current_spawn = await create_subprocess_exec(
-            str(RCLONE_BIN_PATH),
+            RCLONE_BIN_PATH,
             *(
                 [
                     "--config",
-                    str(RCLONE_CFG_PATH),
+                    RCLONE_CFG_PATH,
                     "config",
                     "create",
                     "cloud",
@@ -82,7 +82,7 @@ class RcloneManager:
         return ""
 
     @classmethod
-    def probe(cls) -> int:
+    def probe(cls) -> int | None:
         """
         Checks if the current rclone process is running.
 
@@ -160,8 +160,6 @@ class RcloneManager:
             logger.info("Rclone binary does not exist in path %s", RCLONE_BIN_PATH)
             return None
 
-        import subprocess
-
         with subprocess.Popen(
             [RCLONE_BIN_PATH, "--version"], stdout=subprocess.PIPE
         ) as p:
@@ -206,3 +204,23 @@ class RcloneManager:
                     "Failed to download the latest version. HTTP status: %d",
                     response.status,
                 )
+
+    @classmethod
+    def create_cloud_destination(cls):
+        """
+        Creates the cloud destination directory if it doesn't exist.
+        """
+        sync_destination = Config.get_config_item("sync_destination")
+        with subprocess.Popen(
+            [
+                RCLONE_BIN_PATH,
+                "--config",
+                RCLONE_CFG_PATH,
+                "mkdir",
+                f"cloud:{sync_destination}",
+                "-v",
+            ],
+            stdout=subprocess.PIPE,
+            text=True,
+        ) as p:
+            logger.debug("Creating cloud destination: %s", p.stdout.read())

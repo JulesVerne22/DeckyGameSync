@@ -16,7 +16,7 @@ class Plugin:
         logger.debug("Executing spawn(cloud_type=%s)", cloud_type)
         return await RcloneManager.spawn(cloud_type)
 
-    async def spawn_probe(self) -> int:
+    async def spawn_probe(self) -> int | None:
         logger.debug("Executing probe()")
         return RcloneManager.probe()
 
@@ -27,6 +27,10 @@ class Plugin:
     async def update_rclone(self):
         logger.debug("Executing update_rclone()")
         return RcloneManager.update_rclone()
+
+    async def create_cloud_destination(self):
+        logger.debug("Executing create_cloud_destination()")
+        return RcloneManager.create_cloud_destination()
 
     # Sync Paths
 

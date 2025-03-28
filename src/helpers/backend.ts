@@ -2,9 +2,10 @@ import { callable } from "@decky/api"
 
 // rclone.conf Setup
 export const spawn = callable<[backend_type: string], string>("spawn");
-export const spawn_probe = callable<[], number>("spawn_probe");
+export const spawn_probe = callable<[], number | null>("spawn_probe");
 export const get_cloud_type = callable<[], string>("get_cloud_type");
 export const update_rclone = callable<[], void>("update_rclone");
+export const create_cloud_destination = callable<[], void>("create_cloud_destination");
 
 // Sync Paths
 export const get_target_filters = callable<[app_id: number], Array<string>>("get_target_filters");

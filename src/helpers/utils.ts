@@ -1,4 +1,4 @@
-import { GLOBAL_SYNC_APP_ID, SHARED_FILTER_APP_ID, PLUGIN_NAME_AS_PATH } from "./commonDefs";
+import { GLOBAL_SYNC_APP_ID, SHARED_FILTER_APP_ID } from "./commonDefs";
 import { update_rclone } from "./backend";
 import * as Toaster from "./toaster";
 
