@@ -15,9 +15,7 @@ async function openConfig(cloud: "onedrive" | "drive" | "dropbox") {
     let count = 0; // For timeout in case user forgor 💀
     while ((count++) < 7_200 /* approx 1h */) {
       await sleep(500);
-      const a = await spawn_probe();
-      console.log("AAAAAAAAAAAAAA:", a)
-      if (a !== null) {
+      if (await spawn_probe() !== null) {
         confirmPopup(
           "Create cloud folder for sync?",
           <p>
