@@ -26,7 +26,7 @@ const spliceMenuItem = (children: any[], appid: number) => {
       onSelected: () => {
         SyncTargetConfigPage.enter({ appId: String(appid) });
       },
-      children: "Sync Filters"
+      children: "Sync Logs & Filters"
     })
   ));
 };

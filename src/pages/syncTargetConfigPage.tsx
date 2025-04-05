@@ -73,42 +73,6 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
     return <SidebarNavigation
       pages={[
         {
-          title: "Target Filter",
-          hideTitle: true,
-          content:
-            <FiltersView
-              title="Target Filter"
-              description={<>Filters specific for <i>{appName}</i> sync. It will be used together with the shared filter, but has a lower priority.</>}
-              fullPage={false}
-              getFiltersFunction={() => SyncFilters.get(appId)}
-              setFiltersFunction={(filters) => SyncFilters.set(appId, filters)}
-            >
-              <IconButton
-                icon={FaCloudArrowUp}
-                onOKActionDescription={`Sync Now (${(appId == GLOBAL_SYNC_APP_ID) ? "Local First" : "Upload to Cloud"})`}
-                disabled={syncInProgress}
-                onClick={() => SyncTaskQueue.addSyncTask(sync_local_first, appId)}>
-              </IconButton>
-              <IconButton
-                icon={FaCloudArrowDown}
-                onOKActionDescription={`Sync Now (${(appId == GLOBAL_SYNC_APP_ID) ? "Cloud First" : "Download to Local"})`}
-                disabled={syncInProgress}
-                onClick={() => SyncTaskQueue.addSyncTask(sync_cloud_first, appId)}>
-              </IconButton>
-            </FiltersView>
-        },
-        {
-          title: "Shared Filter",
-          hideTitle: true,
-          content:
-            <SharedFiltersView
-              title="Shared Filter"
-              description="Filters that's shared among all syncs. It will be used together with the target filter, but has a higher priority."
-              fullPage={false}
-            />
-        },
-        "separator",
-        {
           title: "Sync Logs",
           // icon: <FaFileAlt />,
           hideTitle: true,
@@ -148,6 +112,42 @@ class SyncTargetConfigPage extends RoutePage<SyncTargetConfigPageParams> {
                   </IconButton>
                 </>)}
             </LogsView>
+        },
+        "separator",
+        {
+          title: "Target Filter",
+          hideTitle: true,
+          content:
+            <FiltersView
+              title="Target Filter"
+              description={<>Filters specific for <i>{appName}</i> sync. It will be used together with the shared filter, but has a lower priority.</>}
+              fullPage={false}
+              getFiltersFunction={() => SyncFilters.get(appId)}
+              setFiltersFunction={(filters) => SyncFilters.set(appId, filters)}
+            >
+              <IconButton
+                icon={FaCloudArrowUp}
+                onOKActionDescription={`Sync Now (${(appId == GLOBAL_SYNC_APP_ID) ? "Local First" : "Upload to Cloud"})`}
+                disabled={syncInProgress}
+                onClick={() => SyncTaskQueue.addSyncTask(sync_local_first, appId)}>
+              </IconButton>
+              <IconButton
+                icon={FaCloudArrowDown}
+                onOKActionDescription={`Sync Now (${(appId == GLOBAL_SYNC_APP_ID) ? "Cloud First" : "Download to Local"})`}
+                disabled={syncInProgress}
+                onClick={() => SyncTaskQueue.addSyncTask(sync_cloud_first, appId)}>
+              </IconButton>
+            </FiltersView>
+        },
+        {
+          title: "Shared Filter",
+          hideTitle: true,
+          content:
+            <SharedFiltersView
+              title="Shared Filter"
+              description="Filters that's shared among all syncs. It will be used together with the target filter, but has a higher priority."
+              fullPage={false}
+            />
         },
       ]}
     />
