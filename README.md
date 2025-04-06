@@ -57,7 +57,7 @@ For global sync, navigate to `Quick Access Menu - Global Sync Configs`, for per-
 
 ### Other providers
 
-For one or another reason, a provider may not be able to be configured from the Big Picture mode. For these cases, in terminal run `~/homebrew/data/SDH-GameSync/rclone help backends` to find the string representation of your desired cloud type in rclone. After getting the string representation, put in the following command and execute `~/homebrew/data/SDH-GameSync/rclone --config ~/homebrew/settings/SDH-GameSync/rlone.conf config create cloud <your desired cloud type>`, then follow the steps provided by the prompt. Once that's done you can go back to Steam and continue the configuration.
+For one or another reason, a provider may not be able to be configured from the Big Picture mode. For these cases, in terminal run `~/homebrew/data/SDH-GameSync/rclone help backends` to find the string representation of your desired cloud type in rclone. After getting the string representation, put in the following command and execute `~/homebrew/data/SDH-GameSync/rclone --config ~/homebrew/settings/SDH-GameSync/rlone.conf config create cloud <your desired cloud type>`, then follow the steps provided by the prompt. Once that's done you can go back to Steam and continue the configuration. **And don't forget to create the upload folder on your cloud! It defaults to `/sdh-game-sync` but may differ if you have changed the config.**
 
 ## Config
 
