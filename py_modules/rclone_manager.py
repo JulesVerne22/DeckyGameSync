@@ -1,6 +1,7 @@
 from asyncio import create_subprocess_exec
 from asyncio.subprocess import Process, PIPE
 from time import sleep
+from packaging.version import Version
 import re, urllib, subprocess
 
 from common_defs import *
@@ -131,30 +132,30 @@ class RcloneManager:
         cls._get_rclone()
 
     @classmethod
-    def _get_latest_rclone_version(cls) -> str | None:
+    def _get_latest_rclone_version(cls) -> Version | None:
         """
         Retrieves the latest version of rclone from GitHub.
 
         Returns:
-        str: The latest version of rclone.
+        Version: The latest version of rclone.
         """
         url = "https://downloads.rclone.org/version.txt"
         try:
             with urllib.request.urlopen(url, context=ssl_context) as response:
                 if response.status == 200:
-                    return response.read().decode("utf-8").strip()
+                    return Version(response.read().decode("utf-8").strip())
         except Exception as e:
             logger.warning(f"Failed to fetch the latest version of rclone: {e}")
 
         return None
 
     @classmethod
-    def _get_current_rclone_version(cls) -> str | None:
+    def _get_current_rclone_version(cls) -> Version | None:
         """
         Retrieves the current version of rclone from the rclone configuration.
 
         Returns:
-        str: The current version of rclone.
+        Version: The current version of rclone.
         """
         if not RCLONE_BIN_PATH.exists():
             logger.info("Rclone binary does not exist in path %s", RCLONE_BIN_PATH)
@@ -168,7 +169,7 @@ class RcloneManager:
         pattern = re.compile(rb"rclone v[\d\.]+")
         for line in lines:
             if re.search(pattern, line):
-                return line.decode().strip()
+                return Version(line.decode().strip())
 
         logger.warning("Failed to extract the current version of rclone")
         return None
