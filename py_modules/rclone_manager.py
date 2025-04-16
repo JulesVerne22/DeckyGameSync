@@ -122,17 +122,16 @@ class RcloneManager:
         current_version = cls._get_current_rclone_version()
         logger.info("Current version: %s", current_version)
 
-        if (not latest_version) or (
-            current_version and (latest_version <= current_version)
-        ):
-            logger.debug("No update required")
-            return "No update required"
+        if latest_version > current_version:
+            logger.info("Updating rclone from %s to %s", current_version, latest_version)
+            cls._get_rclone()
+            return
 
-        logger.info("Updating rclone from %s to %s", current_version, latest_version)
-        cls._get_rclone()
+        logger.debug("No update required")
+        return "No update required"
 
     @classmethod
-    def _get_latest_rclone_version(cls) -> Version | None:
+    def _get_latest_rclone_version(cls) -> Version:
         """
         Retrieves the latest version of rclone from GitHub.
 
@@ -147,10 +146,10 @@ class RcloneManager:
         except Exception as e:
             logger.warning(f"Failed to fetch the latest version of rclone: {e}")
 
-        return None
+        return DEFAULT_VERSION
 
     @classmethod
-    def _get_current_rclone_version(cls) -> Version | None:
+    def _get_current_rclone_version(cls) -> Version:
         """
         Retrieves the current version of rclone from the rclone configuration.
 
@@ -159,7 +158,7 @@ class RcloneManager:
         """
         if not RCLONE_BIN_PATH.exists():
             logger.info("Rclone binary does not exist in path %s", RCLONE_BIN_PATH)
-            return None
+            return DEFAULT_VERSION
 
         with subprocess.Popen(
             [RCLONE_BIN_PATH, "--version"], stdout=subprocess.PIPE
@@ -172,7 +171,7 @@ class RcloneManager:
                 return Version(line.decode().strip())
 
         logger.warning("Failed to extract the current version of rclone")
-        return None
+        return DEFAULT_VERSION
 
     @classmethod
     def _get_rclone(cls) -> None:

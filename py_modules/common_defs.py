@@ -2,6 +2,7 @@ import decky
 
 from pathlib import Path
 from enum import Enum
+from packaging.version import Version
 import ssl, certifi
 
 RCLONE_PORT = 53682
@@ -20,6 +21,8 @@ SYNC_FILTER_TYPE_DICT = {
     SHARED_FILTER_NAME: -1,
     GLOBAL_SYNC_ID: 0,
 }
+
+DEFAULT_VERSION = Version("0")
 
 logger = decky.logger
 ssl_context = ssl.create_default_context(cafile=certifi.where())
