@@ -168,7 +168,7 @@ class _SyncTarget:
                 "--log-file",
                 str(self._get_rclone_log_path()),
                 "--log-format",
-                "none",
+                "nolevel",
             ]
         )
 
