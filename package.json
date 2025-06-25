@@ -2,7 +2,7 @@
   "name": "sdh-gamesync",
   "version": "1.0.0",
   "description": "A fork of Decky Cloud Save that manages cloud saves and mods for games",
-  "packageManager": "pnpm@10.6.3",
+  "packageManager": "pnpm@10.12.3",
   "type": "module",
   "scripts": {
     "build": "rollup -c",
