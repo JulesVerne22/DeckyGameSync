@@ -142,7 +142,7 @@ class RcloneManager:
         try:
             with urllib.request.urlopen(url, context=ssl_context) as response:
                 if response.status == 200:
-                    return Version(response.read().decode("utf-8").strip())
+                    return Version(response.read().decode("utf-8").strip().split(' ')[-1])
         except Exception as e:
             logger.warning(f"Failed to fetch the latest version of rclone: {e}")
 
@@ -168,7 +168,7 @@ class RcloneManager:
         pattern = re.compile(rb"rclone v[\d\.]+")
         for line in lines:
             if re.search(pattern, line):
-                return Version(line.decode().strip())
+                return Version(line.decode().strip().split(' ')[-1])
 
         logger.warning("Failed to extract the current version of rclone")
         return DEFAULT_VERSION
