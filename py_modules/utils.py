@@ -78,7 +78,14 @@ def test_syncpath(syncpath: str) -> int:
     Returns:
     int: The number of files if it's a directory, -1 if it exceeds the limit, or 0 if it's a file.
     """
-    if not syncpath.startswith(Config.get_config_item("sync_root")):
+    roots = Config.get_config_item("sync_root")
+    match = False
+    for root in roots:
+        if syncpath.startswith(root):
+            match = True
+            break
+    
+    if not match:
         raise Exception("Selection is outside of sync root.")
 
     if syncpath.endswith("/**"):

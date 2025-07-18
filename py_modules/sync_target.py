@@ -109,7 +109,7 @@ class _SyncTarget:
 
     def _get_sync_paths(
         self, winner: RcloneSyncWinner = RcloneSyncWinner.LOCAL
-    ) -> tuple[str, str]:
+    ) -> tuple[list[str], str, bool]:
         """
         Retrieves the sync root and destination directory from the configuration.
 
@@ -121,12 +121,9 @@ class _SyncTarget:
         """
         sync_root, sync_dest = Config.get_config_items("sync_root", "sync_destination")
 
-        if (winner == RcloneSyncWinner.CLOUD) and (
+        return sync_root, f"cloud:{sync_dest}", (winner == RcloneSyncWinner.CLOUD) and (
             self._sync_mode != RcloneSyncMode.BISYNC
-        ):
-            return f"cloud:{sync_dest}", sync_root
-        else:
-            return sync_root, f"cloud:{sync_dest}"
+        )
 
     async def _rclone_execute(
         self, winner: RcloneSyncWinner, extra_args: list[str] = []
@@ -149,6 +146,7 @@ class _SyncTarget:
             self._shared_filter_file.touch(exist_ok=True)
 
         arguments = ["--config", str(RCLONE_CFG_PATH), self._sync_mode.value]
+        # TODO: Need to configure this function to create a rclone call for each root and assign the filters to their respective roots
         arguments.extend(self._get_sync_paths(winner))
 
         if self._filter_required:

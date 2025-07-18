@@ -191,10 +191,10 @@ export default function quickAccessMenu() {
             <ButtonWithIcon
               icon={<FaCloudArrowUp />}
               onClick={() =>
-                Popups.textInputPopup("Global & Game Sync Root",
+                Popups.textInputPopup("Global & Game Sync Roots",
                   Config.get("sync_root"),
                   (e) => {
-                    if (e != Config.get("sync_root")) {
+                    if (e != Config.get("sync_root").join(",")) {
                       if (Config.get("strict_game_sync")) {
                         Popups.confirmPopup("Modify Sync Root",
                           <span>
@@ -202,10 +202,10 @@ export default function quickAccessMenu() {
                             Please make sure all the data are aligned in local and cloud, otherwise data may be lost or even <b>fully deleted</b>!<br /><br />
                             Click "Confirm" to continue.
                           </span>,
-                          () => Config.set("sync_root", e)
+                          () => Config.set("sync_root", e.split(","))
                         )
                       } else {
-                        Config.set("sync_root", e);
+                        Config.set("sync_root", e.split(","));
                       }
                     }
                   })}
